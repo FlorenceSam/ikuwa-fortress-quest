@@ -377,5 +377,30 @@
   font-size: clamp(0.65rem, 1.3vw, 0.85rem);
   font-style: italic;
   letter-spacing: 0.05em;
-  margin: 0;
+  margin: 0 0 1.5rem;
+}
+
+.victory-continue {
+  background: transparent;
+  border: 2px solid #D4A017;
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.75rem, 1.5vw, 0.92rem);
+  font-weight: bold;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  padding: 0.82rem 2.6rem;
+  cursor: pointer;
+  animation: vc-appear 1.4s ease-out forwards;
+  transition: background 0.22s, box-shadow 0.22s;
+}
+
+.victory-continue:hover {
+  background: rgba(212,160,23,0.12);
+  box-shadow: 0 0 28px rgba(212,160,23,0.45);
+}
+
+@keyframes vc-appear {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
 }

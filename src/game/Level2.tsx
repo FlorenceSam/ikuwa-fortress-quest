@@ -1,0 +1,343 @@
+import { useEffect, useRef, useState } from 'react'
+import './level2.css'
+
+// ─── Data ──────────────────────────────────────────────────────────────────
+
+interface Question { text: string; options: string[]; correct: number }
+
+const QUESTIONS: Question[] = [
+  {
+    text: 'What was the name of the Garden God planted?',
+    options: ['Garden of Gethsemane', 'Garden of Eden', 'Garden of Olives', 'Promised Garden'],
+    correct: 1,
+  },
+  {
+    text: 'Which tree were Adam and Eve forbidden to eat from?',
+    options: ['Tree of Life', 'Tree of Knowledge of Good and Evil', 'Tree of Wisdom', 'Tree of Blessing'],
+    correct: 1,
+  },
+  {
+    text: 'Who tempted Eve in the Garden?',
+    options: ['Adam', 'An Angel', 'The Serpent', 'Cain'],
+    correct: 2,
+  },
+  {
+    text: 'What did God do after Adam and Eve sinned?',
+    options: [
+      'Abandoned them',
+      'Destroyed the Garden',
+      'Sought them out and made garments for them',
+      'Created another man',
+    ],
+    correct: 2,
+  },
+]
+
+// ─── Audio ─────────────────────────────────────────────────────────────────
+
+function playCorrectSound() {
+  try {
+    const ctx = new AudioContext()
+    ;[523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain()
+      o.type = 'sine'; o.frequency.value = f
+      const t = ctx.currentTime + i * 0.09
+      g.gain.setValueAtTime(0, t)
+      g.gain.linearRampToValueAtTime(0.18, t + 0.05)
+      g.gain.exponentialRampToValueAtTime(0.001, t + 1.3)
+      o.connect(g); g.connect(ctx.destination)
+      o.start(t); o.stop(t + 1.3)
+    })
+  } catch (_) {}
+}
+
+function playWrongSound() {
+  try {
+    const ctx = new AudioContext()
+    const o = ctx.createOscillator(), g = ctx.createGain()
+    o.type = 'sine'; o.frequency.value = 200
+    g.gain.setValueAtTime(0.12, ctx.currentTime)
+    g.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.55)
+    o.connect(g); g.connect(ctx.destination)
+    o.start(); o.stop(ctx.currentTime + 0.55)
+  } catch (_) {}
+}
+
+function playVictorySound() {
+  try {
+    const ctx = new AudioContext()
+    ;[261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+      const o = ctx.createOscillator(), g = ctx.createGain()
+      o.type = 'sine'; o.frequency.value = f
+      const t = ctx.currentTime + i * 0.075
+      g.gain.setValueAtTime(0, t)
+      g.gain.linearRampToValueAtTime(0.16, t + 0.1)
+      g.gain.exponentialRampToValueAtTime(0.001, t + 3.5)
+      o.connect(g); g.connect(ctx.destination)
+      o.start(t); o.stop(t + 3.5)
+    })
+  } catch (_) {}
+}
+
+function speakVoice(text: string) {
+  try {
+    const utt = new SpeechSynthesisUtterance(text)
+    utt.rate = 0.88; utt.pitch = 1.1; utt.volume = 1
+    const warm = speechSynthesis.getVoices()
+      .find(v => /female|woman|zira|samantha|karen|victoria|moira/i.test(v.name))
+    if (warm) utt.voice = warm
+    speechSynthesis.cancel()
+    speechSynthesis.speak(utt)
+  } catch (_) {}
+}
+
+// ─── Types ─────────────────────────────────────────────────────────────────
+
+interface VParticle { x:number; y:number; vx:number; vy:number; r:number; life:number; max:number; hue:number }
+
+// ─── Component ─────────────────────────────────────────────────────────────
+
+export default function Level2({ onComplete }: { onComplete?: () => void }) {
+  const [currentQ,   setCurrentQ]   = useState(0)
+  const [feedback,   setFeedback]   = useState<'correct'|'wrong'|null>(null)
+  const [selectedIdx,setSelectedIdx]= useState<number|null>(null)
+  const [burstIdx,   setBurstIdx]   = useState<number|null>(null)
+  const [victory,    setVictory]    = useState(false)
+
+  const bgRef      = useRef<HTMLCanvasElement>(null)
+  const victoryRef = useRef<HTMLCanvasElement>(null)
+  const bgRafRef   = useRef<number>(0)
+  const vRafRef    = useRef<number>(0)
+
+  // ── Garden background ────────────────────────────────────────────────────
+
+  useEffect(() => {
+    const canvas = bgRef.current; if (!canvas) return
+    const ctx = canvas.getContext('2d'); if (!ctx) return
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight
+    const W = canvas.width, H = canvas.height
+
+    const stars = Array.from({ length: 220 }, () => ({
+      x: Math.random()*W, y: Math.random()*H,
+      r:    Math.random()*1.2+0.2,
+      base: Math.random()*0.35+0.1,
+      amp:  Math.random()*0.12+0.03,
+      spd:  Math.random()*0.018+0.003,
+      ph:   Math.random()*Math.PI*2,
+      // mix of golds and greens
+      hue: Math.random() < 0.45 ? Math.random()*25+38 : Math.random()*35+105,
+    }))
+
+    // Floating firefly-like garden particles
+    const fireflies = Array.from({ length: 40 }, () => ({
+      x: Math.random()*W,  y: Math.random()*H,
+      vx: (Math.random()-0.5)*0.45,
+      vy: -(Math.random()*0.28+0.04),
+      r:   Math.random()*2.2+0.6,
+      hue: Math.random()*50+95,  // green range 95-145
+      ph:  Math.random()*Math.PI*2,
+      spd: Math.random()*0.04+0.015,
+    }))
+
+    let frame = 0
+    const tick = () => {
+      ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H)
+
+      // Subtle deep-green centre glow
+      const cg = ctx.createRadialGradient(W/2, H*0.52, 0, W/2, H*0.52, W*0.52)
+      cg.addColorStop(0,   'rgba(12,55,8,0.22)')
+      cg.addColorStop(0.45,'rgba(8,38,5,0.10)')
+      cg.addColorStop(1,   'transparent')
+      ctx.fillStyle = cg; ctx.fillRect(0,0,W,H)
+
+      // Gold-green horizon mist at bottom
+      const hg = ctx.createLinearGradient(0, H*0.72, 0, H)
+      hg.addColorStop(0,  'transparent')
+      hg.addColorStop(0.6,'rgba(18,60,10,0.09)')
+      hg.addColorStop(1,  'rgba(10,40,5,0.14)')
+      ctx.fillStyle = hg; ctx.fillRect(0,0,W,H)
+
+      frame++
+
+      // Stars
+      for (const s of stars) {
+        const op = Math.max(0.03, Math.min(1, s.base + Math.sin(frame*s.spd+s.ph)*s.amp))
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r*2.2, 0, Math.PI*2)
+        ctx.fillStyle = `hsla(${s.hue},60%,70%,${op*0.14})`; ctx.fill()
+        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2)
+        ctx.fillStyle = `hsla(${s.hue},55%,92%,${op})`; ctx.fill()
+      }
+
+      // Fireflies
+      for (const f of fireflies) {
+        f.x += f.vx; f.y += f.vy
+        if (f.y < -12) { f.y = H+12; f.x = Math.random()*W }
+        if (f.x < -12) f.x = W+12
+        if (f.x > W+12) f.x = -12
+        const op = Math.max(0.08, Math.min(0.72, 0.4 + Math.sin(frame*f.spd+f.ph)*0.32))
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r*4, 0, Math.PI*2)
+        ctx.fillStyle = `hsla(${f.hue},80%,55%,${op*0.18})`; ctx.fill()
+        ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2)
+        ctx.fillStyle = `hsla(${f.hue},75%,78%,${op})`; ctx.fill()
+      }
+
+      bgRafRef.current = requestAnimationFrame(tick)
+    }
+    tick()
+    return () => cancelAnimationFrame(bgRafRef.current)
+  }, [])
+
+  // ── Victory particles ────────────────────────────────────────────────────
+
+  useEffect(() => {
+    if (!victory) return
+    const canvas = victoryRef.current; if (!canvas) return
+    const ctx = canvas.getContext('2d'); if (!ctx) return
+    canvas.width = window.innerWidth; canvas.height = window.innerHeight
+    const W = canvas.width, H = canvas.height
+
+    const parts: VParticle[] = Array.from({ length: 320 }, () => {
+      const a = Math.random()*Math.PI*2, s = Math.random()*9+1.5
+      return {
+        x: W/2, y: H/2, vx: Math.cos(a)*s, vy: Math.sin(a)*s,
+        r: Math.random()*3+0.5, life: 0, max: Math.random()*140+60,
+        // gold and green mix
+        hue: Math.random() < 0.6 ? Math.random()*25+38 : Math.random()*40+105,
+      }
+    })
+
+    const tick = () => {
+      ctx.clearRect(0,0,W,H)
+      for (let i=parts.length-1; i>=0; i--) {
+        const p=parts[i]; if(++p.life>=p.max){parts.splice(i,1);continue}
+        p.x+=p.vx; p.y+=p.vy; p.vx*=0.962; p.vy*=0.962; p.vy+=0.08
+        const t=p.life/p.max, op=Math.pow(1-t,0.82), rN=p.r*(1+t*0.9)
+        ctx.beginPath(); ctx.arc(p.x,p.y,rN*3.5,0,Math.PI*2)
+        ctx.fillStyle=`hsla(${p.hue},90%,58%,${op*0.22})`; ctx.fill()
+        ctx.beginPath(); ctx.arc(p.x,p.y,rN,0,Math.PI*2)
+        ctx.fillStyle=`hsla(${p.hue},96%,92%,${op})`; ctx.fill()
+      }
+      vRafRef.current = requestAnimationFrame(tick)
+      if (parts.length===0) cancelAnimationFrame(vRafRef.current)
+    }
+    tick()
+    return () => cancelAnimationFrame(vRafRef.current)
+  }, [victory])
+
+  // ── Answer handler ───────────────────────────────────────────────────────
+
+  const handleAnswer = (idx: number) => {
+    if (feedback === 'correct') return  // block clicks during transition
+
+    const q = QUESTIONS[currentQ]
+    setSelectedIdx(idx)
+
+    if (idx === q.correct) {
+      setFeedback('correct')
+      setBurstIdx(idx)
+      playCorrectSound()
+      speakVoice('Excellent Warrior!')
+
+      setTimeout(() => {
+        setBurstIdx(null)
+        setFeedback(null)
+        setSelectedIdx(null)
+
+        if (currentQ + 1 >= QUESTIONS.length) {
+          playVictorySound()
+          setTimeout(() => {
+            setVictory(true)
+            speakVoice('See how smart you are!')
+          }, 500)
+        } else {
+          setCurrentQ(q => q + 1)
+        }
+      }, 1600)
+    } else {
+      setFeedback('wrong')
+      playWrongSound()
+      setTimeout(() => {
+        setFeedback(null)
+        setSelectedIdx(null)
+      }, 1800)
+    }
+  }
+
+  const q = QUESTIONS[currentQ]
+
+  // ── Render ───────────────────────────────────────────────────────────────
+
+  return (
+    <div className="level2">
+      <canvas ref={bgRef} className="level2-bg" />
+
+      <header className="level2-header">
+        <p className="level2-label">LEVEL 1-2</p>
+        <h1 className="level2-title">The Garden of Eden</h1>
+      </header>
+
+      <div className="quiz-progress">
+        {QUESTIONS.map((_, i) => (
+          <div
+            key={i}
+            className={[
+              'quiz-pip',
+              i <  currentQ ? 'quiz-pip--done'    : '',
+              i === currentQ ? 'quiz-pip--current' : '',
+            ].filter(Boolean).join(' ')}
+          />
+        ))}
+      </div>
+
+      {!victory && (
+        <div className="quiz-card">
+          <p className="quiz-q-num">Question {currentQ + 1} of {QUESTIONS.length}</p>
+          <h2 className="quiz-question">{q.text}</h2>
+
+          <div className="quiz-options">
+            {q.options.map((opt, i) => (
+              <button
+                key={i}
+                disabled={feedback === 'correct'}
+                className={[
+                  'quiz-option',
+                  selectedIdx === i && feedback === 'correct' ? 'quiz-option--correct' : '',
+                  selectedIdx === i && feedback === 'wrong'   ? 'quiz-option--wrong'   : '',
+                  burstIdx === i                              ? 'quiz-option--burst'   : '',
+                ].filter(Boolean).join(' ')}
+                onClick={() => handleAnswer(i)}
+              >
+                {opt}
+              </button>
+            ))}
+          </div>
+
+          {feedback === 'correct' && (
+            <p className="quiz-feedback quiz-feedback--correct">✦ Excellent Warrior! ✦</p>
+          )}
+          {feedback === 'wrong' && (
+            <p className="quiz-feedback quiz-feedback--wrong">
+              Try again — God believes in you!
+            </p>
+          )}
+        </div>
+      )}
+
+      {victory && (
+        <div className="victory-overlay">
+          <canvas ref={victoryRef} className="victory-canvas" />
+          <div className="victory-content">
+            <h1 className="victory-glory">GLORY!</h1>
+            <p className="victory-message">You completed The Garden of Eden!</p>
+            <p className="victory-verse">"For we are God's masterpiece" — Ephesians 2:10</p>
+            {onComplete && (
+              <button className="victory-continue" onClick={onComplete}>
+                CONTINUE →
+              </button>
+            )}
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}

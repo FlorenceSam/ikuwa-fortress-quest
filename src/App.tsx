@@ -6,6 +6,7 @@ import {
   CharacterNameScreen,
 } from './screens/AuthScreens'
 import Level1 from './game/Level1'
+import Level2 from './game/Level2'
 import './App.css'
 
 // ─── Audio ─────────────────────────────────────────────────────────────────
@@ -141,7 +142,7 @@ function mkParticles(cx: number, cy: number): Particle[] {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AppScreen      = 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game'
+type AppScreen      = 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2'
 type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -338,7 +339,8 @@ export default function App() {
     return <CharacterNameScreen firstName={firstName} onEnter={enterKingdom} />
   }
 
-  if (appScreen === 'game') return <Level1 />
+  if (appScreen === 'game')   return <Level1 onComplete={() => setAppScreen('level2')} />
+  if (appScreen === 'level2') return <Level2 />
 
   // Cinematic
   return (

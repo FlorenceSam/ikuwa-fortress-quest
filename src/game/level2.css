@@ -1,0 +1,335 @@
+/* ── Container ───────────────────────────────────────────────────────────── */
+
+.level2 {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #000;
+  overflow: hidden;
+  animation: l2-appear 0.9s ease-out forwards;
+}
+
+@keyframes l2-appear {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.level2-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.level2-header {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: clamp(0.8rem, 2vh, 1.5rem) 1rem clamp(0.2rem, 0.6vh, 0.5rem);
+  flex-shrink: 0;
+}
+
+.level2-label {
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.6rem, 1.3vw, 0.78rem);
+  letter-spacing: 0.40em;
+  text-transform: uppercase;
+  margin: 0 0 0.25rem;
+  text-shadow: 0 0 18px rgba(212,160,23,0.55);
+}
+
+.level2-title {
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.1rem, 2.8vw, 2rem);
+  font-weight: bold;
+  letter-spacing: 0.07em;
+  margin: 0;
+  text-shadow: 0 0 28px rgba(212,160,23,0.40);
+}
+
+/* ── Progress pips ───────────────────────────────────────────────────────── */
+
+.quiz-progress {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 0.65rem;
+  padding: clamp(0.4rem, 1vh, 0.7rem) 0;
+  flex-shrink: 0;
+}
+
+.quiz-pip {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: rgba(212,160,23,0.14);
+  border: 1px solid rgba(212,160,23,0.30);
+  transition: background 0.4s, box-shadow 0.4s;
+}
+
+.quiz-pip--done {
+  background: #D4A017;
+  box-shadow: 0 0 10px rgba(212,160,23,0.80), 0 0 22px rgba(212,160,23,0.38);
+}
+
+.quiz-pip--current {
+  background: rgba(212,160,23,0.42);
+  border-color: #D4A017;
+  box-shadow: 0 0 8px rgba(212,160,23,0.55);
+}
+
+/* ── Quiz card ───────────────────────────────────────────────────────────── */
+
+.quiz-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  max-width: 640px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.7rem, 1.8vh, 1.2rem);
+  padding: clamp(0.8rem, 2vh, 1.6rem) clamp(1rem, 4vw, 2.5rem);
+  box-sizing: border-box;
+}
+
+.quiz-q-num {
+  color: rgba(212,160,23,0.40);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.60rem, 1.2vw, 0.75rem);
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.quiz-question {
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1rem, 2.5vw, 1.55rem);
+  font-weight: bold;
+  line-height: 1.5;
+  letter-spacing: 0.03em;
+  text-align: center;
+  margin: 0;
+  text-shadow: 0 0 24px rgba(212,160,23,0.32);
+}
+
+/* ── Answer options ──────────────────────────────────────────────────────── */
+
+.quiz-options {
+  display: flex;
+  flex-direction: column;
+  gap: clamp(0.5rem, 1.2vh, 0.78rem);
+  width: 100%;
+}
+
+.quiz-option {
+  width: 100%;
+  padding: clamp(0.65rem, 1.4vh, 0.88rem) clamp(0.9rem, 2.5vw, 1.4rem);
+  background: rgba(212,160,23,0.04);
+  border: 1.5px solid rgba(212,160,23,0.28);
+  border-radius: 6px;
+  color: rgba(212,160,23,0.78);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.74rem, 1.55vw, 0.93rem);
+  line-height: 1.45;
+  letter-spacing: 0.025em;
+  text-align: left;
+  cursor: pointer;
+  transition: background 0.18s, border-color 0.18s, color 0.18s, box-shadow 0.18s, transform 0.10s;
+  position: relative;
+  overflow: hidden;
+}
+
+.quiz-option:hover:not(:disabled) {
+  background: rgba(212,160,23,0.09);
+  border-color: rgba(212,160,23,0.70);
+  color: #D4A017;
+  box-shadow: 0 0 16px rgba(212,160,23,0.20);
+}
+
+.quiz-option:active:not(:disabled) {
+  transform: scale(0.985);
+}
+
+.quiz-option:disabled { cursor: default; }
+
+/* Correct — gold burst glow */
+.quiz-option--correct {
+  background: rgba(212,160,23,0.13) !important;
+  border-color: #D4A017 !important;
+  color: #D4A017 !important;
+  animation: opt-correct-glow 0.55s ease-out;
+}
+
+@keyframes opt-correct-glow {
+  0%   { box-shadow: 0 0 0 rgba(212,160,23,0); }
+  35%  { box-shadow: 0 0 48px rgba(212,160,23,0.90), 0 0 90px rgba(212,160,23,0.48); }
+  100% { box-shadow: 0 0 22px rgba(212,160,23,0.42), 0 0 44px rgba(212,160,23,0.18); }
+}
+
+/* Gold burst radial expand on the button itself */
+.quiz-option--burst::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at center, rgba(212,160,23,0.50) 0%, transparent 65%);
+  animation: burst-radial 0.65s ease-out forwards;
+  pointer-events: none;
+}
+
+@keyframes burst-radial {
+  from { transform: scale(0.1); opacity: 1; }
+  to   { transform: scale(2.8); opacity: 0; }
+}
+
+/* Wrong — warm amber + shake */
+.quiz-option--wrong {
+  background: rgba(160,60,10,0.09) !important;
+  border-color: rgba(210,100,30,0.55) !important;
+  color: rgba(215,135,65,0.88) !important;
+  animation: opt-wrong-shake 0.48s ease-in-out;
+}
+
+@keyframes opt-wrong-shake {
+  0%,100% { transform: translateX(0); }
+  20%     { transform: translateX(-7px); }
+  50%     { transform: translateX(7px); }
+  75%     { transform: translateX(-3px); }
+}
+
+/* ── Feedback message ────────────────────────────────────────────────────── */
+
+.quiz-feedback {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.82rem, 1.8vw, 1rem);
+  font-style: italic;
+  letter-spacing: 0.06em;
+  text-align: center;
+  margin: 0;
+  animation: feedback-rise 0.30s ease-out;
+}
+
+@keyframes feedback-rise {
+  from { opacity: 0; transform: translateY(7px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0)  scale(1); }
+}
+
+.quiz-feedback--correct {
+  color: #D4A017;
+  text-shadow: 0 0 22px rgba(212,160,23,0.70);
+}
+
+.quiz-feedback--wrong {
+  color: rgba(212,140,55,0.82);
+}
+
+/* ── Victory overlay ─────────────────────────────────────────────────────── */
+
+.victory-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  animation: v2-fade 0.7s ease-out forwards;
+}
+
+@keyframes v2-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.victory-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.victory-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 2rem;
+  animation: v2-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes v2-rise {
+  from { opacity: 0; transform: scale(0.55); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.victory-glory {
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(4.5rem, 16vw, 11rem);
+  font-weight: bold;
+  letter-spacing: 0.16em;
+  margin: 0;
+  line-height: 1;
+  animation: glory-pulse2 1.6s ease-in-out infinite;
+  text-shadow: 0 0 35px rgba(212,160,23,0.85), 0 0 90px rgba(212,160,23,0.45);
+}
+
+@keyframes glory-pulse2 {
+  0%,100% { text-shadow: 0 0 35px rgba(212,160,23,0.85), 0 0  90px rgba(212,160,23,0.45); }
+  50%     { text-shadow: 0 0 55px rgba(212,160,23,1.00), 0 0 130px rgba(212,160,23,0.65); }
+}
+
+.victory-message {
+  color: rgba(212,160,23,0.90);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.1rem, 3.2vw, 1.9rem);
+  font-style: italic;
+  letter-spacing: 0.06em;
+  margin: 0.5rem 0 0.4rem;
+  text-shadow: 0 0 22px rgba(212,160,23,0.38);
+}
+
+.victory-verse {
+  color: rgba(212,160,23,0.45);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.65rem, 1.3vw, 0.85rem);
+  font-style: italic;
+  letter-spacing: 0.05em;
+  margin: 0 0 1.5rem;
+}
+
+.victory-continue {
+  background: transparent;
+  border: 2px solid #D4A017;
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.75rem, 1.5vw, 0.92rem);
+  font-weight: bold;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  padding: 0.82rem 2.6rem;
+  cursor: pointer;
+  animation: v2-btn-appear 1.4s ease-out forwards;
+  transition: background 0.22s, box-shadow 0.22s;
+}
+
+.victory-continue:hover {
+  background: rgba(212,160,23,0.12);
+  box-shadow: 0 0 28px rgba(212,160,23,0.45);
+}
+
+@keyframes v2-btn-appear {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

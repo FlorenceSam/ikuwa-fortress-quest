@@ -65,7 +65,7 @@ interface VParticle { x:number; y:number; vx:number; vy:number; r:number; life:n
 
 // ─── Component ─────────────────────────────────────────────────────────────
 
-export default function Level1() {
+export default function Level1({ onComplete }: { onComplete?: () => void }) {
   const [hand,       setHand]       = useState<number[]>(() => shuffle([1,2,3,4,5,6,7]))
   const [slots,      setSlots]      = useState<(number|null)[]>(Array(7).fill(null))
   const [correct,    setCorrect]    = useState<Set<number>>(new Set())
@@ -365,6 +365,11 @@ export default function Level1() {
             <h1 className="victory-glory">GLORY!</h1>
             <p className="victory-message">You are a walking miracle!</p>
             <p className="victory-verse">"For we are God's masterpiece" — Ephesians 2:10</p>
+            {onComplete && (
+              <button className="victory-continue" onClick={onComplete}>
+                CONTINUE →
+              </button>
+            )}
           </div>
         </div>
       )}
