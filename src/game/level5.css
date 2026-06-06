@@ -1,0 +1,321 @@
+/* ─── Level 5: The Tower of Babel ─────────────────────────────────────────── */
+
+.level5 {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+}
+
+.l5-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+
+/* ── Lightning flash overlay ── */
+
+.l5-flash {
+  position: absolute;
+  inset: 0;
+  z-index: 200;
+  background: rgba(210, 225, 255, 0.80);
+  pointer-events: none;
+  animation: l5-flash-out 0.28s ease-out forwards;
+}
+
+@keyframes l5-flash-out {
+  from { opacity: 1; }
+  to   { opacity: 0; }
+}
+
+/* ── Header ── */
+
+.l5-header {
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: 10;
+  padding: clamp(8px, 2vh, 16px) clamp(14px, 3vw, 26px);
+  pointer-events: none;
+}
+
+.l5-label {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.52rem, 1.0vw, 0.70rem);
+  color: rgba(212, 160, 23, 0.50);
+  letter-spacing: 0.24em;
+}
+
+.l5-title {
+  margin: 3px 0 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.90rem, 2.0vw, 1.40rem);
+  font-weight: normal;
+  color: rgba(212, 160, 23, 0.78);
+  letter-spacing: 0.06em;
+  text-shadow: 0 0 22px rgba(212, 160, 23, 0.22);
+}
+
+/* ── Timer bar ── */
+
+.l5-timer-track {
+  position: absolute;
+  top: clamp(50px, 9.5vh, 74px);
+  left: clamp(14px, 3vw, 26px);
+  right: clamp(14px, 3vw, 26px);
+  z-index: 10;
+  height: 3px;
+  background: rgba(212, 160, 23, 0.10);
+  border-radius: 2px;
+}
+
+.l5-timer-fill {
+  height: 100%;
+  background: linear-gradient(
+    90deg,
+    rgba(212, 160, 23, 0.90),
+    rgba(220, 110, 20, 0.75)
+  );
+  border-radius: 2px;
+  transition: width 0.92s linear;
+  box-shadow: 0 0 7px rgba(212, 160, 23, 0.38);
+}
+
+.l5-timer-num {
+  position: absolute;
+  right: -1px;
+  top: 50%;
+  transform: translateY(-160%);
+  font-family: Georgia, serif;
+  font-size: clamp(0.52rem, 0.95vw, 0.68rem);
+  color: rgba(212, 160, 23, 0.50);
+  letter-spacing: 0.12em;
+}
+
+/* ── Brick counter (top-right) ── */
+
+.l5-brick-count {
+  position: absolute;
+  top: clamp(10px, 2vh, 18px);
+  right: clamp(14px, 3vw, 26px);
+  z-index: 10;
+  font-family: Georgia, serif;
+  font-size: clamp(0.58rem, 1.0vw, 0.74rem);
+  color: rgba(212, 160, 23, 0.52);
+  letter-spacing: 0.12em;
+  pointer-events: none;
+}
+
+/* ── Play zone (bottom strip) ── */
+
+.l5-play-zone {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 15;
+  padding: clamp(10px, 2vh, 18px) clamp(16px, 4vw, 40px) clamp(14px, 3.5vh, 28px);
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(4, 2, 0, 0.50) 28%,
+    rgba(8, 4, 0, 0.82) 100%
+  );
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.l5-tap-hint {
+  margin: 0 0 clamp(8px, 1.6vh, 14px);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: clamp(0.66rem, 1.38vw, 0.92rem);
+  color: rgba(212, 160, 23, 0.68);
+  letter-spacing: 0.05em;
+  text-align: center;
+  min-height: 1.4em;
+  transition: color 0.18s;
+}
+
+/* ── Horizontal brick track ── */
+
+.l5-track-wrap {
+  position: relative;
+  height: clamp(30px, 5.5vh, 48px);
+  background: rgba(212, 160, 23, 0.055);
+  border: 1px solid rgba(212, 160, 23, 0.16);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+/* Gold sweet-spot zone (width & left set via JS) */
+.l5-sweet-spot {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  background: rgba(212, 160, 23, 0.20);
+  border-left:  1px solid rgba(212, 160, 23, 0.48);
+  border-right: 1px solid rgba(212, 160, 23, 0.48);
+  box-shadow: inset 0 0 14px rgba(212, 160, 23, 0.18);
+  pointer-events: none;
+}
+
+/* Sliding brick emoji (left set via JS, centers itself) */
+.l5-brick-mover {
+  position: absolute;
+  top: 50%;
+  transform: translateX(-50%) translateY(-50%);
+  font-size: clamp(1.4rem, 2.8vw, 1.9rem);
+  line-height: 1;
+  pointer-events: none;
+  will-change: left;
+}
+
+.l5-brick-mover.l5-brick--hit {
+  filter: drop-shadow(0 0 10px rgba(80, 230, 80, 0.92));
+  animation: l5-hit-pop 0.35s ease-out;
+}
+
+.l5-brick-mover.l5-brick--miss {
+  filter: drop-shadow(0 0 10px rgba(230, 60, 60, 0.88));
+  animation: l5-miss-shake 0.28s ease-in-out;
+}
+
+@keyframes l5-hit-pop {
+  0%   { transform: translateX(-50%) translateY(-50%) scale(1);    }
+  40%  { transform: translateX(-50%) translateY(-50%) scale(1.55); }
+  100% { transform: translateX(-50%) translateY(-50%) scale(1);    }
+}
+
+@keyframes l5-miss-shake {
+  0%, 100% { transform: translateX(-50%) translateY(-50%) rotate(0deg);    }
+  25%       { transform: translateX(-50%) translateY(-50%) rotate(-14deg);  }
+  75%       { transform: translateX(-50%) translateY(-50%) rotate(14deg);   }
+}
+
+/* ── Divine overlays ── */
+
+.l5-divine-overlay {
+  position: absolute;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 50;
+  text-align: center;
+  pointer-events: none;
+  animation: l5-divine-in 0.85s ease-out;
+}
+
+.l5-divine--god {
+  bottom: clamp(80px, 16vh, 160px);
+  max-width: min(88vw, 620px);
+  width: max-content;
+}
+
+.l5-divine--angel {
+  bottom: clamp(88px, 18vh, 170px);
+  max-width: min(82vw, 560px);
+}
+
+.l5-divine-text {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  line-height: 1.75;
+}
+
+.l5-divine--god .l5-divine-text {
+  font-size: clamp(1.05rem, 2.5vw, 1.75rem);
+  color: #e8bc1a;
+  text-shadow:
+    0 0 28px rgba(212, 160, 23, 0.85),
+    0 0 60px rgba(212, 140, 10, 0.45),
+    0 0 110px rgba(200, 80,  5, 0.20);
+}
+
+.l5-divine--angel .l5-divine-text {
+  font-size: clamp(0.82rem, 1.85vw, 1.28rem);
+  color: rgba(245, 238, 220, 0.93);
+  text-shadow:
+    0 0 22px rgba(255, 245, 200, 0.55),
+    0 0 55px rgba(220, 205, 160, 0.25);
+}
+
+@keyframes l5-divine-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(16px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+}
+
+/* ── Language bubbles ── */
+
+.l5-bubble {
+  position: absolute;
+  z-index: 60;
+  padding: clamp(5px, 1vh, 9px) clamp(11px, 2.2vw, 20px);
+  border-radius: 999px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.60rem, 1.25vw, 0.82rem);
+  font-weight: bold;
+  letter-spacing: 0.07em;
+  pointer-events: none;
+  transform: translate(-50%, -50%);
+  animation: l5-bubble-pop 0.50s ease-out both;
+  box-shadow:
+    0 2px 14px rgba(0, 0, 0, 0.40),
+    0 0 0 1px rgba(255, 255, 255, 0.10);
+  white-space: nowrap;
+}
+
+@keyframes l5-bubble-pop {
+  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.25) rotate(-8deg); }
+  55%  {              transform: translate(-50%, -50%) scale(1.18) rotate(1deg);  }
+  100% { opacity: 1; transform: translate(-50%, -50%) scale(1)    rotate(0deg);  }
+}
+
+/* ── Pride quote ── */
+
+.l5-pride-quote {
+  position: absolute;
+  bottom: clamp(90px, 17vh, 170px);
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 70;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: clamp(0.88rem, 1.95vw, 1.38rem);
+  color: rgba(212, 160, 23, 0.92);
+  text-align: center;
+  max-width: min(80vw, 530px);
+  line-height: 1.6;
+  text-shadow: 0 0 28px rgba(212, 160, 23, 0.38);
+  pointer-events: none;
+  animation: l5-pride-in 1.25s ease-out;
+}
+
+@keyframes l5-pride-in {
+  from { opacity: 0; transform: translateX(-50%) translateY(14px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
+}
+
+/* ── Screen shake (crumble phase) ── */
+
+.level5--shake {
+  animation: l5-shake 1.5s ease-in-out;
+}
+
+@keyframes l5-shake {
+  0%   { transform: translate(0,    0)    rotate(0deg);    }
+  5%   { transform: translate(-7px,  4px) rotate(-0.55deg); }
+  10%  { transform: translate( 9px, -5px) rotate( 0.65deg); }
+  15%  { transform: translate(-7px,  5px) rotate(-0.45deg); }
+  20%  { transform: translate( 7px, -4px) rotate( 0.50deg); }
+  25%  { transform: translate(-6px,  3px) rotate(-0.35deg); }
+  30%  { transform: translate( 6px, -3px) rotate( 0.40deg); }
+  38%  { transform: translate(-4px,  2px) rotate(-0.25deg); }
+  46%  { transform: translate( 4px, -2px) rotate( 0.20deg); }
+  56%  { transform: translate(-2px,  1px) rotate(-0.12deg); }
+  70%  { transform: translate( 2px, -1px) rotate( 0.08deg); }
+  84%  { transform: translate(-1px,  0px) rotate(-0.04deg); }
+  100% { transform: translate( 0,    0)    rotate(0deg);    }
+}

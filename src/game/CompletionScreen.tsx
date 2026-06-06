@@ -4,6 +4,8 @@ import './completion.css'
 interface Props {
   verse: string
   verseRef: string
+  subtitle?: string   // defaults to "you have walked faithfully today"
+  voiceLine?: string  // defaults to "${name}. You have walked faithfully today."
   onComplete?: () => void
 }
 
@@ -34,11 +36,9 @@ function makeEmber(W: number, H: number, randomY = false): Ember {
   }
 }
 
-function speakCompletion(name: string) {
+function speakCompletion(line: string) {
   try {
-    const utt = new SpeechSynthesisUtterance(
-      `${name}. You have walked faithfully today.`
-    )
+    const utt = new SpeechSynthesisUtterance(line)
     utt.rate = 0.72; utt.pitch = 0.96; utt.volume = 1
     const warm = speechSynthesis.getVoices()
       .find(v => /female|woman|zira|samantha|karen|victoria|moira/i.test(v.name))
@@ -48,10 +48,12 @@ function speakCompletion(name: string) {
   } catch (_) {}
 }
 
-export default function CompletionScreen({ verse, verseRef, onComplete }: Props) {
+export default function CompletionScreen({ verse, verseRef, subtitle, voiceLine, onComplete }: Props) {
   const canvasRef = useRef<HTMLCanvasElement>(null)
   const rafRef    = useRef<number>(0)
   const name      = localStorage.getItem('iq_character') || 'Warrior'
+  const sub       = subtitle  ?? 'you have walked faithfully today'
+  const vl        = voiceLine ?? `${name}. You have walked faithfully today.`
 
   useEffect(() => {
     const cv = canvasRef.current; if (!cv) return
@@ -112,13 +114,13 @@ export default function CompletionScreen({ verse, verseRef, onComplete }: Props)
     tick()
 
     // Speak name after text entrance animations have begun
-    const voiceTimer = setTimeout(() => speakCompletion(name), 900)
+    const voiceTimer = setTimeout(() => speakCompletion(vl), 900)
 
     return () => {
       cancelAnimationFrame(rafRef.current)
       clearTimeout(voiceTimer)
     }
-  }, [name])
+  }, [name, vl])
 
   return (
     <div className="comp-screen">
@@ -126,7 +128,7 @@ export default function CompletionScreen({ verse, verseRef, onComplete }: Props)
       <div className="comp-glow" />
       <div className="comp-content">
         <h1 className="comp-name">{name}</h1>
-        <p className="comp-subtitle">you have walked faithfully today</p>
+        <p className="comp-subtitle">{sub}</p>
         <div className="comp-divider" />
         <p className="comp-verse">"{verse}"</p>
         <p className="comp-verse-ref">— {verseRef}</p>
