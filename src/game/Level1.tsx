@@ -1,27 +1,26 @@
 import { useEffect, useRef, useState } from 'react'
 import './level1.css'
 
-// ─── Creation days data ────────────────────────────────────────────────────
+// ─── Data ──────────────────────────────────────────────────────────────────
 
 const DAYS = [
-  { id: 1, emoji: '🌑', title: 'Darkness & Light',  verse: 'Genesis 1:3-5'  },
-  { id: 2, emoji: '🌊', title: 'Sky & Water',        verse: 'Genesis 1:6-8'  },
-  { id: 3, emoji: '🌿', title: 'Land & Plants',      verse: 'Genesis 1:9-13' },
-  { id: 4, emoji: '⭐', title: 'Sun, Moon & Stars', verse: 'Genesis 1:14-19'},
-  { id: 5, emoji: '🐟', title: 'Fish & Birds',       verse: 'Genesis 1:20-23'},
-  { id: 6, emoji: '🦁', title: 'Animals & Humans',   verse: 'Genesis 1:24-31'},
-  { id: 7, emoji: '😴', title: 'God Rests',          verse: 'Genesis 2:1-3'  },
+  { id: 1, emoji: '🌑', title: 'Darkness & Light',  verse: 'Genesis 1:3-5'   },
+  { id: 2, emoji: '🌊', title: 'Sky & Water',        verse: 'Genesis 1:6-8'   },
+  { id: 3, emoji: '🌿', title: 'Land & Plants',      verse: 'Genesis 1:9-13'  },
+  { id: 4, emoji: '⭐', title: 'Sun, Moon & Stars', verse: 'Genesis 1:14-19' },
+  { id: 5, emoji: '🐟', title: 'Fish & Birds',       verse: 'Genesis 1:20-23' },
+  { id: 6, emoji: '🦁', title: 'Animals & Humans',   verse: 'Genesis 1:24-31' },
+  { id: 7, emoji: '😴', title: 'God Rests',          verse: 'Genesis 2:1-3'   },
 ]
 
-// Pentatonic scale — each correct drop plays the next note up
 const NOTES = [523.25, 659.25, 783.99, 880, 1046.50, 1318.51, 1567.98]
 
-// ─── Audio helpers ─────────────────────────────────────────────────────────
+// ─── Audio ─────────────────────────────────────────────────────────────────
 
 function playChime(freq: number) {
   try {
     const ctx = new AudioContext()
-    const play = (f: number, vol: number, dur: number) => {
+    const hit = (f: number, vol: number, dur: number) => {
       const o = ctx.createOscillator(), g = ctx.createGain()
       o.type = 'sine'; o.frequency.value = f
       g.gain.setValueAtTime(vol, ctx.currentTime)
@@ -29,18 +28,16 @@ function playChime(freq: number) {
       o.connect(g); g.connect(ctx.destination)
       o.start(); o.stop(ctx.currentTime + dur)
     }
-    play(freq,      0.30, 1.8)
-    play(freq * 2,  0.12, 1.2)
-    play(freq * 3,  0.05, 0.8)
+    hit(freq,     0.30, 1.8)
+    hit(freq * 2, 0.12, 1.2)
+    hit(freq * 3, 0.05, 0.7)
   } catch (_) {}
 }
 
 function playVictory() {
   try {
     const ctx = new AudioContext()
-    // Rising arpeggio then held chord
-    const arp = [261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50]
-    arp.forEach((f, i) => {
+    ;[261.63, 329.63, 392.00, 523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
       const o = ctx.createOscillator(), g = ctx.createGain()
       o.type = 'sine'; o.frequency.value = f
       const t = ctx.currentTime + i * 0.075
@@ -53,7 +50,7 @@ function playVictory() {
   } catch (_) {}
 }
 
-// ─── Utilities ─────────────────────────────────────────────────────────────
+// ─── Helpers ───────────────────────────────────────────────────────────────
 
 function shuffle<T>(arr: T[]): T[] {
   const a = [...arr]
@@ -64,12 +61,7 @@ function shuffle<T>(arr: T[]): T[] {
   return a
 }
 
-// ─── Types ─────────────────────────────────────────────────────────────────
-
-interface VParticle {
-  x: number; y: number; vx: number; vy: number
-  r: number; life: number; max: number; hue: number
-}
+interface VParticle { x:number; y:number; vx:number; vy:number; r:number; life:number; max:number; hue:number }
 
 // ─── Component ─────────────────────────────────────────────────────────────
 
@@ -77,7 +69,7 @@ export default function Level1() {
   const [hand,       setHand]       = useState<number[]>(() => shuffle([1,2,3,4,5,6,7]))
   const [slots,      setSlots]      = useState<(number|null)[]>(Array(7).fill(null))
   const [correct,    setCorrect]    = useState<Set<number>>(new Set())
-  const [dragId,     setDragId]     = useState<number|null>(null)
+  const [draggingId, setDraggingId] = useState<number|null>(null)
   const [hoverSlot,  setHoverSlot]  = useState<number|null>(null)
   const [wrongSlots, setWrongSlots] = useState<Set<number>>(new Set())
   const [victory,    setVictory]    = useState(false)
@@ -86,10 +78,27 @@ export default function Level1() {
   const victoryRef = useRef<HTMLCanvasElement>(null)
   const bgRafRef   = useRef<number>(0)
   const vRafRef    = useRef<number>(0)
-  // Ref holds drag state for both HTML5 drag and touch events
-  const dragRef    = useRef<{ cardId: number; from: 'hand' | number } | null>(null)
+  // Ghost element follows pointer — direct DOM, no React state (stays smooth)
+  const ghostRef   = useRef<HTMLDivElement|null>(null)
+  const dragRef    = useRef<{ cardId:number; ox:number; oy:number }|null>(null)
 
-  // ── Background stars ──────────────────────────────────────────────────────
+  // Always-fresh drop logic via ref (avoids stale closure in pointer handlers)
+  const doDropRef = useRef<(cardId:number, slotIdx:number) => void>(null!)
+  doDropRef.current = (cardId, slotIdx) => {
+    const isCorrect = cardId === slotIdx + 1
+    if (isCorrect) {
+      setHand(h => h.filter(id => id !== cardId))
+      setSlots(s => { const n=[...s]; n[slotIdx]=cardId; return n })
+      setCorrect(c => { const n=new Set(c); n.add(cardId); return n })
+      playChime(NOTES[slotIdx])
+    } else {
+      // Shake the slot, card stays in hand (ghost disappears = visual "return")
+      setWrongSlots(w => { const n=new Set(w); n.add(slotIdx); return n })
+      setTimeout(() => setWrongSlots(w => { const n=new Set(w); n.delete(slotIdx); return n }), 600)
+    }
+  }
+
+  // ── Background stars ────────────────────────────────────────────────────
 
   useEffect(() => {
     const canvas = bgRef.current; if (!canvas) return
@@ -98,28 +107,28 @@ export default function Level1() {
     const W = canvas.width, H = canvas.height
 
     const stars = Array.from({ length: 260 }, () => ({
-      x: Math.random() * W, y: Math.random() * H,
-      r:   Math.random() * 1.3 + 0.2,
-      base: Math.random() * 0.4 + 0.12,
-      amp:  Math.random() * 0.14 + 0.03,
-      spd:  Math.random() * 0.02 + 0.003,
-      ph:   Math.random() * Math.PI * 2,
-      hue:  Math.random() < 0.68 ? Math.random() * 20 + 40 : 210,
+      x: Math.random()*W, y: Math.random()*H,
+      r:    Math.random()*1.3+0.2,
+      base: Math.random()*0.4+0.12,
+      amp:  Math.random()*0.14+0.03,
+      spd:  Math.random()*0.02+0.003,
+      ph:   Math.random()*Math.PI*2,
+      hue:  Math.random()<0.68 ? Math.random()*20+40 : 210,
     }))
 
     let frame = 0
     const tick = () => {
-      ctx.fillStyle = '#000'; ctx.fillRect(0, 0, W, H)
-      const cg = ctx.createRadialGradient(W/2, H/2, 0, W/2, H/2, W * 0.45)
-      cg.addColorStop(0, 'rgba(212,160,23,0.05)'); cg.addColorStop(1, 'transparent')
-      ctx.fillStyle = cg; ctx.fillRect(0, 0, W, H)
+      ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H)
+      const cg = ctx.createRadialGradient(W/2,H/2,0,W/2,H/2,W*0.45)
+      cg.addColorStop(0,'rgba(212,160,23,0.05)'); cg.addColorStop(1,'transparent')
+      ctx.fillStyle = cg; ctx.fillRect(0,0,W,H)
       frame++
       for (const s of stars) {
-        const op = Math.max(0.03, Math.min(1, s.base + Math.sin(frame * s.spd + s.ph) * s.amp))
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.r * 2.2, 0, Math.PI * 2)
-        ctx.fillStyle = `hsla(${s.hue},70%,70%,${op * 0.18})`; ctx.fill()
-        ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI * 2)
-        ctx.fillStyle = `hsla(${s.hue},60%,93%,${op})`; ctx.fill()
+        const op = Math.max(0.03, Math.min(1, s.base+Math.sin(frame*s.spd+s.ph)*s.amp))
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r*2.2,0,Math.PI*2)
+        ctx.fillStyle=`hsla(${s.hue},70%,70%,${op*0.18})`; ctx.fill()
+        ctx.beginPath(); ctx.arc(s.x,s.y,s.r,0,Math.PI*2)
+        ctx.fillStyle=`hsla(${s.hue},60%,93%,${op})`; ctx.fill()
       }
       bgRafRef.current = requestAnimationFrame(tick)
     }
@@ -127,162 +136,162 @@ export default function Level1() {
     return () => cancelAnimationFrame(bgRafRef.current)
   }, [])
 
-  // ── Victory check ─────────────────────────────────────────────────────────
+  // ── Victory ─────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (correct.size === 7) {
-      playVictory()
-      setTimeout(() => setVictory(true), 500)
-    }
+    if (correct.size === 7) { playVictory(); setTimeout(() => setVictory(true), 500) }
   }, [correct])
-
-  // ── Victory particles canvas ──────────────────────────────────────────────
 
   useEffect(() => {
     if (!victory) return
     const canvas = victoryRef.current; if (!canvas) return
     const ctx = canvas.getContext('2d'); if (!ctx) return
     canvas.width = window.innerWidth; canvas.height = window.innerHeight
-    const W = canvas.width, H = canvas.height
-
-    const parts: VParticle[] = Array.from({ length: 320 }, () => {
-      const a = Math.random() * Math.PI * 2
-      const s = Math.random() * 9 + 1.5
-      return { x: W/2, y: H/2, vx: Math.cos(a)*s, vy: Math.sin(a)*s,
-               r: Math.random()*3+0.5, life: 0, max: Math.random()*140+60,
-               hue: Math.random()*25+38 }
+    const W=canvas.width, H=canvas.height
+    const parts: VParticle[] = Array.from({length:320}, () => {
+      const a=Math.random()*Math.PI*2, s=Math.random()*9+1.5
+      return { x:W/2, y:H/2, vx:Math.cos(a)*s, vy:Math.sin(a)*s,
+               r:Math.random()*3+0.5, life:0, max:Math.random()*140+60, hue:Math.random()*25+38 }
     })
-
     const tick = () => {
-      ctx.clearRect(0, 0, W, H)
-      for (let i = parts.length - 1; i >= 0; i--) {
-        const p = parts[i]
-        if (++p.life >= p.max) { parts.splice(i, 1); continue }
-        p.x += p.vx; p.y += p.vy
-        p.vx *= 0.962; p.vy *= 0.962; p.vy += 0.08
-        const t = p.life / p.max, op = Math.pow(1 - t, 0.82)
-        const rN = p.r * (1 + t * 0.9)
-        ctx.beginPath(); ctx.arc(p.x, p.y, rN * 3.5, 0, Math.PI * 2)
-        ctx.fillStyle = `hsla(${p.hue},90%,58%,${op * 0.22})`; ctx.fill()
-        ctx.beginPath(); ctx.arc(p.x, p.y, rN, 0, Math.PI * 2)
-        ctx.fillStyle = `hsla(${p.hue},96%,92%,${op})`; ctx.fill()
+      ctx.clearRect(0,0,W,H)
+      for (let i=parts.length-1; i>=0; i--) {
+        const p=parts[i]; if(++p.life>=p.max){parts.splice(i,1);continue}
+        p.x+=p.vx; p.y+=p.vy; p.vx*=0.962; p.vy*=0.962; p.vy+=0.08
+        const t=p.life/p.max, op=Math.pow(1-t,0.82), rN=p.r*(1+t*0.9)
+        ctx.beginPath(); ctx.arc(p.x,p.y,rN*3.5,0,Math.PI*2)
+        ctx.fillStyle=`hsla(${p.hue},90%,58%,${op*0.22})`; ctx.fill()
+        ctx.beginPath(); ctx.arc(p.x,p.y,rN,0,Math.PI*2)
+        ctx.fillStyle=`hsla(${p.hue},96%,92%,${op})`; ctx.fill()
       }
       vRafRef.current = requestAnimationFrame(tick)
-      if (parts.length === 0) cancelAnimationFrame(vRafRef.current)
+      if (parts.length===0) cancelAnimationFrame(vRafRef.current)
     }
     tick()
     return () => cancelAnimationFrame(vRafRef.current)
   }, [victory])
 
-  // ── Core drop logic (shared by HTML5 drag and touch) ──────────────────────
+  // ── Pointer drag handlers ───────────────────────────────────────────────
+  //
+  //  Strategy: pointer capture routes all pointermove/pointerup back to the
+  //  element that called setPointerCapture — works identically for mouse and touch.
+  //  A ghost <div> is injected into document.body and moved via direct style
+  //  updates (no React re-renders) keeping drag perfectly smooth at 60 fps.
+  //  On pointerup the ghost is briefly hidden so elementFromPoint can see the
+  //  slot underneath; then it is removed.
 
-  const executeDrop = (cardId: number, from: 'hand' | number, slotIdx: number) => {
-    const existing = slots[slotIdx]
-    if (existing !== null && correct.has(existing)) return  // slot is locked
+  const startDrag = (e: React.PointerEvent<HTMLDivElement>, cardId: number) => {
+    if (correct.has(cardId)) return      // locked cards cannot be dragged
+    e.preventDefault()
 
-    const newSlots = [...slots]
-    const newHand  = [...hand]
+    const rect = e.currentTarget.getBoundingClientRect()
+    dragRef.current = { cardId, ox: e.clientX - rect.left, oy: e.clientY - rect.top }
+    setDraggingId(cardId)
 
-    if (from === 'hand') {
-      newHand.splice(newHand.indexOf(cardId), 1)
-    } else {
-      newSlots[from as number] = null
-    }
+    // Capture so all future pointer events come here, even off-element
+    e.currentTarget.setPointerCapture(e.pointerId)
 
-    if (existing !== null && !correct.has(existing)) newHand.push(existing)
-
-    newSlots[slotIdx] = cardId
-
-    const isCorrect = cardId === slotIdx + 1
-    if (isCorrect) {
-      playChime(NOTES[slotIdx])
-      setCorrect(prev => new Set([...prev, cardId]))
-    } else {
-      setWrongSlots(prev => { const n = new Set(prev); n.add(slotIdx); return n })
-      setTimeout(() => setWrongSlots(prev => { const n = new Set(prev); n.delete(slotIdx); return n }), 600)
-    }
-
-    setSlots(newSlots); setHand(newHand)
-    setDragId(null); setHoverSlot(null)
-    dragRef.current = null
+    // Build ghost — a DOM clone styled like a gold card
+    const day = DAYS.find(d => d.id === cardId)!
+    const ghost = document.createElement('div')
+    ghost.innerHTML =
+      `<span style="font-size:clamp(1.6rem,3.8vw,2.8rem);line-height:1;display:block">${day.emoji}</span>` +
+      `<span style="color:#D4A017;font-family:Georgia,serif;font-size:0.62rem;` +
+        `text-align:center;padding:0 0.2rem;letter-spacing:0.03em;display:block;margin-top:0.3rem">${day.title}</span>`
+    Object.assign(ghost.style, {
+      position:      'fixed',
+      left:          `${rect.left}px`,
+      top:           `${rect.top}px`,
+      width:         `${rect.width}px`,
+      height:        `${rect.height}px`,
+      display:       'flex',
+      flexDirection: 'column',
+      alignItems:    'center',
+      justifyContent:'center',
+      background:    'linear-gradient(155deg,#1c1800,#2a2000)',
+      border:        '2px solid #D4A017',
+      borderRadius:  '9px',
+      pointerEvents: 'none',
+      zIndex:        '9999',
+      opacity:       '0.94',
+      boxShadow:     '0 10px 35px rgba(212,160,23,0.65), 0 0 55px rgba(212,160,23,0.30)',
+      transform:     'scale(1.07)',
+      cursor:        'grabbing',
+      userSelect:    'none',
+    })
+    document.body.appendChild(ghost)
+    ghostRef.current = ghost
   }
 
-  const returnToHand = (cardId: number, from: number) => {
-    const newSlots = [...slots]; newSlots[from] = null
-    setSlots(newSlots); setHand(h => [...h, cardId])
-    setDragId(null); dragRef.current = null
+  const moveDrag = (e: React.PointerEvent<HTMLDivElement>, cardId: number) => {
+    const dr = dragRef.current
+    if (!dr || dr.cardId !== cardId || !ghostRef.current) return
+
+    // Move ghost directly — no setState = no re-render = buttery smooth
+    ghostRef.current.style.left = `${e.clientX - dr.ox}px`
+    ghostRef.current.style.top  = `${e.clientY - dr.oy}px`
+
+    // Detect which slot is under the pointer
+    ghostRef.current.style.visibility = 'hidden'
+    const under = document.elementFromPoint(e.clientX, e.clientY)
+    ghostRef.current.style.visibility = ''
+    const slotEl = under?.closest('[data-slot]')
+    const idx = slotEl ? parseInt(slotEl.getAttribute('data-slot') ?? '-1') : -1
+    setHoverSlot(idx >= 0 ? idx : null)
   }
 
-  // ── HTML5 drag handlers ───────────────────────────────────────────────────
+  const endDrag = (e: React.PointerEvent<HTMLDivElement>, cardId: number) => {
+    const dr = dragRef.current
+    if (!dr || dr.cardId !== cardId) return
 
-  const onCardDragStart = (cardId: number, from: 'hand' | number) => {
-    dragRef.current = { cardId, from }
-    setDragId(cardId)
-  }
+    // Hide ghost, find target, remove ghost
+    if (ghostRef.current) ghostRef.current.style.visibility = 'hidden'
+    const under = document.elementFromPoint(e.clientX, e.clientY)
+    if (ghostRef.current) { ghostRef.current.remove(); ghostRef.current = null }
 
-  const onSlotDrop = (slotIdx: number) => {
-    if (!dragRef.current) return
-    executeDrop(dragRef.current.cardId, dragRef.current.from, slotIdx)
-  }
-
-  const onHandDrop = () => {
-    if (!dragRef.current || dragRef.current.from === 'hand') { setDragId(null); return }
-    returnToHand(dragRef.current.cardId, dragRef.current.from as number)
-  }
-
-  // ── Touch drag handlers ───────────────────────────────────────────────────
-
-  const onCardTouchStart = (e: React.TouchEvent, cardId: number, from: 'hand' | number) => {
-    dragRef.current = { cardId, from }
-    setDragId(cardId)
-  }
-
-  const onCardTouchEnd = (e: React.TouchEvent) => {
-    if (!dragRef.current) return
-    const touch = e.changedTouches[0]
-    const el = document.elementFromPoint(touch.clientX, touch.clientY)
-    const slotEl = el?.closest('[data-slot]')
+    const slotEl = under?.closest('[data-slot]')
     if (slotEl) {
       const idx = parseInt(slotEl.getAttribute('data-slot') ?? '-1')
-      if (idx >= 0) { executeDrop(dragRef.current.cardId, dragRef.current.from, idx); return }
+      if (idx >= 0) doDropRef.current(cardId, idx)
     }
-    // Dropped outside a slot — if came from a slot, return to hand
-    if (dragRef.current.from !== 'hand') {
-      returnToHand(dragRef.current.cardId, dragRef.current.from as number)
-    }
-    setDragId(null); dragRef.current = null
+    // If no slot: card stays in hand (ghost simply vanishes = visual "return")
+
+    dragRef.current = null
+    setDraggingId(null)
+    setHoverSlot(null)
   }
 
-  // ── Render ────────────────────────────────────────────────────────────────
+  const cancelDrag = () => {
+    if (ghostRef.current) { ghostRef.current.remove(); ghostRef.current = null }
+    dragRef.current = null
+    setDraggingId(null)
+    setHoverSlot(null)
+  }
+
+  // ── Render ──────────────────────────────────────────────────────────────
 
   return (
     <div className="level1">
       <canvas ref={bgRef} className="level1-bg" />
 
-      {/* Header */}
       <header className="level1-header">
         <p className="level1-day-label">DAY 1 OF 7</p>
         <h1 className="level1-title">The Seven Days of Creation</h1>
-        <p className="level1-hint">Drag each card to its correct day</p>
+        <p className="level1-hint">Drag each card to its correct day below</p>
       </header>
 
       {/* Cards in hand */}
-      <section
-        className="cards-hand"
-        onDragOver={e => e.preventDefault()}
-        onDrop={onHandDrop}
-      >
+      <section className="cards-hand">
         {hand.map(id => {
           const day = DAYS.find(d => d.id === id)!
           return (
             <div
               key={id}
-              className={`card${dragId === id ? ' card--dragging' : ''}`}
-              draggable
-              onDragStart={() => onCardDragStart(id, 'hand')}
-              onDragEnd={() => { setDragId(null); dragRef.current = null }}
-              onTouchStart={e => onCardTouchStart(e, id, 'hand')}
-              onTouchEnd={onCardTouchEnd}
+              className={`card${draggingId === id ? ' card--dragging' : ''}`}
+              onPointerDown={e => startDrag(e, id)}
+              onPointerMove={e => moveDrag(e, id)}
+              onPointerUp={e => endDrag(e, id)}
+              onPointerCancel={cancelDrag}
             >
               <span className="card-emoji">{day.emoji}</span>
               <span className="card-title">{day.title}</span>
@@ -290,13 +299,12 @@ export default function Level1() {
             </div>
           )
         })}
-
         {hand.length === 0 && correct.size < 7 && (
           <p className="hand-empty">All cards placed — check the slots below</p>
         )}
       </section>
 
-      {/* Progress */}
+      {/* Progress pips */}
       <div className="progress-row">
         {[1,2,3,4,5,6,7].map(n => (
           <div key={n} className={`pip${correct.has(n) ? ' pip--lit' : ''}`} />
@@ -306,10 +314,9 @@ export default function Level1() {
       {/* Slots */}
       <section className="slots-row">
         {Array.from({ length: 7 }, (_, i) => {
-          const cardId  = slots[i]
-          const day     = cardId !== null ? DAYS.find(d => d.id === cardId) : null
-          const isOk    = cardId !== null && correct.has(cardId)
-          const isWrong = wrongSlots.has(i)
+          const cardId = slots[i]
+          const day    = cardId !== null ? DAYS.find(d => d.id === cardId) : null
+          const isOk   = cardId !== null && correct.has(cardId)
 
           return (
             <div
@@ -317,25 +324,14 @@ export default function Level1() {
               data-slot={i}
               className={[
                 'slot',
-                isOk                     ? 'slot--correct' : '',
-                hoverSlot === i && !isOk ? 'slot--hover'   : '',
-                isWrong                  ? 'slot--wrong'   : '',
+                isOk              ? 'slot--correct' : '',
+                hoverSlot === i   ? 'slot--hover'   : '',
+                wrongSlots.has(i) ? 'slot--wrong'   : '',
               ].filter(Boolean).join(' ')}
-              onDragOver={e => { e.preventDefault(); if (!isOk) setHoverSlot(i) }}
-              onDragLeave={() => setHoverSlot(null)}
-              onDrop={() => { onSlotDrop(i); setHoverSlot(null) }}
             >
               <span className="slot-number">{i + 1}</span>
-
-              {day && (
-                <div
-                  className={`card card--in-slot${isOk ? ' card--correct' : ''}`}
-                  draggable={!isOk}
-                  onDragStart={() => !isOk && onCardDragStart(cardId!, i)}
-                  onDragEnd={() => { setDragId(null); dragRef.current = null }}
-                  onTouchStart={e => !isOk && onCardTouchStart(e, cardId!, i)}
-                  onTouchEnd={!isOk ? onCardTouchEnd : undefined}
-                >
+              {day && isOk && (
+                <div className="card card--in-slot card--correct">
                   <span className="card-emoji">{day.emoji}</span>
                   <span className="card-title">{day.title}</span>
                 </div>
@@ -345,7 +341,7 @@ export default function Level1() {
         })}
       </section>
 
-      {/* Victory overlay */}
+      {/* Victory */}
       {victory && (
         <div className="victory-overlay">
           <canvas ref={victoryRef} className="victory-canvas" />
