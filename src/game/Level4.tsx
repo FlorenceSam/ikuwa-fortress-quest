@@ -19,13 +19,14 @@ const TYPES = [
 ]
 
 function generateAnimals(): Animal[] {
-  // 4-col × 3-row grid with jitter → shuffle
+  // 4-col × 3-row grid — left 62% of screen, top 17%-62% vertically
+  // Ark occupies right ~32%, header top ~12%; animals never go too low
   const grid: Array<{x:number;y:number}> = []
   for (let r = 0; r < 3; r++) {
     for (let c = 0; c < 4; c++) {
-      const x = 13 + (c / 3) * 74 + (Math.random()-0.5)*9
-      const y = 24 + (r / 2) * 48 + (Math.random()-0.5)*7
-      grid.push({ x: Math.max(9,Math.min(91,x)), y: Math.max(20,Math.min(77,y)) })
+      const x =  6 + (c / 3) * 53 + (Math.random()-0.5)*7   // 6% → 59%
+      const y = 18 + (r / 2) * 40 + (Math.random()-0.5)*5   // 18% → 58%
+      grid.push({ x: Math.max(4,Math.min(60,x)), y: Math.max(15,Math.min(61,y)) })
     }
   }
   for (let i=grid.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[grid[i],grid[j]]=[grid[j],grid[i]]}
@@ -180,12 +181,15 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
   const [removed,      setRemoved]     = useState<Set<string>>(new Set())
   const [wrongIds,     setWrongIds]    = useState<string[]>([])
 
-  const bgRef      = useRef<HTMLCanvasElement>(null)
-  const cinRef     = useRef<HTMLCanvasElement>(null)
-  const vRef       = useRef<HTMLCanvasElement>(null)
-  const cinRafRef  = useRef<number>(0)
-  const vRafRef    = useRef<number>(0)
-  const timerRef   = useRef<ReturnType<typeof setInterval>|null>(null)
+  const bgRef          = useRef<HTMLCanvasElement>(null)
+  const cinRef         = useRef<HTMLCanvasElement>(null)
+  const vRef           = useRef<HTMLCanvasElement>(null)
+  const cinRafRef      = useRef<number>(0)
+  const vRafRef        = useRef<number>(0)
+  const timerRef       = useRef<ReturnType<typeof setInterval>|null>(null)
+  // Refs prevent stale-closure bugs on pair counting and glory gating
+  const pairsFoundRef  = useRef(0)
+  const glorySentRef   = useRef(false)
 
   // Derived: water height 0→100%
   const waterPct = ((45 - timeLeft) / 45) * 100
@@ -254,13 +258,16 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
     const ctx=cv.getContext('2d'); if(!ctx) return
     cv.width=window.innerWidth; cv.height=window.innerHeight
     const W=cv.width, H=cv.height
-    const start=performance.now()
+    // Reset start on the ACTUAL first frame — prevents instant glory if tab was
+    // backgrounded between performance.now() and the first RAF callback
+    let start = -1
     const DUR=9500
-    let lastLightning=start, lightningOn=false, voicePlayed=false
+    let lastLightning=0, lightningOn=false, voicePlayed=false
 
     playRainbowSound()
 
     const draw = (now:number) => {
+      if (start < 0) { start = now; lastLightning = now }
       const elapsed=now-start
       const p=Math.min(1,elapsed/DUR)
       ctx.clearRect(0,0,W,H)
@@ -369,7 +376,8 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
 
       if (p < 1) {
         cinRafRef.current=requestAnimationFrame(draw)
-      } else {
+      } else if (!glorySentRef.current) {
+        glorySentRef.current=true
         setPhase('glory')
         setTimeout(()=>speakVoice('You saved them all, Warrior!'), 700)
       }
@@ -427,26 +435,29 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
     const a2 = animals.find(a=>a.id===id)!
 
     if (a1.type === a2.type) {
-      // ✅ Match
-      const newCount = pairsFound + 1
+      // ✅ Match — use ref so count is always fresh (avoids stale closure)
+      pairsFoundRef.current += 1
+      const newCount = pairsFoundRef.current
       setPairsFound(newCount)
-      setAnimOut(s=>{const n=new Set(s);n.add(selected);n.add(id);return n})
+      const sid = selected   // capture before clearing
+      setAnimOut(s=>{const n=new Set(s);n.add(sid);n.add(id);return n})
       setSelected(null)
       playMatchSound()
       speakVoice('Two by two, as God commanded!')
 
       setTimeout(()=>{
-        setRemoved(s=>{const n=new Set(s);n.add(selected);n.add(id);return n})
-        setAnimOut(s=>{const n=new Set(s);n.delete(selected);n.delete(id);return n})
+        setRemoved(s=>{const n=new Set(s);n.add(sid);n.add(id);return n})
+        setAnimOut(s=>{const n=new Set(s);n.delete(sid);n.delete(id);return n})
       }, 950)
 
-      if (newCount === 6) {
+      if (newCount === 6 && !glorySentRef.current) {
         if(timerRef.current) clearInterval(timerRef.current)
         setTimeout(()=>setPhase('cinematic'), 1500)
       }
     } else {
       // ❌ Wrong pair
-      setWrongIds([selected, id])
+      const sid = selected
+      setWrongIds([sid, id])
       setSelected(null)
       playWrongSound()
       speakVoice('We have to be fearfully and wonderfully made alike!')
@@ -470,11 +481,20 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
       {/* ── MATCHING PHASE ─────────────────────────────────────────────── */}
       {phase === 'matching' && (
         <>
-          {/* Ark at top */}
+          {/* Ark — right side, massive */}
           <div className="ark-container">
-            <div className="ark-cabin" />
-            <div className="ark-hull" />
-            <div className="ark-badge">{pairsFound}/6 pairs aboard 🐾</div>
+            <div className="ark-roof" />
+            <div className="ark-super">
+              <div className="ark-window ark-window--a" />
+              <div className="ark-window ark-window--b" />
+            </div>
+            <div className="ark-deck" />
+            <div className="ark-hull">
+              <div className="ark-plank-1" />
+              <div className="ark-plank-2" />
+              <div className="ark-plank-3" />
+            </div>
+            <div className="ark-badge">{pairsFound} / 6 pairs aboard 🐾</div>
           </div>
 
           {/* Hint */}
@@ -490,7 +510,8 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
 
           {/* Animals */}
           {animals.filter(a=>!removed.has(a.id)).map(a => {
-            const isUnderwater = waterPct > (100 - (a.y + 7))
+            // Card bottom edge ≈ a.y + 8%. Submerged when water top (100-waterPct) < bottom edge.
+            const isUnderwater = waterPct > (100 - (a.y + 8))
             return (
               <div
                 key={a.id}

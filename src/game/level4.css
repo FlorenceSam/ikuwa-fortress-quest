@@ -17,23 +17,23 @@
   pointer-events: none;
 }
 
-/* ─── Header ─────────────────────────────────────────────────────────────── */
+/* ─── Header — left side only so ark has room ────────────────────────────── */
 
 .level4-header {
   position: absolute;
   top: 0;
   left: 0;
-  right: 0;
+  width: 64%;
   z-index: 20;
-  text-align: center;
-  padding: 8px 12px 4px;
-  background: linear-gradient(180deg, rgba(0,0,0,0.78) 60%, transparent);
+  text-align: left;
+  padding: 10px 16px 6px;
+  background: linear-gradient(180deg, rgba(0,0,0,0.82) 55%, transparent);
   pointer-events: none;
 }
 
 .level4-label {
   margin: 0;
-  font-size: clamp(0.52rem, 1.1vw, 0.68rem);
+  font-size: clamp(0.52rem, 1.0vw, 0.66rem);
   letter-spacing: 0.22em;
   color: rgba(212,160,23,0.55);
   text-transform: uppercase;
@@ -41,9 +41,9 @@
 
 .level4-title {
   margin: 2px 0 0;
-  font-size: clamp(0.78rem, 1.8vw, 1.05rem);
-  letter-spacing: 0.06em;
-  color: rgba(212,160,23,0.90);
+  font-size: clamp(0.80rem, 1.8vw, 1.08rem);
+  letter-spacing: 0.05em;
+  color: rgba(212,160,23,0.92);
   font-weight: normal;
   text-shadow: 0 0 18px rgba(212,160,23,0.30);
 }
@@ -52,61 +52,133 @@
 
 .match-hint {
   position: absolute;
-  bottom: calc(6% + 10px);
+  bottom: calc(5% + 12px);
   left: 0;
-  right: 0;
+  width: 65%;
   text-align: center;
   margin: 0;
-  font-size: clamp(0.60rem, 1.1vw, 0.72rem);
+  font-size: clamp(0.58rem, 1.0vw, 0.70rem);
   letter-spacing: 0.12em;
-  color: rgba(212,160,23,0.45);
+  color: rgba(212,160,23,0.42);
   pointer-events: none;
   z-index: 20;
 }
 
-/* ─── Ark ────────────────────────────────────────────────────────────────── */
+/* ─── ARK — right side, massive (≈ 1/3 screen height) ───────────────────── */
 
 .ark-container {
-  position: absolute;
-  top: 12px;
-  left: 50%;
-  transform: translateX(-50%);
+  position: fixed;
+  right: 0;
+  top: 50%;
+  transform: translateY(-50%);
   z-index: 22;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 3px;
-  filter: drop-shadow(0 0 12px rgba(212,160,23,0.18));
+  gap: 0;
+  pointer-events: none;
+  filter:
+    drop-shadow(-6px 10px 28px rgba(0,0,0,0.85))
+    drop-shadow(0 0 40px rgba(212,160,23,0.09));
 }
 
-.ark-hull {
-  width: clamp(90px, 13vw, 155px);
-  height: clamp(20px, 3vw, 36px);
-  background: linear-gradient(180deg, #6b3514 0%, #3e1c09 55%, #2a1206 100%);
-  border-radius: 2px 2px 16px 16px;
-  border: 1px solid rgba(212,160,23,0.28);
-  box-shadow: 0 4px 12px rgba(0,0,0,0.75), 0 0 18px rgba(212,160,23,0.06);
+/* Triangular roof */
+.ark-roof {
+  width: clamp(120px, 18vw, 230px);
+  height: clamp(34px, 5.5vh, 68px);
+  background: linear-gradient(170deg, #8a4520, #5c2e0f 55%, #3e1c08);
+  clip-path: polygon(50% 0%, 1% 100%, 99% 100%);
+  position: relative;
 }
 
-.ark-cabin {
-  width: clamp(50px, 7vw, 85px);
-  height: clamp(14px, 2.2vw, 26px);
-  background: linear-gradient(180deg, #7a3e14, #5c2e0f);
-  border: 1px solid rgba(212,160,23,0.22);
+/* Upper cabin / superstructure */
+.ark-super {
+  width: clamp(120px, 18vw, 230px);
+  height: clamp(62px, 11vh, 135px);
+  background:
+    repeating-linear-gradient(
+      180deg,
+      transparent 0,
+      transparent 14px,
+      rgba(0,0,0,0.18) 14px,
+      rgba(0,0,0,0.18) 16px
+    ),
+    linear-gradient(175deg, #7a3e14 0%, #5c2e0f 50%, #452510 100%);
+  border: 1.5px solid rgba(212,160,23,0.28);
   border-bottom: none;
-  box-shadow: 0 -2px 8px rgba(0,0,0,0.55);
+  position: relative;
+  overflow: hidden;
 }
 
+/* Windows on the superstructure */
+.ark-window {
+  position: absolute;
+  width: clamp(14px, 2.0vw, 26px);
+  height: clamp(14px, 2.0vw, 26px);
+  border-radius: 50%;
+  background: rgba(255,200,80,0.40);
+  border: 1.5px solid rgba(212,160,23,0.65);
+  box-shadow: 0 0 12px rgba(255,200,80,0.35), inset 0 0 6px rgba(255,200,80,0.20);
+}
+.ark-window--a { top: 28%; left: 22%; }
+.ark-window--b { top: 28%; right: 22%; }
+
+/* Deck */
+.ark-deck {
+  width: clamp(150px, 22vw, 280px);
+  height: clamp(10px, 1.8vh, 22px);
+  background: linear-gradient(180deg, #8a4520, #5c2e0f);
+  border: 1px solid rgba(212,160,23,0.35);
+  box-shadow: 0 2px 0 rgba(0,0,0,0.5);
+}
+
+/* Main hull */
+.ark-hull {
+  width: clamp(150px, 22vw, 280px);
+  height: clamp(90px, 16vh, 195px);
+  background:
+    repeating-linear-gradient(
+      175deg,
+      transparent 0,
+      transparent 18px,
+      rgba(0,0,0,0.14) 18px,
+      rgba(0,0,0,0.14) 20px
+    ),
+    linear-gradient(175deg, #6b3514 0%, #4e2510 35%, #3a1c08 65%, #281308 100%);
+  border: 1.5px solid rgba(212,160,23,0.32);
+  border-radius: 2px 2px 48% 48% / 2px 2px 28% 28%;
+  box-shadow:
+    inset 0 -8px 22px rgba(0,0,0,0.45),
+    0 10px 0 rgba(0,0,0,0.65),
+    0 14px 28px rgba(0,0,0,0.75);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Horizontal plank lines on hull */
+.ark-plank-1, .ark-plank-2, .ark-plank-3 {
+  position: absolute;
+  left: 4%;
+  right: 4%;
+  height: 1px;
+  background: rgba(0,0,0,0.22);
+}
+.ark-plank-1 { top: 28%; }
+.ark-plank-2 { top: 55%; }
+.ark-plank-3 { top: 78%; }
+
+/* Pair counter badge */
 .ark-badge {
-  background: rgba(0,0,0,0.72);
-  border: 1px solid rgba(212,160,23,0.38);
+  margin-top: 10px;
+  background: rgba(0,0,0,0.78);
+  border: 1px solid rgba(212,160,23,0.45);
   color: #D4A017;
-  font-size: clamp(0.55rem, 1.0vw, 0.68rem);
-  padding: 2px 10px;
+  font-size: clamp(0.62rem, 1.1vw, 0.78rem);
+  padding: 4px 14px;
   border-radius: 4px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.07em;
   white-space: nowrap;
-  box-shadow: 0 0 10px rgba(212,160,23,0.08);
+  box-shadow: 0 0 14px rgba(212,160,23,0.10);
 }
 
 /* ─── Rising water ───────────────────────────────────────────────────────── */
@@ -116,31 +188,47 @@
   bottom: 0;
   left: 0;
   right: 0;
+  min-height: 5px;
   z-index: 8;
   background: linear-gradient(180deg,
-    rgba(8,45,120,0.80) 0%,
-    rgba(5,28,88,0.90)  35%,
-    rgba(3,14,52,0.96) 100%
+    rgba(0,38,140,0.95) 0%,
+    rgba(0,22,100,0.97) 30%,
+    rgba(0,12,68,0.99)  65%,
+    rgba(0,5,38,1.00)  100%
   );
-  transition: height 1.15s linear;
+  transition: height 1.10s linear;
   pointer-events: none;
+}
+
+/* Glowing bright surface line — always visible even at low height */
+.water::after {
+  content: '';
+  position: absolute;
+  top: -2px;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: rgba(30,130,255,0.95);
+  box-shadow:
+    0 0 18px rgba(30,130,255,0.85),
+    0 0 40px rgba(30,130,255,0.50);
 }
 
 .water-surface {
   position: absolute;
-  top: -14px;
-  left: -8%;
-  width: 116%;
-  height: clamp(16px, 2.5vw, 30px);
-  background: rgba(28,90,190,0.60);
+  top: -18px;
+  left: -10%;
+  width: 120%;
+  height: clamp(18px, 2.8vw, 36px);
+  background: rgba(10,80,210,0.72);
   border-radius: 50%;
-  animation: l4-wave-sway 2.8s ease-in-out infinite;
+  animation: l4-wave-sway 2.5s ease-in-out infinite;
 }
 
 @keyframes l4-wave-sway {
-  0%,100% { transform: scaleX(1) translateX(0) scaleY(1); }
-  35%     { transform: scaleX(0.97) translateX(1.8%) scaleY(1.15); }
-  70%     { transform: scaleX(1.02) translateX(-1.2%) scaleY(0.88); }
+  0%,100% { transform: scaleX(1)    translateX(0)    scaleY(1); }
+  33%     { transform: scaleX(0.96) translateX(2.2%) scaleY(1.18); }
+  66%     { transform: scaleX(1.03) translateX(-1.5%) scaleY(0.86); }
 }
 
 /* ─── Rain overlay ───────────────────────────────────────────────────────── */
@@ -154,8 +242,8 @@
     174deg,
     transparent 0,
     transparent 5px,
-    rgba(130,165,220,0.045) 5px,
-    rgba(130,165,220,0.045) 6px
+    rgba(130,165,220,0.048) 5px,
+    rgba(130,165,220,0.048) 6px
   );
   animation: l4-rain-fall 0.55s linear infinite;
 }
@@ -171,32 +259,32 @@
   position: absolute;
   transform: translate(-50%, -50%);
   z-index: 12;
-  width: clamp(58px, 8.5vw, 94px);
-  height: clamp(66px, 10vw, 110px);
+  width: clamp(60px, 8.8vw, 98px);
+  height: clamp(68px, 10.5vw, 114px);
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
   cursor: pointer;
   border-radius: 8px;
-  border: 1.5px solid rgba(212,160,23,0.32);
-  background: linear-gradient(145deg, #1c1800, #0c0a00);
+  border: 1.5px solid rgba(212,160,23,0.34);
+  background: linear-gradient(145deg, #1e1b00, #0e0c00);
   box-shadow:
     0 7px 0 rgba(0,0,0,0.55),
     0 10px 18px rgba(0,0,0,0.72),
     inset 0 1px 0 rgba(212,160,23,0.10),
     0 0 14px rgba(212,160,23,0.07);
-  transition: border-color 0.18s, box-shadow 0.18s, filter 0.18s;
+  transition: border-color 0.18s, box-shadow 0.18s;
   animation: l4-card-idle 4.5s ease-in-out infinite;
 }
 
-.animal-card:hover:not(.animal-card--wrong):not(.animal-card--paired):not(.animal-card--under) {
-  border-color: rgba(212,160,23,0.55);
+.animal-card:hover:not(.animal-card--wrong):not(.animal-card--paired) {
+  border-color: rgba(212,160,23,0.60);
   box-shadow:
     0 7px 0 rgba(0,0,0,0.55),
-    0 10px 20px rgba(0,0,0,0.75),
-    0 0 22px rgba(212,160,23,0.20);
-  transform: translate(-50%, -52%) scale(1.05);
+    0 10px 22px rgba(0,0,0,0.78),
+    0 0 24px rgba(212,160,23,0.22);
+  transform: translate(-50%, -53%) scale(1.06);
   z-index: 14;
 }
 
@@ -206,7 +294,7 @@
 }
 
 .animal-emoji {
-  font-size: clamp(1.6rem, 3.8vw, 2.8rem);
+  font-size: clamp(1.7rem, 4vw, 3.0rem);
   line-height: 1;
   filter: drop-shadow(0 2px 4px rgba(0,0,0,0.6));
   display: block;
@@ -214,30 +302,30 @@
 
 /* ── Selected ── */
 .animal-card--selected {
-  border-color: rgba(212,160,23,0.88);
-  background: linear-gradient(145deg, #2a2200, #181300);
+  border-color: rgba(212,160,23,0.90);
+  background: linear-gradient(145deg, #2e2500, #1c1800);
   box-shadow:
     0 7px 0 rgba(0,0,0,0.55),
     0 10px 22px rgba(0,0,0,0.75),
-    0 0 30px rgba(212,160,23,0.38),
+    0 0 32px rgba(212,160,23,0.42),
     inset 0 0 14px rgba(212,160,23,0.10);
   animation: l4-pulse-gold 0.9s ease-in-out infinite;
   z-index: 16;
 }
 
 @keyframes l4-pulse-gold {
-  0%,100% { box-shadow: 0 7px 0 rgba(0,0,0,0.55), 0 10px 22px rgba(0,0,0,0.75), 0 0 28px rgba(212,160,23,0.36); }
-  50%     { box-shadow: 0 7px 0 rgba(0,0,0,0.55), 0 10px 22px rgba(0,0,0,0.75), 0 0 44px rgba(212,160,23,0.60); }
+  0%,100% { box-shadow: 0 7px 0 rgba(0,0,0,0.55), 0 10px 22px rgba(0,0,0,0.75), 0 0 28px rgba(212,160,23,0.38); }
+  50%     { box-shadow: 0 7px 0 rgba(0,0,0,0.55), 0 10px 22px rgba(0,0,0,0.75), 0 0 48px rgba(212,160,23,0.65); }
 }
 
 /* ── Wrong pair ── */
 .animal-card--wrong {
-  border-color: rgba(220,50,50,0.80);
-  background: linear-gradient(145deg, #1e0700, #110300);
+  border-color: rgba(220,50,50,0.82);
+  background: linear-gradient(145deg, #200800, #120300);
   box-shadow:
     0 7px 0 rgba(0,0,0,0.55),
     0 10px 22px rgba(0,0,0,0.75),
-    0 0 30px rgba(220,50,50,0.28);
+    0 0 32px rgba(220,50,50,0.30);
   animation: l4-shake-wrong 0.55s ease-in-out, l4-pulse-red 0.7s 0.55s ease-in-out 2;
   pointer-events: none;
 }
@@ -253,11 +341,11 @@
 }
 
 @keyframes l4-pulse-red {
-  0%,100% { box-shadow: 0 7px 0 rgba(0,0,0,0.55), 0 0 26px rgba(220,50,50,0.24); }
-  50%     { box-shadow: 0 7px 0 rgba(0,0,0,0.55), 0 0 40px rgba(220,50,50,0.45); }
+  0%,100% { box-shadow: 0 7px 0 rgba(0,0,0,0.55), 0 0 28px rgba(220,50,50,0.26); }
+  50%     { box-shadow: 0 7px 0 rgba(0,0,0,0.55), 0 0 44px rgba(220,50,50,0.50); }
 }
 
-/* ── Paired (exit) ── */
+/* ── Paired (exit animation) ── */
 .animal-card--paired {
   animation: l4-pair-away 0.95s ease-in-out forwards !important;
   pointer-events: none;
@@ -265,17 +353,17 @@
 }
 
 @keyframes l4-pair-away {
-  0%   { opacity: 1; transform: translate(-50%,-50%) scale(1); filter: brightness(1); }
-  25%  { opacity: 1; transform: translate(-50%,-65%) scale(1.35); filter: brightness(2.5); }
-  55%  { opacity: 0.8; transform: translate(-50%,-90%) scale(1.1); filter: brightness(3); }
-  100% { opacity: 0; transform: translate(-50%,-130%) scale(0.5); filter: brightness(4); }
+  0%   { opacity: 1; transform: translate(-50%,-50%) scale(1);    filter: brightness(1); }
+  25%  { opacity: 1; transform: translate(-50%,-68%) scale(1.40); filter: brightness(2.8); }
+  55%  { opacity: 0.8; transform: translate(-50%,-95%) scale(1.1); filter: brightness(3.5); }
+  100% { opacity: 0; transform: translate(-50%,-140%) scale(0.4); filter: brightness(4); }
 }
 
-/* ── Underwater ── */
+/* ── Underwater — dimmed but still clickable (pointer-events kept on animal) ── */
 .animal-card--under {
-  filter: brightness(0.45) saturate(0.35) blur(0.5px);
-  opacity: 0.68;
-  z-index: 9;
+  filter: brightness(0.55) saturate(0.45) blur(0.4px);
+  opacity: 0.72;
+  z-index: 11;   /* stays above water's z-index 8 so clicks pass through */
 }
 
 /* ─── Cinematic canvas ───────────────────────────────────────────────────── */
