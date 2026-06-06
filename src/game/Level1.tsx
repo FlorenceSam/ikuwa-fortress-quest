@@ -4,13 +4,13 @@ import './level1.css'
 // ─── Data ──────────────────────────────────────────────────────────────────
 
 const DAYS = [
-  { id: 1, emoji: '🌑', title: 'Darkness & Light',  verse: 'Genesis 1:3-5'   },
-  { id: 2, emoji: '🌊', title: 'Sky & Water',        verse: 'Genesis 1:6-8'   },
-  { id: 3, emoji: '🌿', title: 'Land & Plants',      verse: 'Genesis 1:9-13'  },
-  { id: 4, emoji: '⭐', title: 'Sun, Moon & Stars', verse: 'Genesis 1:14-19' },
-  { id: 5, emoji: '🐟', title: 'Fish & Birds',       verse: 'Genesis 1:20-23' },
-  { id: 6, emoji: '🦁', title: 'Animals & Humans',   verse: 'Genesis 1:24-31' },
-  { id: 7, emoji: '😴', title: 'God Rests',          verse: 'Genesis 2:1-3'   },
+  { id: 1, emoji: '🌑', title: 'Day and Night',              verse: 'Genesis 1:3-5'   },
+  { id: 2, emoji: '🌊', title: 'Heaven and Water',           verse: 'Genesis 1:6-8'   },
+  { id: 3, emoji: '🌿', title: 'Land and Plants',            verse: 'Genesis 1:9-13'  },
+  { id: 4, emoji: '⭐', title: 'Sun, Moon and Stars',       verse: 'Genesis 1:14-19' },
+  { id: 5, emoji: '🐟', title: 'Fish and Birds',             verse: 'Genesis 1:20-23' },
+  { id: 6, emoji: '🦁', title: 'Other Animals and Humans',   verse: 'Genesis 1:24-31' },
+  { id: 7, emoji: '😴', title: 'God Rests',                  verse: 'Genesis 2:1-3'   },
 ]
 
 const NOTES = [523.25, 659.25, 783.99, 880, 1046.50, 1318.51, 1567.98]
