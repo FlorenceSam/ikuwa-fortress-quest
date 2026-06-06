@@ -1,0 +1,310 @@
+/* ── Base screen ─────────────────────────────────────────────────────────── */
+
+.screen {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  background: #000000;
+  padding: 2rem 1.5rem;
+  box-sizing: border-box;
+  overflow-y: auto;
+  animation: screen-enter 0.65s ease-out forwards;
+}
+
+@keyframes screen-enter {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Decorative gold rule ────────────────────────────────────────────────── */
+
+.gold-rule {
+  width: 100%;
+  max-width: 480px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, #D4A017 30%, #D4A017 70%, transparent);
+  margin: 1.8rem auto;
+  flex-shrink: 0;
+}
+
+.gold-rule.narrow {
+  max-width: 180px;
+  margin: 0.9rem auto 2rem;
+}
+
+/* ── Welcome screen ──────────────────────────────────────────────────────── */
+
+.welcome-screen {
+  justify-content: space-between;
+  padding: 6vh 2rem 9vh;
+}
+
+.welcome-content {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+
+.game-subtitle {
+  color: rgba(212, 160, 23, 0.52);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.58rem, 1.4vw, 0.78rem);
+  letter-spacing: 0.50em;
+  text-transform: uppercase;
+  margin: 0 0 1.6rem;
+}
+
+.game-title {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: bold;
+  color: #D4A017;
+  line-height: 0.95;
+  text-shadow:
+    0 0 35px rgba(212, 160, 23, 0.45),
+    0 0 90px rgba(212, 160, 23, 0.18);
+}
+
+.game-title span {
+  display: block;
+  font-size: clamp(3.4rem, 9.5vw, 8rem);
+  letter-spacing: 0.14em;
+}
+
+.game-verse {
+  color: rgba(212, 160, 23, 0.38);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.62rem, 1.3vw, 0.8rem);
+  font-style: italic;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-align: center;
+}
+
+.welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  width: 100%;
+  max-width: 300px;
+}
+
+/* ── Buttons ─────────────────────────────────────────────────────────────── */
+
+.gold-btn {
+  width: 100%;
+  padding: 0.88rem 2rem;
+  background: #D4A017;
+  color: #000000;
+  border: 2px solid #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.82rem, 1.7vw, 0.96rem);
+  font-weight: bold;
+  letter-spacing: 0.20em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition: background 0.22s, color 0.22s, box-shadow 0.22s, transform 0.12s;
+}
+
+.gold-btn:hover {
+  background: #e8b520;
+  border-color: #e8b520;
+  box-shadow: 0 0 22px rgba(212, 160, 23, 0.60);
+}
+
+.gold-btn:active {
+  transform: scale(0.975);
+}
+
+.gold-btn--outline {
+  background: transparent;
+  color: #D4A017;
+}
+
+.gold-btn--outline:hover {
+  background: rgba(212, 160, 23, 0.10);
+  color: #e8b520;
+}
+
+/* ── Screen title ────────────────────────────────────────────────────────── */
+
+.screen-title {
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.5rem, 3.8vw, 2.6rem);
+  font-weight: bold;
+  letter-spacing: 0.24em;
+  margin: 0;
+  text-align: center;
+  text-shadow: 0 0 24px rgba(212, 160, 23, 0.32);
+}
+
+/* ── Auth form ───────────────────────────────────────────────────────────── */
+
+.auth-form {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-width: 340px;
+}
+
+.field-group {
+  display: flex;
+  flex-direction: column;
+  gap: 0.38rem;
+  margin-bottom: 1.6rem;
+}
+
+.field-group label {
+  color: rgba(212, 160, 23, 0.58);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.68rem;
+  letter-spacing: 0.30em;
+  text-transform: uppercase;
+}
+
+.field-group input {
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(212, 160, 23, 0.30);
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1rem;
+  padding: 0.55rem 0;
+  outline: none;
+  width: 100%;
+  box-sizing: border-box;
+  transition: border-color 0.28s, box-shadow 0.28s;
+}
+
+.field-group input::placeholder {
+  color: rgba(212, 160, 23, 0.22);
+}
+
+.field-group input:focus {
+  border-bottom-color: #D4A017;
+  box-shadow: 0 3px 12px -4px rgba(212, 160, 23, 0.32);
+}
+
+.form-btn {
+  margin-top: 0.5rem;
+}
+
+/* ── Form error ──────────────────────────────────────────────────────────── */
+
+.form-error {
+  color: #e8952a;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.80rem;
+  letter-spacing: 0.04em;
+  margin: 0 0 0.8rem;
+  text-align: center;
+  animation: err-pop 0.28s ease-out;
+}
+
+@keyframes err-pop {
+  from { opacity: 0; transform: translateY(-5px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Auth switch link ────────────────────────────────────────────────────── */
+
+.auth-switch {
+  margin-top: 1.6rem;
+  color: rgba(212, 160, 23, 0.44);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.84rem;
+  letter-spacing: 0.05em;
+  text-align: center;
+}
+
+.text-link {
+  background: none;
+  border: none;
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 0.84rem;
+  cursor: pointer;
+  padding: 0;
+  text-decoration: underline;
+  text-decoration-color: rgba(212, 160, 23, 0.38);
+  transition: text-decoration-color 0.2s, color 0.2s;
+}
+
+.text-link:hover {
+  color: #e8b520;
+  text-decoration-color: #e8b520;
+}
+
+/* ── Character name screen ───────────────────────────────────────────────── */
+
+.character-screen {
+  gap: 0;
+}
+
+.character-question {
+  color: rgba(212, 160, 23, 0.65);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.1rem, 2.8vw, 1.7rem);
+  font-weight: normal;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  margin: 0;
+  text-align: center;
+}
+
+.character-warrior {
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(3rem, 8vw, 6rem);
+  font-weight: bold;
+  letter-spacing: 0.20em;
+  line-height: 1.1;
+  margin: 0.05em 0 0;
+  text-align: center;
+  text-shadow:
+    0 0 28px rgba(212, 160, 23, 0.55),
+    0 0 75px rgba(212, 160, 23, 0.22);
+}
+
+.character-form {
+  align-items: center;
+  max-width: 380px;
+}
+
+.character-input {
+  background: transparent;
+  border: none;
+  border-bottom: 2px solid rgba(212, 160, 23, 0.38);
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: 1.35rem;
+  letter-spacing: 0.14em;
+  padding: 0.6rem 0;
+  outline: none;
+  text-align: center;
+  width: 100%;
+  max-width: 360px;
+  box-sizing: border-box;
+  transition: border-color 0.28s, box-shadow 0.28s;
+  margin-bottom: 1.6rem;
+}
+
+.character-input::placeholder {
+  color: rgba(212, 160, 23, 0.22);
+  font-size: 1rem;
+  letter-spacing: 0.06em;
+}
+
+.character-input:focus {
+  border-bottom-color: #D4A017;
+  box-shadow: 0 4px 14px -4px rgba(212, 160, 23, 0.35);
+}

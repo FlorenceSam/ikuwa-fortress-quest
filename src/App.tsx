@@ -1,7 +1,13 @@
 import { useEffect, useRef, useState } from 'react'
+import {
+  WelcomeScreen,
+  CreateAccountScreen,
+  LoginScreen,
+  CharacterNameScreen,
+} from './screens/AuthScreens'
 import './App.css'
 
-// ─── Audio ────────────────────────────────────────────────────────────────────
+// ─── Audio ─────────────────────────────────────────────────────────────────
 
 function buildReverb(ctx: AudioContext): ConvolverNode {
   const rate = ctx.sampleRate
@@ -41,21 +47,19 @@ function launchSound() {
     osc.start(now + start); osc.stop(now + start + dur + 2)
   }
 
-  // Void drone — begins with text at 1 s
+  // Void drone + choir swell
   tone(40,  0.40, 1,   4);   tone(55,  0.30, 1,   4)
   tone(82,  0.15, 1.3, 3.5); tone(110, 0.10, 1.6, 3)
   tone(165, 0.07, 2.0, 2.5)
-  // Choir swell building toward 4 s
   tone(220, 0.055, 2.2, 2.2,   0); tone(220, 0.055, 2.2, 2.2,  14)
   tone(220, 0.055, 2.2, 2.2, -14)
   tone(330, 0.038, 2.7, 1.8,   7); tone(330, 0.038, 2.7, 1.8,  -7)
   tone(440, 0.022, 3.0, 1.5,   9); tone(440, 0.022, 3.0, 1.5,  -9)
   tone(660, 0.013, 3.4, 1.2,   5)
 
-  // ── Creation Bang — exactly at 4 s ─────────────────────────────────────
+  // ── Creation Bang at 4 s ──────────────────────────────────────────────────
   const B = 4
 
-  // Rising frequency sweep (0.7 s build-up)
   const sw  = ctx.createOscillator()
   const swG = ctx.createGain()
   sw.type = 'sine'
@@ -67,7 +71,6 @@ function launchSound() {
   sw.connect(swG); swG.connect(dry)
   sw.start(now + B - 0.7); sw.stop(now + B + 0.15)
 
-  // Deep impact boom
   const bm  = ctx.createOscillator()
   const bmG = ctx.createGain()
   bm.type = 'sine'
@@ -79,19 +82,18 @@ function launchSound() {
   bm.connect(bmG); bmG.connect(dry); bmG.connect(reverb)
   bm.start(now + B); bm.stop(now + B + 4)
 
-  // Cosmic warmth — swells as stars are born
+  // Cosmic warmth
   tone(55,  0.22, B+0.4, 9);    tone(82,  0.16, B+0.8,  8.5)
   tone(110, 0.11, B+1.2, 8);    tone(165, 0.08, B+1.6,  7.5)
   tone(220, 0.06, B+2.0, 7, 0); tone(330, 0.04, B+2.5,  6.5, 0)
   tone(440, 0.025, B+3,  6, 5)
-  // Golden shimmer overtones
   tone(880, 0.009, B+1.0, 7,  0); tone(880, 0.009, B+1.0, 7, 18)
   tone(1320, 0.005, B+2.5, 5, 0)
 
   return ctx
 }
 
-// ─── Canvas types ─────────────────────────────────────────────────────────────
+// ─── Canvas ─────────────────────────────────────────────────────────────────
 
 interface Star {
   x: number; y: number; r: number
@@ -107,20 +109,17 @@ function mkStars(w: number, h: number): Star[] {
   return Array.from({ length: 440 }, (_, i) => {
     const bright = i < 60
     const roll = Math.random()
-    // 65% warm gold, 20% blue-white accent, 15% deep amber
-    const hue = roll < 0.65 ? Math.random() * 22 + 38
-              : roll < 0.85 ? Math.random() * 20 + 195
-              :               Math.random() * 12 + 28
+    const hue  = roll < 0.65 ? Math.random() * 22 + 38
+               : roll < 0.85 ? Math.random() * 20 + 195
+               :               Math.random() * 12 + 28
     return {
-      x:    Math.random() * w,
-      y:    Math.random() * h,
+      x: Math.random() * w, y: Math.random() * h,
       r:    bright ? Math.random() * 1.6 + 1.2 : Math.random() * 1.0 + 0.15,
       base: bright ? Math.random() * 0.4  + 0.50 : Math.random() * 0.32 + 0.20,
       amp:  bright ? Math.random() * 0.30 + 0.14 : Math.random() * 0.10 + 0.03,
       spd:  Math.random() * 0.022 + 0.004,
       ph:   Math.random() * Math.PI * 2,
-      hue,
-      bright,
+      hue, bright,
     }
   })
 }
@@ -130,39 +129,95 @@ function mkParticles(cx: number, cy: number): Particle[] {
     const a = Math.random() * Math.PI * 2
     const s = Math.random() * 6.5 + 0.8
     return {
-      x: cx + (Math.random() - 0.5) * 30,
-      y: cy + (Math.random() - 0.5) * 30,
+      x: cx + (Math.random() - 0.5) * 30, y: cy + (Math.random() - 0.5) * 30,
       vx: Math.cos(a) * s, vy: Math.sin(a) * s,
-      r:    Math.random() * 2.6 + 0.5,
-      life: 0,
-      max:  Math.random() * 140 + 80,
-      hue:  Math.random() * 22 + 40,   // 40-62: pure gold range
-      sat:  Math.random() * 12 + 88,   // 88-100%: fully saturated
+      r: Math.random() * 2.6 + 0.5,
+      life: 0, max: Math.random() * 140 + 80,
+      hue: Math.random() * 22 + 40, sat: Math.random() * 12 + 88,
     }
   })
 }
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// ─── Types ───────────────────────────────────────────────────────────────────
 
-type Phase = 'prompt' | 'dark' | 'reveal' | 'creation' | 'cosmos'
+type AppScreen   = 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic'
+type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
+
+// ─── Component ───────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [phase, setPhase] = useState<Phase>('prompt')
-  const audioRef = useRef<AudioContext | null>(null)
-  const canvasRef = useRef<HTMLCanvasElement>(null)
-  const rafRef    = useRef<number>(0)
+  const [appScreen,      setAppScreen]      = useState<AppScreen>('welcome')
+  const [cinematicPhase, setCinematicPhase] = useState<CinematicPhase>('dark')
+  const [firstName,      setFirstName]      = useState('')
 
-  const begin = () => {
-    if (phase !== 'prompt') return
-    audioRef.current = launchSound()
-    setPhase('dark')
-    setTimeout(() => setPhase('reveal'),   1000)   // 1 s darkness
-    setTimeout(() => setPhase('creation'), 4000)   // ball at exactly 4 s
-    setTimeout(() => setPhase('cosmos'),   6000)   // stars at 6 s
+  const audioRef       = useRef<AudioContext | null>(null)
+  const canvasRef      = useRef<HTMLCanvasElement>(null)
+  const rafRef         = useRef<number>(0)
+  const speechLoopRef  = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // ── Voice (Web Speech API) ────────────────────────────────────────────────
+
+  const startVoice = () => {
+    if (!('speechSynthesis' in window)) return
+    window.speechSynthesis.cancel()
+
+    const speak = () => {
+      const utt = new SpeechSynthesisUtterance(
+        "You are God's. You are lovely. You are fearfully and wonderfully made. God loves you."
+      )
+      utt.rate   = 0.76
+      utt.pitch  = 0.88
+      utt.volume = 0.70
+      utt.onend  = () => { speechLoopRef.current = setTimeout(speak, 3000) }
+      window.speechSynthesis.speak(utt)
+    }
+    speak()
   }
 
+  const stopVoice = () => {
+    if ('speechSynthesis' in window) window.speechSynthesis.cancel()
+    if (speechLoopRef.current) { clearTimeout(speechLoopRef.current); speechLoopRef.current = null }
+  }
+
+  useEffect(() => () => stopVoice(), [])
+
+  // ── Screen transitions ────────────────────────────────────────────────────
+
+  const goLogin = () => {
+    startVoice()
+    setAppScreen('login')
+  }
+
+  const goCreate = () => {
+    startVoice()
+    setAppScreen('create-account')
+  }
+
+  const afterAuth = (name: string) => {
+    setFirstName(name)
+    setAppScreen('character-name')
+  }
+
+  // ── Cinematic launch (called from ENTER THE KINGDOM click — user gesture) ─
+
+  const enterKingdom = (characterName: string) => {
+    stopVoice()
+    localStorage.setItem('iq_character', characterName)
+
+    // AudioContext MUST be created inside a user gesture handler
+    audioRef.current = launchSound()
+
+    setAppScreen('cinematic')
+    setCinematicPhase('dark')
+    setTimeout(() => setCinematicPhase('reveal'),   1000)
+    setTimeout(() => setCinematicPhase('creation'), 4000)
+    setTimeout(() => setCinematicPhase('cosmos'),   6000)
+  }
+
+  // ── Canvas (cosmos phase) ─────────────────────────────────────────────────
+
   useEffect(() => {
-    if (phase !== 'cosmos') return
+    if (cinematicPhase !== 'cosmos') return
     const canvas = canvasRef.current
     if (!canvas) return
     const c = canvas.getContext('2d')
@@ -177,39 +232,29 @@ export default function App() {
     let frame = 0
 
     const nebulae: [number, number, number, string][] = [
-      [W * 0.28, H * 0.32, W * 0.42, 'rgba(200, 110, 15, 0.07)'],  // amber
-      [W * 0.72, H * 0.56, W * 0.34, 'rgba(160,  70, 12, 0.06)'],  // deep amber
-      [W * 0.50, H * 0.16, W * 0.30, 'rgba(220, 140, 25, 0.05)'],  // golden crown
-      [W * 0.12, H * 0.72, W * 0.24, 'rgba( 55,  15, 110, 0.08)'], // violet
-      [W * 0.82, H * 0.22, W * 0.20, 'rgba( 80,  35, 130, 0.06)'], // purple accent
+      [W*0.28, H*0.32, W*0.42, 'rgba(200,110,15, 0.07)'],
+      [W*0.72, H*0.56, W*0.34, 'rgba(160, 70,12, 0.06)'],
+      [W*0.50, H*0.16, W*0.30, 'rgba(220,140,25, 0.05)'],
+      [W*0.12, H*0.72, W*0.24, 'rgba( 55, 15,110,0.08)'],
+      [W*0.82, H*0.22, W*0.20, 'rgba( 80, 35,130,0.06)'],
     ]
 
     const tick = () => {
-      // Deep golden-space background
-      const bg = c.createRadialGradient(W * 0.5, H * 0.42, 0, W * 0.5, H * 0.42, W * 1.1)
-      bg.addColorStop(0,    '#120908')
-      bg.addColorStop(0.30, '#0c0604')
-      bg.addColorStop(0.65, '#070302')
-      bg.addColorStop(1,    '#000000')
+      const bg = c.createRadialGradient(W*.5, H*.42, 0, W*.5, H*.42, W*1.1)
+      bg.addColorStop(0, '#120908'); bg.addColorStop(0.30, '#0c0604')
+      bg.addColorStop(0.65, '#070302'); bg.addColorStop(1, '#000000')
       c.fillStyle = bg; c.fillRect(0, 0, W, H)
 
-      // Warm central glow — echoes of creation
-      const cg = c.createRadialGradient(W * 0.5, H * 0.5, 0, W * 0.5, H * 0.5, W * 0.38)
-      cg.addColorStop(0,   'rgba(255, 200, 60, 0.07)')
-      cg.addColorStop(0.6, 'rgba(255, 160, 30, 0.03)')
-      cg.addColorStop(1,   'transparent')
+      const cg = c.createRadialGradient(W*.5, H*.5, 0, W*.5, H*.5, W*.38)
+      cg.addColorStop(0, 'rgba(255,200,60,0.07)'); cg.addColorStop(1, 'transparent')
       c.fillStyle = cg; c.fillRect(0, 0, W, H)
 
-      // Golden Milky Way band
-      const mw = c.createLinearGradient(W * 0.08, H * 0.22, W * 0.92, H * 0.82)
-      mw.addColorStop(0,    'transparent')
-      mw.addColorStop(0.28, 'rgba(255, 210, 90,  0.028)')
-      mw.addColorStop(0.50, 'rgba(255, 230, 130, 0.048)')
-      mw.addColorStop(0.72, 'rgba(255, 210, 90,  0.028)')
-      mw.addColorStop(1,    'transparent')
+      const mw = c.createLinearGradient(W*.08, H*.22, W*.92, H*.82)
+      mw.addColorStop(0, 'transparent'); mw.addColorStop(0.28, 'rgba(255,210,90,0.028)')
+      mw.addColorStop(0.50, 'rgba(255,230,130,0.048)'); mw.addColorStop(0.72, 'rgba(255,210,90,0.028)')
+      mw.addColorStop(1, 'transparent')
       c.fillStyle = mw; c.fillRect(0, 0, W, H)
 
-      // Nebulae
       for (const [x, y, r, col] of nebulae) {
         const g = c.createRadialGradient(x, y, 0, x, y, r)
         g.addColorStop(0, col); g.addColorStop(1, 'transparent')
@@ -218,91 +263,84 @@ export default function App() {
 
       frame++
 
-      // Stars — golden-toned with multi-layer glow
       for (const s of stars) {
         const op = Math.max(0.04, Math.min(1, s.base + Math.sin(frame * s.spd + s.ph) * s.amp))
-
-        // Outer diffuse glow
-        c.beginPath()
-        c.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2)
-        c.fillStyle = `hsla(${s.hue}, 85%, 70%, ${op * 0.14})`
-        c.fill()
-
-        // Mid glow
-        c.beginPath()
-        c.arc(s.x, s.y, s.r * 1.9, 0, Math.PI * 2)
-        c.fillStyle = `hsla(${s.hue}, 80%, 80%, ${op * 0.35})`
-        c.fill()
-
-        // Bright core
-        c.beginPath()
-        c.arc(s.x, s.y, s.r, 0, Math.PI * 2)
-        c.fillStyle = `hsla(${s.hue}, 65%, 94%, ${op})`
-        c.fill()
-
-        // Sparkle cross on brightest stars
+        c.beginPath(); c.arc(s.x, s.y, s.r * 3.5, 0, Math.PI * 2)
+        c.fillStyle = `hsla(${s.hue},85%,70%,${op * 0.14})`; c.fill()
+        c.beginPath(); c.arc(s.x, s.y, s.r * 1.9, 0, Math.PI * 2)
+        c.fillStyle = `hsla(${s.hue},80%,80%,${op * 0.35})`; c.fill()
+        c.beginPath(); c.arc(s.x, s.y, s.r, 0, Math.PI * 2)
+        c.fillStyle = `hsla(${s.hue},65%,94%,${op})`; c.fill()
         if (s.bright && op > 0.48) {
           const len = s.r * 5.5
-          c.strokeStyle = `hsla(${s.hue}, 90%, 85%, ${op * 0.40})`
-          c.lineWidth = 0.65
+          c.strokeStyle = `hsla(${s.hue},90%,85%,${op * 0.40})`; c.lineWidth = 0.65
           c.beginPath()
-          c.moveTo(s.x - len, s.y); c.lineTo(s.x + len, s.y)
-          c.moveTo(s.x, s.y - len); c.lineTo(s.x, s.y + len)
-          c.stroke()
-          // Diagonal sparkle arms (45°)
-          const dlen = len * 0.55
-          c.strokeStyle = `hsla(${s.hue}, 90%, 85%, ${op * 0.22})`
+          c.moveTo(s.x-len, s.y); c.lineTo(s.x+len, s.y)
+          c.moveTo(s.x, s.y-len); c.lineTo(s.x, s.y+len); c.stroke()
+          const d = len * 0.55
+          c.strokeStyle = `hsla(${s.hue},90%,85%,${op * 0.22})`
           c.beginPath()
-          c.moveTo(s.x - dlen, s.y - dlen); c.lineTo(s.x + dlen, s.y + dlen)
-          c.moveTo(s.x + dlen, s.y - dlen); c.lineTo(s.x - dlen, s.y + dlen)
-          c.stroke()
+          c.moveTo(s.x-d, s.y-d); c.lineTo(s.x+d, s.y+d)
+          c.moveTo(s.x+d, s.y-d); c.lineTo(s.x-d, s.y+d); c.stroke()
         }
       }
 
-      // Shiny golden birth particles — 3-layer glow
       for (let i = parts.length - 1; i >= 0; i--) {
         const p = parts[i]
         if (++p.life >= p.max) { parts.splice(i, 1); continue }
-        p.x += p.vx; p.y += p.vy
-        p.vx *= 0.965; p.vy *= 0.965
-        const t   = p.life / p.max
-        const op  = Math.pow(1 - t, 0.88)
-        const rNow = p.r * (1 + t * 1.4)
-
-        // Far glow halo
-        c.beginPath()
-        c.arc(p.x, p.y, rNow * 4.5, 0, Math.PI * 2)
-        c.fillStyle = `hsla(${p.hue}, ${p.sat}%, 58%, ${op * 0.18})`
-        c.fill()
-
-        // Mid shimmer
-        c.beginPath()
-        c.arc(p.x, p.y, rNow * 2.0, 0, Math.PI * 2)
-        c.fillStyle = `hsla(${p.hue}, ${p.sat}%, 72%, ${op * 0.52})`
-        c.fill()
-
-        // Bright core
-        c.beginPath()
-        c.arc(p.x, p.y, rNow, 0, Math.PI * 2)
-        c.fillStyle = `hsla(${p.hue}, ${p.sat}%, 95%, ${op})`
-        c.fill()
+        p.x += p.vx; p.y += p.vy; p.vx *= 0.965; p.vy *= 0.965
+        const t = p.life / p.max, op = Math.pow(1 - t, 0.88)
+        const rN = p.r * (1 + t * 1.4)
+        c.beginPath(); c.arc(p.x, p.y, rN*4.5, 0, Math.PI*2)
+        c.fillStyle = `hsla(${p.hue},${p.sat}%,58%,${op*0.18})`; c.fill()
+        c.beginPath(); c.arc(p.x, p.y, rN*2.0, 0, Math.PI*2)
+        c.fillStyle = `hsla(${p.hue},${p.sat}%,72%,${op*0.52})`; c.fill()
+        c.beginPath(); c.arc(p.x, p.y, rN, 0, Math.PI*2)
+        c.fillStyle = `hsla(${p.hue},${p.sat}%,95%,${op})`; c.fill()
       }
 
       rafRef.current = requestAnimationFrame(tick)
     }
-
     tick()
     return () => cancelAnimationFrame(rafRef.current)
-  }, [phase])
+  }, [cinematicPhase])
 
+  // ── Render ────────────────────────────────────────────────────────────────
+
+  if (appScreen === 'welcome') {
+    return <WelcomeScreen onLogin={goLogin} onCreateAccount={goCreate} />
+  }
+
+  if (appScreen === 'create-account') {
+    return (
+      <CreateAccountScreen
+        onSuccess={afterAuth}
+        onLogin={() => setAppScreen('login')}
+      />
+    )
+  }
+
+  if (appScreen === 'login') {
+    return (
+      <LoginScreen
+        onSuccess={afterAuth}
+        onCreateAccount={() => setAppScreen('create-account')}
+      />
+    )
+  }
+
+  if (appScreen === 'character-name') {
+    return <CharacterNameScreen firstName={firstName} onEnter={enterKingdom} />
+  }
+
+  // Cinematic
   return (
-    <div className="opening-screen" onClick={begin}>
-      {phase === 'prompt'   && <p className="begin-prompt">Touch anywhere to begin</p>}
-      {phase === 'cosmos'   && <canvas ref={canvasRef} className="cosmos-canvas" />}
-      {phase === 'creation' && <div className="creation-ball" />}
-      {phase === 'creation' && <div className="creation-flash" />}
-      {(phase === 'reveal' || phase === 'creation') && (
-        <h1 className={`opening-text${phase === 'reveal' ? ' visible' : ' fade-out'}`}>
+    <div className="opening-screen">
+      {cinematicPhase === 'cosmos'   && <canvas ref={canvasRef} className="cosmos-canvas" />}
+      {cinematicPhase === 'creation' && <div className="creation-ball" />}
+      {cinematicPhase === 'creation' && <div className="creation-flash" />}
+      {(cinematicPhase === 'reveal' || cinematicPhase === 'creation') && (
+        <h1 className={`opening-text${cinematicPhase === 'reveal' ? ' visible' : ' fade-out'}`}>
           Let there be light
         </h1>
       )}
