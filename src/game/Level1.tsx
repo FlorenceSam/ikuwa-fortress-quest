@@ -139,7 +139,23 @@ export default function Level1() {
   // ── Victory ─────────────────────────────────────────────────────────────
 
   useEffect(() => {
-    if (correct.size === 7) { playVictory(); setTimeout(() => setVictory(true), 500) }
+    if (correct.size === 7) {
+      playVictory()
+      setTimeout(() => setVictory(true), 500)
+      setTimeout(() => {
+        try {
+          const utt = new SpeechSynthesisUtterance('See how smart you are!')
+          utt.rate   = 0.88
+          utt.pitch  = 1.1
+          utt.volume = 1
+          const voices = speechSynthesis.getVoices()
+          const warm = voices.find(v => /female|woman|zira|samantha|karen|victoria|moira/i.test(v.name))
+          if (warm) utt.voice = warm
+          speechSynthesis.cancel()
+          speechSynthesis.speak(utt)
+        } catch (_) {}
+      }, 900)
+    }
   }, [correct])
 
   useEffect(() => {
