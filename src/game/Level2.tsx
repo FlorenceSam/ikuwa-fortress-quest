@@ -33,20 +33,52 @@ const QUESTIONS: Question[] = [
   },
 ]
 
+// Per-question celebration: unique voice + text + CSS modifier class
+const REACTIONS = [
+  {
+    voice: 'Wisdom overflow!',
+    text:  'Wisdom Overflow!',
+    cls:   'celeb--overflow',
+  },
+  {
+    voice: 'You are too much!',
+    text:  'You Are Too Much!',
+    cls:   'celeb--toomuch',
+  },
+  {
+    voice: 'You are worth your onions!',
+    text:  'You Are Worth Your Onions!',
+    cls:   'celeb--onions',
+  },
+  {
+    voice: 'You make God proud!',
+    text:  'You Make God Proud!',
+    cls:   'celeb--proud',
+  },
+]
+
 // ─── Audio ─────────────────────────────────────────────────────────────────
 
-function playCorrectSound() {
+// Four distinct correct-answer chords — one per question
+const CORRECT_CHORDS = [
+  [523.25, 659.25, 783.99, 1046.50],   // Q1 — ascending bright
+  [392.00, 523.25, 659.25, 880.00],    // Q2 — explosive spread
+  [440.00, 554.37, 659.25, 880.00],    // Q3 — playful major
+  [349.23, 523.25, 698.46, 1046.50],   // Q4 — majestic wide
+]
+
+function playCorrectSound(qIdx: number) {
   try {
     const ctx = new AudioContext()
-    ;[523.25, 659.25, 783.99, 1046.50].forEach((f, i) => {
+    CORRECT_CHORDS[qIdx].forEach((f, i) => {
       const o = ctx.createOscillator(), g = ctx.createGain()
       o.type = 'sine'; o.frequency.value = f
-      const t = ctx.currentTime + i * 0.09
+      const t = ctx.currentTime + i * 0.08
       g.gain.setValueAtTime(0, t)
-      g.gain.linearRampToValueAtTime(0.18, t + 0.05)
-      g.gain.exponentialRampToValueAtTime(0.001, t + 1.3)
+      g.gain.linearRampToValueAtTime(0.18, t + 0.06)
+      g.gain.exponentialRampToValueAtTime(0.001, t + 1.4)
       o.connect(g); g.connect(ctx.destination)
-      o.start(t); o.stop(t + 1.3)
+      o.start(t); o.stop(t + 1.5)
     })
   } catch (_) {}
 }
@@ -82,7 +114,7 @@ function playVictorySound() {
 function speakVoice(text: string) {
   try {
     const utt = new SpeechSynthesisUtterance(text)
-    utt.rate = 0.88; utt.pitch = 1.1; utt.volume = 1
+    utt.rate = 0.88; utt.pitch = 1.12; utt.volume = 1
     const warm = speechSynthesis.getVoices()
       .find(v => /female|woman|zira|samantha|karen|victoria|moira/i.test(v.name))
     if (warm) utt.voice = warm
@@ -98,11 +130,12 @@ interface VParticle { x:number; y:number; vx:number; vy:number; r:number; life:n
 // ─── Component ─────────────────────────────────────────────────────────────
 
 export default function Level2({ onComplete }: { onComplete?: () => void }) {
-  const [currentQ,   setCurrentQ]   = useState(0)
-  const [feedback,   setFeedback]   = useState<'correct'|'wrong'|null>(null)
-  const [selectedIdx,setSelectedIdx]= useState<number|null>(null)
-  const [burstIdx,   setBurstIdx]   = useState<number|null>(null)
-  const [victory,    setVictory]    = useState(false)
+  const [currentQ,    setCurrentQ]    = useState(0)
+  const [feedback,    setFeedback]    = useState<'correct'|'wrong'|null>(null)
+  const [selectedIdx, setSelectedIdx] = useState<number|null>(null)
+  const [burstIdx,    setBurstIdx]    = useState<number|null>(null)
+  const [celebIdx,    setCelebIdx]    = useState<number|null>(null)   // which reaction to show
+  const [victory,     setVictory]     = useState(false)
 
   const bgRef      = useRef<HTMLCanvasElement>(null)
   const victoryRef = useRef<HTMLCanvasElement>(null)
@@ -124,17 +157,15 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
       amp:  Math.random()*0.12+0.03,
       spd:  Math.random()*0.018+0.003,
       ph:   Math.random()*Math.PI*2,
-      // mix of golds and greens
       hue: Math.random() < 0.45 ? Math.random()*25+38 : Math.random()*35+105,
     }))
 
-    // Floating firefly-like garden particles
     const fireflies = Array.from({ length: 40 }, () => ({
-      x: Math.random()*W,  y: Math.random()*H,
-      vx: (Math.random()-0.5)*0.45,
-      vy: -(Math.random()*0.28+0.04),
+      x:   Math.random()*W,  y: Math.random()*H,
+      vx:  (Math.random()-0.5)*0.45,
+      vy:  -(Math.random()*0.28+0.04),
       r:   Math.random()*2.2+0.6,
-      hue: Math.random()*50+95,  // green range 95-145
+      hue: Math.random()*50+95,
       ph:  Math.random()*Math.PI*2,
       spd: Math.random()*0.04+0.015,
     }))
@@ -142,24 +173,17 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
     let frame = 0
     const tick = () => {
       ctx.fillStyle = '#000'; ctx.fillRect(0,0,W,H)
-
-      // Subtle deep-green centre glow
       const cg = ctx.createRadialGradient(W/2, H*0.52, 0, W/2, H*0.52, W*0.52)
       cg.addColorStop(0,   'rgba(12,55,8,0.22)')
       cg.addColorStop(0.45,'rgba(8,38,5,0.10)')
       cg.addColorStop(1,   'transparent')
       ctx.fillStyle = cg; ctx.fillRect(0,0,W,H)
-
-      // Gold-green horizon mist at bottom
       const hg = ctx.createLinearGradient(0, H*0.72, 0, H)
       hg.addColorStop(0,  'transparent')
       hg.addColorStop(0.6,'rgba(18,60,10,0.09)')
       hg.addColorStop(1,  'rgba(10,40,5,0.14)')
       ctx.fillStyle = hg; ctx.fillRect(0,0,W,H)
-
       frame++
-
-      // Stars
       for (const s of stars) {
         const op = Math.max(0.03, Math.min(1, s.base + Math.sin(frame*s.spd+s.ph)*s.amp))
         ctx.beginPath(); ctx.arc(s.x, s.y, s.r*2.2, 0, Math.PI*2)
@@ -167,8 +191,6 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
         ctx.beginPath(); ctx.arc(s.x, s.y, s.r, 0, Math.PI*2)
         ctx.fillStyle = `hsla(${s.hue},55%,92%,${op})`; ctx.fill()
       }
-
-      // Fireflies
       for (const f of fireflies) {
         f.x += f.vx; f.y += f.vy
         if (f.y < -12) { f.y = H+12; f.x = Math.random()*W }
@@ -180,7 +202,6 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
         ctx.beginPath(); ctx.arc(f.x, f.y, f.r, 0, Math.PI*2)
         ctx.fillStyle = `hsla(${f.hue},75%,78%,${op})`; ctx.fill()
       }
-
       bgRafRef.current = requestAnimationFrame(tick)
     }
     tick()
@@ -195,17 +216,14 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
     const ctx = canvas.getContext('2d'); if (!ctx) return
     canvas.width = window.innerWidth; canvas.height = window.innerHeight
     const W = canvas.width, H = canvas.height
-
     const parts: VParticle[] = Array.from({ length: 320 }, () => {
       const a = Math.random()*Math.PI*2, s = Math.random()*9+1.5
       return {
         x: W/2, y: H/2, vx: Math.cos(a)*s, vy: Math.sin(a)*s,
         r: Math.random()*3+0.5, life: 0, max: Math.random()*140+60,
-        // gold and green mix
         hue: Math.random() < 0.6 ? Math.random()*25+38 : Math.random()*40+105,
       }
     })
-
     const tick = () => {
       ctx.clearRect(0,0,W,H)
       for (let i=parts.length-1; i>=0; i--) {
@@ -227,7 +245,7 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
   // ── Answer handler ───────────────────────────────────────────────────────
 
   const handleAnswer = (idx: number) => {
-    if (feedback === 'correct') return  // block clicks during transition
+    if (feedback === 'correct') return
 
     const q = QUESTIONS[currentQ]
     setSelectedIdx(idx)
@@ -235,10 +253,13 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
     if (idx === q.correct) {
       setFeedback('correct')
       setBurstIdx(idx)
-      playCorrectSound()
-      speakVoice('Excellent Warrior!')
+      setCelebIdx(currentQ)                     // show this question's unique reaction
+      playCorrectSound(currentQ)
+      speakVoice(REACTIONS[currentQ].voice)
 
+      // Clear celebration after 2.3s then advance
       setTimeout(() => {
+        setCelebIdx(null)
         setBurstIdx(null)
         setFeedback(null)
         setSelectedIdx(null)
@@ -252,14 +273,11 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
         } else {
           setCurrentQ(q => q + 1)
         }
-      }, 1600)
+      }, 2300)
     } else {
       setFeedback('wrong')
       playWrongSound()
-      setTimeout(() => {
-        setFeedback(null)
-        setSelectedIdx(null)
-      }, 1800)
+      setTimeout(() => { setFeedback(null); setSelectedIdx(null) }, 1800)
     }
   }
 
@@ -282,8 +300,8 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
             key={i}
             className={[
               'quiz-pip',
-              i <  currentQ ? 'quiz-pip--done'    : '',
-              i === currentQ ? 'quiz-pip--current' : '',
+              i <  currentQ  ? 'quiz-pip--done'    : '',
+              i === currentQ ? 'quiz-pip--current'  : '',
             ].filter(Boolean).join(' ')}
           />
         ))}
@@ -312,14 +330,22 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
             ))}
           </div>
 
-          {feedback === 'correct' && (
-            <p className="quiz-feedback quiz-feedback--correct">✦ Excellent Warrior! ✦</p>
-          )}
           {feedback === 'wrong' && (
             <p className="quiz-feedback quiz-feedback--wrong">
               Try again — God believes in you!
             </p>
           )}
+        </div>
+      )}
+
+      {/* Per-question celebration overlay — key forces remount so animation restarts */}
+      {celebIdx !== null && (
+        <div
+          key={`celeb-${celebIdx}`}
+          className={`celeb ${REACTIONS[celebIdx].cls}`}
+          aria-live="assertive"
+        >
+          <span className="celeb-text">{REACTIONS[celebIdx].text}</span>
         </div>
       )}
 

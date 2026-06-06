@@ -234,6 +234,134 @@
   color: rgba(212,140,55,0.82);
 }
 
+/* ── Celebration overlays ────────────────────────────────────────────────── */
+/*
+  Four totally distinct reactions — base layout shared, animations unique.
+  key={`celeb-${celebIdx}`} in React forces remount so animation always fires.
+*/
+
+.celeb {
+  position: fixed;
+  inset: 0;
+  z-index: 150;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+}
+
+.celeb-text {
+  font-family: Georgia, 'Times New Roman', serif;
+  font-weight: bold;
+  text-align: center;
+  max-width: 88vw;
+  line-height: 1.25;
+  padding: 0 1rem;
+}
+
+/* ── 1. "Wisdom Overflow!" ─────────────────────────────────────────────────
+   Cascades in from the top like knowledge pouring down.
+   Wide letter-spacing expands as it arrives, then overflows away upward.
+*/
+.celeb--overflow .celeb-text {
+  font-size: clamp(2.4rem, 7vw, 5rem);
+  color: #FFD700;
+  letter-spacing: 0.18em;
+  text-shadow:
+    0 0 30px rgba(255,215,0,0.95),
+    0 0 70px rgba(255,215,0,0.55),
+    0 0 120px rgba(212,160,23,0.30);
+  animation: wisdom-overflow 2.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes wisdom-overflow {
+  0%   { opacity: 0; transform: translateY(-160px) scaleY(0.6); letter-spacing: 0.05em; }
+  18%  { opacity: 1; transform: translateY(18px)   scaleY(1.08); letter-spacing: 0.22em; }
+  32%  { transform: translateY(-6px)  scaleY(0.97); }
+  46%  { opacity: 1; transform: translateY(0)      scaleY(1); letter-spacing: 0.18em; }
+  68%  { opacity: 1; transform: translateY(0)      scaleY(1); }
+  100% { opacity: 0; transform: translateY(-50px)  scaleY(0.85); letter-spacing: 0.30em; }
+}
+
+/* ── 2. "You Are Too Much!" ────────────────────────────────────────────────
+   Nuclear explosion — starts as a dot, BLASTS to overfill the screen,
+   bounces back to readable, then detonates outward into nothing.
+*/
+.celeb--toomuch .celeb-text {
+  font-size: clamp(2.8rem, 8.5vw, 6rem);
+  color: #FFC820;
+  letter-spacing: 0.06em;
+  text-shadow:
+    0 0 20px rgba(255,200,32,1.00),
+    0 0 55px rgba(255,200,32,0.70),
+    0 0 100px rgba(255,160,0,0.45),
+    0 0 180px rgba(255,120,0,0.20);
+  animation: too-much 2.3s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+}
+
+@keyframes too-much {
+  0%   { opacity: 0; transform: scale(0.04); }
+  15%  { opacity: 1; transform: scale(1.45); }
+  28%  { transform: scale(0.88); }
+  38%  { opacity: 1; transform: scale(1.08); }
+  55%  { opacity: 1; transform: scale(1.00); }
+  72%  { opacity: 1; }
+  100% { opacity: 0; transform: scale(1.60); }
+}
+
+/* ── 3. "You Are Worth Your Onions!" ───────────────────────────────────────
+   Playful bounce-in with a spin wiggle — lands crooked, corrects itself,
+   does a little shimmy, then bounces away.
+*/
+.celeb--onions .celeb-text {
+  font-size: clamp(2rem, 5.8vw, 4.2rem);
+  color: #F0B429;
+  letter-spacing: 0.04em;
+  text-shadow:
+    0 0 22px rgba(240,180,41,0.90),
+    0 0 55px rgba(240,160,20,0.50),
+    0 0 90px rgba(200,120,10,0.25);
+  animation: onions-bounce 2.3s cubic-bezier(0.36, 1.2, 0.64, 1) forwards;
+}
+
+@keyframes onions-bounce {
+  0%   { opacity: 0; transform: rotate(-14deg) scale(0.25) translateY(60px); }
+  16%  { opacity: 1; transform: rotate(6deg)  scale(1.18) translateY(-14px); }
+  28%  { transform: rotate(-4deg) scale(0.94) translateY(8px); }
+  40%  { transform: rotate(2deg)  scale(1.05) translateY(-4px); }
+  52%  { opacity: 1; transform: rotate(-1deg) scale(1.00) translateY(0); }
+  56%  { transform: rotate(3deg)  scale(1.03); }       /* shimmy */
+  62%  { transform: rotate(-2deg) scale(0.98); }
+  68%  { opacity: 1; transform: rotate(0deg)  scale(1.00); }
+  100% { opacity: 0; transform: rotate(8deg)  scale(0.80) translateY(-40px); }
+}
+
+/* ── 4. "You Make God Proud!" ──────────────────────────────────────────────
+   Majestic slow ascent from below — like a divine light rising.
+   Wider spacing, brighter outer glow, holds longer before fading heavenward.
+*/
+.celeb--proud .celeb-text {
+  font-size: clamp(2.2rem, 6.5vw, 4.8rem);
+  color: #FFE580;
+  letter-spacing: 0.22em;
+  text-shadow:
+    0 0 18px rgba(255,229,128,1.00),
+    0 0 50px rgba(255,229,128,0.75),
+    0 0 100px rgba(255,200,60,0.50),
+    0 0 200px rgba(255,170,0,0.28),
+    0 2px 0 rgba(0,0,0,0.35);
+  animation: god-proud 2.3s ease-out forwards;
+}
+
+@keyframes god-proud {
+  0%   { opacity: 0; transform: translateY(110px) scale(0.78); filter: blur(12px); }
+  22%  { opacity: 1; transform: translateY(-10px) scale(1.05); filter: blur(0); }
+  38%  { opacity: 1; transform: translateY(4px)   scale(0.98); }
+  52%  { opacity: 1; transform: translateY(0)     scale(1.00); }
+  70%  { opacity: 1; }
+  100% { opacity: 0; transform: translateY(-55px) scale(1.10); filter: blur(5px); }
+}
+
 /* ── Victory overlay ─────────────────────────────────────────────────────── */
 
 .victory-overlay {
