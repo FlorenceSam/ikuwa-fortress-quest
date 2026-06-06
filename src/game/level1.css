@@ -1,0 +1,381 @@
+/* ── Full-screen container ───────────────────────────────────────────────── */
+
+.level1 {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  background: #000;
+  overflow: hidden;
+  animation: level-appear 0.9s ease-out forwards;
+}
+
+@keyframes level-appear {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Background canvas ───────────────────────────────────────────────────── */
+
+.level1-bg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Header ──────────────────────────────────────────────────────────────── */
+
+.level1-header {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: clamp(0.8rem, 2vh, 1.6rem) 1rem clamp(0.4rem, 1vh, 0.8rem);
+  flex-shrink: 0;
+}
+
+.level1-day-label {
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.65rem, 1.4vw, 0.85rem);
+  letter-spacing: 0.40em;
+  text-transform: uppercase;
+  margin: 0 0 0.3rem;
+  text-shadow: 0 0 18px rgba(212,160,23,0.55);
+}
+
+.level1-title {
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.1rem, 2.8vw, 2rem);
+  font-weight: bold;
+  letter-spacing: 0.07em;
+  margin: 0 0 0.3rem;
+  text-shadow: 0 0 28px rgba(212,160,23,0.40);
+}
+
+.level1-hint {
+  color: rgba(212,160,23,0.42);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.65rem, 1.2vw, 0.8rem);
+  font-style: italic;
+  margin: 0;
+}
+
+/* ── Cards hand area ─────────────────────────────────────────────────────── */
+
+.cards-hand {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  align-content: center;
+  gap: clamp(0.45rem, 1.2vw, 0.9rem);
+  padding: clamp(0.5rem, 1.5vh, 1.2rem) clamp(0.5rem, 2vw, 2rem);
+  min-height: clamp(100px, 18vh, 170px);
+  flex: 1;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.hand-empty {
+  color: rgba(212,160,23,0.30);
+  font-family: Georgia, serif;
+  font-size: 0.82rem;
+  font-style: italic;
+  letter-spacing: 0.06em;
+  margin: 0;
+  align-self: center;
+}
+
+/* ── Progress pips ───────────────────────────────────────────────────────── */
+
+.progress-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  gap: 0.5rem;
+  padding: 0 0 clamp(0.4rem, 1vh, 0.7rem);
+  flex-shrink: 0;
+}
+
+.pip {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(212,160,23,0.18);
+  border: 1px solid rgba(212,160,23,0.35);
+  transition: background 0.4s, box-shadow 0.4s;
+}
+
+.pip--lit {
+  background: #D4A017;
+  box-shadow: 0 0 10px rgba(212,160,23,0.8), 0 0 22px rgba(212,160,23,0.4);
+}
+
+/* ── Game card ───────────────────────────────────────────────────────────── */
+
+.card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: clamp(0.15rem, 0.5vh, 0.35rem);
+  width:  clamp(72px, 10.5vw, 118px);
+  height: clamp(88px, 12.5vw, 142px);
+  background: linear-gradient(155deg, #0e0e0e 0%, #1c1500 100%);
+  border: 1.5px solid rgba(212,160,23,0.38);
+  border-radius: 9px;
+  cursor: grab;
+  user-select: none;
+  touch-action: none;
+  flex-shrink: 0;
+  transition: transform 0.18s, box-shadow 0.18s, border-color 0.2s, opacity 0.18s;
+  box-shadow:
+    0 0  14px rgba(212,160,23,0.10),
+    inset 0 0 18px rgba(212,160,23,0.04);
+}
+
+.card:hover:not(.card--in-slot) {
+  transform: translateY(-5px) scale(1.04);
+  border-color: #D4A017;
+  box-shadow:
+    0 0 24px rgba(212,160,23,0.42),
+    0 6px 20px rgba(0,0,0,0.5),
+    inset 0 0 18px rgba(212,160,23,0.08);
+}
+
+.card:active { cursor: grabbing; }
+
+.card--dragging {
+  opacity: 0.38;
+  transform: scale(0.93);
+  pointer-events: none;
+}
+
+/* Correct card — glows and locks */
+.card--correct {
+  border-color: #D4A017 !important;
+  cursor: default !important;
+  animation: card-glow-pulse 2.2s ease-in-out infinite;
+}
+
+@keyframes card-glow-pulse {
+  0%,100% {
+    box-shadow:
+      0 0 22px rgba(212,160,23,0.65),
+      0 0 55px rgba(212,160,23,0.28),
+      inset 0 0 18px rgba(212,160,23,0.10);
+  }
+  50% {
+    box-shadow:
+      0 0 38px rgba(212,160,23,0.90),
+      0 0 80px rgba(212,160,23,0.42),
+      inset 0 0 28px rgba(212,160,23,0.18);
+  }
+}
+
+.card-emoji {
+  font-size: clamp(1.6rem, 3.8vw, 3rem);
+  line-height: 1;
+}
+
+.card-title {
+  color: rgba(212,160,23,0.80);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.44rem, 0.9vw, 0.66rem);
+  letter-spacing: 0.03em;
+  text-align: center;
+  line-height: 1.25;
+  padding: 0 0.25rem;
+}
+
+.card-verse {
+  color: rgba(212,160,23,0.32);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.38rem, 0.75vw, 0.55rem);
+  font-style: italic;
+  text-align: center;
+}
+
+.card--correct .card-title { color: #D4A017; }
+.card--correct .card-verse  { color: rgba(212,160,23,0.55); }
+
+/* Hide verse text on small cards */
+@media (max-width: 500px) {
+  .card-verse { display: none; }
+}
+
+/* Card sitting inside a slot */
+.card--in-slot {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  border: none;
+  box-sizing: border-box;
+}
+
+.card--in-slot:hover:not(.card--correct) {
+  transform: none;
+  border: none;
+  box-shadow: none;
+  opacity: 0.88;
+}
+
+/* ── Slots row ───────────────────────────────────────────────────────────── */
+
+.slots-row {
+  position: relative;
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  gap: clamp(0.38rem, 1vw, 0.75rem);
+  padding: 0 clamp(0.5rem, 2vw, 2rem) clamp(0.8rem, 2vh, 1.5rem);
+  flex-shrink: 0;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+/* ── Individual slot ─────────────────────────────────────────────────────── */
+
+.slot {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width:  clamp(72px, 10.5vw, 118px);
+  height: clamp(96px, 13vw, 148px);
+  border: 1.5px dashed rgba(212,160,23,0.24);
+  border-radius: 9px;
+  background: rgba(212,160,23,0.025);
+  flex-shrink: 0;
+  transition: border-color 0.22s, background 0.22s, box-shadow 0.22s;
+}
+
+.slot-number {
+  position: absolute;
+  top: 0.28rem;
+  left: 0.38rem;
+  color: rgba(212,160,23,0.35);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.58rem, 1.1vw, 0.78rem);
+  font-weight: bold;
+  letter-spacing: 0.04em;
+  pointer-events: none;
+  z-index: 1;
+  transition: color 0.22s;
+}
+
+.slot--hover {
+  border-color: rgba(212,160,23,0.72);
+  border-style: solid;
+  background: rgba(212,160,23,0.07);
+  box-shadow: 0 0 20px rgba(212,160,23,0.22), inset 0 0 20px rgba(212,160,23,0.05);
+}
+
+.slot--correct {
+  border-color: rgba(212,160,23,0.55) !important;
+  border-style: solid !important;
+}
+
+.slot--correct .slot-number { color: #D4A017; }
+
+.slot--wrong { animation: slot-shake 0.55s ease-in-out; }
+
+@keyframes slot-shake {
+  0%,100% { transform: translateX(0); }
+  18%     { transform: translateX(-7px); }
+  45%     { transform: translateX(7px); }
+  65%     { transform: translateX(-4px); }
+  82%     { transform: translateX(4px); }
+}
+
+/* ── Victory overlay ─────────────────────────────────────────────────────── */
+
+.victory-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,0.55);
+  animation: v-fade 0.7s ease-out forwards;
+}
+
+@keyframes v-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.victory-canvas {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  pointer-events: none;
+}
+
+.victory-content {
+  position: relative;
+  z-index: 1;
+  text-align: center;
+  padding: 2rem;
+  animation: v-rise 0.9s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes v-rise {
+  from { opacity: 0; transform: scale(0.55); }
+  to   { opacity: 1; transform: scale(1); }
+}
+
+.victory-glory {
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(4.5rem, 16vw, 11rem);
+  font-weight: bold;
+  letter-spacing: 0.16em;
+  margin: 0;
+  line-height: 1;
+  animation: glory-pulse 1.6s ease-in-out infinite;
+  text-shadow:
+    0 0  35px rgba(212,160,23,0.85),
+    0 0  90px rgba(212,160,23,0.45),
+    0 0 180px rgba(212,160,23,0.20);
+}
+
+@keyframes glory-pulse {
+  0%,100% {
+    text-shadow:
+      0 0 35px rgba(212,160,23,0.85), 0 0  90px rgba(212,160,23,0.45);
+  }
+  50% {
+    text-shadow:
+      0 0 55px rgba(212,160,23,1.00), 0 0 130px rgba(212,160,23,0.65);
+  }
+}
+
+.victory-message {
+  color: rgba(212,160,23,0.90);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.1rem, 3.2vw, 2rem);
+  font-style: italic;
+  letter-spacing: 0.06em;
+  margin: 0.5rem 0 0.4rem;
+  text-shadow: 0 0 22px rgba(212,160,23,0.40);
+}
+
+.victory-verse {
+  color: rgba(212,160,23,0.45);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.65rem, 1.3vw, 0.85rem);
+  font-style: italic;
+  letter-spacing: 0.05em;
+  margin: 0;
+}

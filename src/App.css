@@ -150,3 +150,38 @@
   0%   { opacity: 0; }
   100% { opacity: 1; }
 }
+
+/* ── Begin Journey button (shown over cosmos) ────────────────────────────── */
+
+.continue-btn {
+  position: fixed;
+  bottom: 9vh;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  background: transparent;
+  border: 2px solid #D4A017;
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.78rem, 1.5vw, 0.95rem);
+  font-weight: bold;
+  letter-spacing: 0.28em;
+  text-transform: uppercase;
+  padding: 0.85rem 2.8rem;
+  cursor: pointer;
+  white-space: nowrap;
+  animation: btn-appear 1.2s ease-out forwards;
+  transition: background 0.22s, box-shadow 0.22s, color 0.22s;
+}
+
+.continue-btn:hover {
+  background: rgba(212,160,23,0.12);
+  box-shadow: 0 0 28px rgba(212,160,23,0.45);
+  color: #e8b520;
+  border-color: #e8b520;
+}
+
+@keyframes btn-appear {
+  from { opacity: 0; transform: translateX(-50%) translateY(12px); }
+  to   { opacity: 1; transform: translateX(-50%) translateY(0); }
+}

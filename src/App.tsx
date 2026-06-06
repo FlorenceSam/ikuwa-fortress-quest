@@ -5,6 +5,7 @@ import {
   LoginScreen,
   CharacterNameScreen,
 } from './screens/AuthScreens'
+import Level1 from './game/Level1'
 import './App.css'
 
 // ─── Audio ─────────────────────────────────────────────────────────────────
@@ -140,7 +141,7 @@ function mkParticles(cx: number, cy: number): Particle[] {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AppScreen   = 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic'
+type AppScreen      = 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game'
 type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -149,6 +150,7 @@ export default function App() {
   const [appScreen,      setAppScreen]      = useState<AppScreen>('welcome')
   const [cinematicPhase, setCinematicPhase] = useState<CinematicPhase>('dark')
   const [firstName,      setFirstName]      = useState('')
+  const [showContinue,   setShowContinue]   = useState(false)
 
   const audioRef       = useRef<AudioContext | null>(null)
   const canvasRef      = useRef<HTMLCanvasElement>(null)
@@ -207,11 +209,14 @@ export default function App() {
     // AudioContext MUST be created inside a user gesture handler
     audioRef.current = launchSound()
 
+    setShowContinue(false)
     setAppScreen('cinematic')
     setCinematicPhase('dark')
     setTimeout(() => setCinematicPhase('reveal'),   1000)
     setTimeout(() => setCinematicPhase('creation'), 4000)
     setTimeout(() => setCinematicPhase('cosmos'),   6000)
+    // Show "Begin Journey" button 5 s after cosmos fully fades in
+    setTimeout(() => setShowContinue(true), 11000)
   }
 
   // ── Canvas (cosmos phase) ─────────────────────────────────────────────────
@@ -333,6 +338,8 @@ export default function App() {
     return <CharacterNameScreen firstName={firstName} onEnter={enterKingdom} />
   }
 
+  if (appScreen === 'game') return <Level1 />
+
   // Cinematic
   return (
     <div className="opening-screen">
@@ -343,6 +350,11 @@ export default function App() {
         <h1 className={`opening-text${cinematicPhase === 'reveal' ? ' visible' : ' fade-out'}`}>
           Let there be light
         </h1>
+      )}
+      {cinematicPhase === 'cosmos' && showContinue && (
+        <button className="continue-btn" onClick={() => setAppScreen('game')}>
+          BEGIN YOUR JOURNEY
+        </button>
       )}
     </div>
   )
