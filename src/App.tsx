@@ -8,6 +8,7 @@ import {
 import Level1 from './game/Level1'
 import Level2 from './game/Level2'
 import Level3 from './game/Level3'
+import Level4 from './game/Level4'
 import './App.css'
 
 // ─── Audio ─────────────────────────────────────────────────────────────────
@@ -143,7 +144,7 @@ function mkParticles(cx: number, cy: number): Particle[] {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AppScreen      = 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3'
+type AppScreen      = 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4'
 type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -342,7 +343,8 @@ export default function App() {
 
   if (appScreen === 'game')   return <Level1 onComplete={() => setAppScreen('level2')} />
   if (appScreen === 'level2') return <Level2 onComplete={() => setAppScreen('level3')} />
-  if (appScreen === 'level3') return <Level3 />
+  if (appScreen === 'level3') return <Level3 onComplete={() => setAppScreen('level4')} />
+  if (appScreen === 'level4') return <Level4 />
 
   // Cinematic
   return (
