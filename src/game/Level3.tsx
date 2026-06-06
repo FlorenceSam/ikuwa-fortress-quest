@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react'
+import CompletionScreen from './CompletionScreen'
 import './level3.css'
 
 // ─── Types ──────────────────────────────────────────────────────────────────
@@ -130,9 +131,7 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
 
   const bgRef        = useRef<HTMLCanvasElement>(null)
   const jealousyRef  = useRef<HTMLCanvasElement>(null)
-  const victoryRef   = useRef<HTMLCanvasElement>(null)
   const jRafRef      = useRef<number>(0)
-  const vRafRef      = useRef<number>(0)
   const ghostRef     = useRef<HTMLDivElement|null>(null)
   const dragRef      = useRef<{ id: ItemId; ox: number; oy: number }|null>(null)
   const timerRef     = useRef<ReturnType<typeof setInterval>|null>(null)
@@ -309,37 +308,6 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
     return () => cancelAnimationFrame(jRafRef.current)
   }, [phase])
 
-  // ── Victory particles ────────────────────────────────────────────────────
-
-  useEffect(() => {
-    if (phase !== 'victory') return
-    const cv = victoryRef.current; if (!cv) return
-    const ctx = cv.getContext('2d'); if (!ctx) return
-    cv.width = window.innerWidth; cv.height = window.innerHeight
-    const W=cv.width, H=cv.height
-    const parts: VP[] = Array.from({length:360}, ()=>{
-      const a=Math.random()*Math.PI*2, s=Math.random()*9+2
-      return { x:W/2,y:H/2,vx:Math.cos(a)*s,vy:Math.sin(a)*s,
-               r:Math.random()*3+0.5,life:0,max:Math.random()*160+60,
-               hue:Math.random()<0.7?Math.random()*25+38:Math.random()*30+195 }
-    })
-    const tick = () => {
-      ctx.clearRect(0,0,W,H)
-      for (let i=parts.length-1;i>=0;i--) {
-        const p=parts[i]; if(++p.life>=p.max){parts.splice(i,1);continue}
-        p.x+=p.vx;p.y+=p.vy;p.vx*=0.960;p.vy*=0.960;p.vy+=0.08
-        const t=p.life/p.max,op=Math.pow(1-t,0.80),rN=p.r*(1+t*1.0)
-        ctx.beginPath();ctx.arc(p.x,p.y,rN*3.5,0,Math.PI*2)
-        ctx.fillStyle=`hsla(${p.hue},90%,58%,${op*0.22})`;ctx.fill()
-        ctx.beginPath();ctx.arc(p.x,p.y,rN,0,Math.PI*2)
-        ctx.fillStyle=`hsla(${p.hue},96%,92%,${op})`;ctx.fill()
-      }
-      vRafRef.current=requestAnimationFrame(tick)
-      if(parts.length===0) cancelAnimationFrame(vRafRef.current)
-    }
-    tick()
-    return () => cancelAnimationFrame(vRafRef.current)
-  }, [phase])
 
   // ── Drag handlers ────────────────────────────────────────────────────────
 
@@ -431,7 +399,6 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
       setTimeout(() => {
         playVictorySound()
         setPhase('victory')
-        setTimeout(() => speakVoice('Your sacrifice of Faith has been accepted!'), 600)
       }, 2500)
     } else {
       setQ2Wrong(true)
@@ -571,19 +538,13 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
         </div>
       )}
 
-      {/* ── VICTORY ────────────────────────────────────────────────────── */}
+      {/* ── COMPLETION ─────────────────────────────────────────────────── */}
       {phase === 'victory' && (
-        <div className="victory-overlay">
-          <canvas ref={victoryRef} className="victory-canvas" />
-          <div className="victory-content">
-            <h1 className="victory-glory">GLORY!</h1>
-            <p className="victory-message">Your sacrifice of Faith has been accepted!</p>
-            <p className="victory-verse">"By faith Abel brought God a better offering" — Hebrews 11:4</p>
-            {onComplete && (
-              <button className="victory-continue" onClick={onComplete}>CONTINUE →</button>
-            )}
-          </div>
-        </div>
+        <CompletionScreen
+          verse="By faith Abel brought God a better offering than Cain did."
+          verseRef="Hebrews 11:4"
+          onComplete={onComplete}
+        />
       )}
     </div>
   )

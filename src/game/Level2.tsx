@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './level2.css'
+import CompletionScreen from './CompletionScreen'
 
 // ─── Data ──────────────────────────────────────────────────────────────────
 
@@ -123,10 +124,6 @@ function speakVoice(text: string) {
   } catch (_) {}
 }
 
-// ─── Types ─────────────────────────────────────────────────────────────────
-
-interface VParticle { x:number; y:number; vx:number; vy:number; r:number; life:number; max:number; hue:number }
-
 // ─── Component ─────────────────────────────────────────────────────────────
 
 export default function Level2({ onComplete }: { onComplete?: () => void }) {
@@ -137,10 +134,8 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
   const [celebIdx,    setCelebIdx]    = useState<number|null>(null)   // which reaction to show
   const [victory,     setVictory]     = useState(false)
 
-  const bgRef      = useRef<HTMLCanvasElement>(null)
-  const victoryRef = useRef<HTMLCanvasElement>(null)
-  const bgRafRef   = useRef<number>(0)
-  const vRafRef    = useRef<number>(0)
+  const bgRef    = useRef<HTMLCanvasElement>(null)
+  const bgRafRef = useRef<number>(0)
 
   // ── Garden background ────────────────────────────────────────────────────
 
@@ -208,39 +203,6 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
     return () => cancelAnimationFrame(bgRafRef.current)
   }, [])
 
-  // ── Victory particles ────────────────────────────────────────────────────
-
-  useEffect(() => {
-    if (!victory) return
-    const canvas = victoryRef.current; if (!canvas) return
-    const ctx = canvas.getContext('2d'); if (!ctx) return
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight
-    const W = canvas.width, H = canvas.height
-    const parts: VParticle[] = Array.from({ length: 320 }, () => {
-      const a = Math.random()*Math.PI*2, s = Math.random()*9+1.5
-      return {
-        x: W/2, y: H/2, vx: Math.cos(a)*s, vy: Math.sin(a)*s,
-        r: Math.random()*3+0.5, life: 0, max: Math.random()*140+60,
-        hue: Math.random() < 0.6 ? Math.random()*25+38 : Math.random()*40+105,
-      }
-    })
-    const tick = () => {
-      ctx.clearRect(0,0,W,H)
-      for (let i=parts.length-1; i>=0; i--) {
-        const p=parts[i]; if(++p.life>=p.max){parts.splice(i,1);continue}
-        p.x+=p.vx; p.y+=p.vy; p.vx*=0.962; p.vy*=0.962; p.vy+=0.08
-        const t=p.life/p.max, op=Math.pow(1-t,0.82), rN=p.r*(1+t*0.9)
-        ctx.beginPath(); ctx.arc(p.x,p.y,rN*3.5,0,Math.PI*2)
-        ctx.fillStyle=`hsla(${p.hue},90%,58%,${op*0.22})`; ctx.fill()
-        ctx.beginPath(); ctx.arc(p.x,p.y,rN,0,Math.PI*2)
-        ctx.fillStyle=`hsla(${p.hue},96%,92%,${op})`; ctx.fill()
-      }
-      vRafRef.current = requestAnimationFrame(tick)
-      if (parts.length===0) cancelAnimationFrame(vRafRef.current)
-    }
-    tick()
-    return () => cancelAnimationFrame(vRafRef.current)
-  }, [victory])
 
   // ── Answer handler ───────────────────────────────────────────────────────
 
@@ -266,10 +228,7 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
 
         if (currentQ + 1 >= QUESTIONS.length) {
           playVictorySound()
-          setTimeout(() => {
-            setVictory(true)
-            speakVoice('See how smart you are!')
-          }, 500)
+          setTimeout(() => setVictory(true), 500)
         } else {
           setCurrentQ(q => q + 1)
         }
@@ -350,19 +309,11 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
       )}
 
       {victory && (
-        <div className="victory-overlay">
-          <canvas ref={victoryRef} className="victory-canvas" />
-          <div className="victory-content">
-            <h1 className="victory-glory">GLORY!</h1>
-            <p className="victory-message">You completed The Garden of Eden!</p>
-            <p className="victory-verse">"For we are God's masterpiece" — Ephesians 2:10</p>
-            {onComplete && (
-              <button className="victory-continue" onClick={onComplete}>
-                CONTINUE →
-              </button>
-            )}
-          </div>
-        </div>
+        <CompletionScreen
+          verse="So God created mankind in his own image; in the image of God he created them."
+          verseRef="Genesis 1:27"
+          onComplete={onComplete}
+        />
       )}
     </div>
   )

@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './level1.css'
+import CompletionScreen from './CompletionScreen'
 
 // ─── Data ──────────────────────────────────────────────────────────────────
 
@@ -61,8 +62,6 @@ function shuffle<T>(arr: T[]): T[] {
   return a
 }
 
-interface VParticle { x:number; y:number; vx:number; vy:number; r:number; life:number; max:number; hue:number }
-
 // ─── Component ─────────────────────────────────────────────────────────────
 
 export default function Level1({ onComplete }: { onComplete?: () => void }) {
@@ -75,9 +74,7 @@ export default function Level1({ onComplete }: { onComplete?: () => void }) {
   const [victory,    setVictory]    = useState(false)
 
   const bgRef      = useRef<HTMLCanvasElement>(null)
-  const victoryRef = useRef<HTMLCanvasElement>(null)
   const bgRafRef   = useRef<number>(0)
-  const vRafRef    = useRef<number>(0)
   // Ghost element follows pointer — direct DOM, no React state (stays smooth)
   const ghostRef   = useRef<HTMLDivElement|null>(null)
   const dragRef    = useRef<{ cardId:number; ox:number; oy:number }|null>(null)
@@ -142,50 +139,8 @@ export default function Level1({ onComplete }: { onComplete?: () => void }) {
     if (correct.size === 7) {
       playVictory()
       setTimeout(() => setVictory(true), 500)
-      setTimeout(() => {
-        try {
-          const utt = new SpeechSynthesisUtterance('See how smart you are!')
-          utt.rate   = 0.88
-          utt.pitch  = 1.1
-          utt.volume = 1
-          const voices = speechSynthesis.getVoices()
-          const warm = voices.find(v => /female|woman|zira|samantha|karen|victoria|moira/i.test(v.name))
-          if (warm) utt.voice = warm
-          speechSynthesis.cancel()
-          speechSynthesis.speak(utt)
-        } catch (_) {}
-      }, 900)
     }
   }, [correct])
-
-  useEffect(() => {
-    if (!victory) return
-    const canvas = victoryRef.current; if (!canvas) return
-    const ctx = canvas.getContext('2d'); if (!ctx) return
-    canvas.width = window.innerWidth; canvas.height = window.innerHeight
-    const W=canvas.width, H=canvas.height
-    const parts: VParticle[] = Array.from({length:320}, () => {
-      const a=Math.random()*Math.PI*2, s=Math.random()*9+1.5
-      return { x:W/2, y:H/2, vx:Math.cos(a)*s, vy:Math.sin(a)*s,
-               r:Math.random()*3+0.5, life:0, max:Math.random()*140+60, hue:Math.random()*25+38 }
-    })
-    const tick = () => {
-      ctx.clearRect(0,0,W,H)
-      for (let i=parts.length-1; i>=0; i--) {
-        const p=parts[i]; if(++p.life>=p.max){parts.splice(i,1);continue}
-        p.x+=p.vx; p.y+=p.vy; p.vx*=0.962; p.vy*=0.962; p.vy+=0.08
-        const t=p.life/p.max, op=Math.pow(1-t,0.82), rN=p.r*(1+t*0.9)
-        ctx.beginPath(); ctx.arc(p.x,p.y,rN*3.5,0,Math.PI*2)
-        ctx.fillStyle=`hsla(${p.hue},90%,58%,${op*0.22})`; ctx.fill()
-        ctx.beginPath(); ctx.arc(p.x,p.y,rN,0,Math.PI*2)
-        ctx.fillStyle=`hsla(${p.hue},96%,92%,${op})`; ctx.fill()
-      }
-      vRafRef.current = requestAnimationFrame(tick)
-      if (parts.length===0) cancelAnimationFrame(vRafRef.current)
-    }
-    tick()
-    return () => cancelAnimationFrame(vRafRef.current)
-  }, [victory])
 
   // ── Pointer drag handlers ───────────────────────────────────────────────
   //
@@ -357,21 +312,13 @@ export default function Level1({ onComplete }: { onComplete?: () => void }) {
         })}
       </section>
 
-      {/* Victory */}
+      {/* Completion */}
       {victory && (
-        <div className="victory-overlay">
-          <canvas ref={victoryRef} className="victory-canvas" />
-          <div className="victory-content">
-            <h1 className="victory-glory">GLORY!</h1>
-            <p className="victory-message">You are a walking miracle!</p>
-            <p className="victory-verse">"For we are God's masterpiece" — Ephesians 2:10</p>
-            {onComplete && (
-              <button className="victory-continue" onClick={onComplete}>
-                CONTINUE →
-              </button>
-            )}
-          </div>
-        </div>
+        <CompletionScreen
+          verse="In the beginning, God created the heavens and the earth."
+          verseRef="Genesis 1:1"
+          onComplete={onComplete}
+        />
       )}
     </div>
   )

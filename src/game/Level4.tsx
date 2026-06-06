@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './level4.css'
+import CompletionScreen from './CompletionScreen'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -77,19 +78,6 @@ function playRainbowSound() {
   } catch(_){}
 }
 
-function playVictorySound() {
-  try {
-    const ctx=new AudioContext()
-    ;[261.63,329.63,392,523.25,659.25,783.99,1046.50].forEach((f,i)=>{
-      const o=ctx.createOscillator(),g=ctx.createGain()
-      o.type='sine';o.frequency.value=f
-      const t=ctx.currentTime+i*0.075
-      g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(0.16,t+0.1)
-      g.gain.exponentialRampToValueAtTime(0.001,t+3.5)
-      o.connect(g);g.connect(ctx.destination);o.start(t);o.stop(t+3.5)
-    })
-  } catch(_){}
-}
 
 function speakVoice(text:string, rate=0.88, pitch=1.08) {
   try {
@@ -165,10 +153,6 @@ function drawArk(ctx:CanvasRenderingContext2D, W:number, H:number, rise:number, 
   ctx.restore()
 }
 
-// ─── Particle type ───────────────────────────────────────────────────────────
-
-interface VP { x:number;y:number;vx:number;vy:number;r:number;life:number;max:number;hue:number }
-
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function Level4({ onComplete }:{ onComplete?: () => void }) {
@@ -183,9 +167,7 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
 
   const bgRef          = useRef<HTMLCanvasElement>(null)
   const cinRef         = useRef<HTMLCanvasElement>(null)
-  const vRef           = useRef<HTMLCanvasElement>(null)
   const cinRafRef      = useRef<number>(0)
-  const vRafRef        = useRef<number>(0)
   const timerRef       = useRef<ReturnType<typeof setInterval>|null>(null)
   // Refs prevent stale-closure bugs on pair counting and glory gating
   const pairsFoundRef  = useRef(0)
@@ -379,7 +361,6 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
       } else if (!glorySentRef.current) {
         glorySentRef.current=true
         setPhase('glory')
-        setTimeout(()=>speakVoice('You saved them all, Warrior!'), 700)
       }
     }
 
@@ -387,37 +368,6 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
     return ()=>cancelAnimationFrame(cinRafRef.current)
   }, [phase])
 
-  // ── Victory particles ────────────────────────────────────────────────────
-
-  useEffect(() => {
-    if (phase!=='glory') return
-    const cv=vRef.current; if(!cv) return
-    const ctx=cv.getContext('2d'); if(!ctx) return
-    cv.width=window.innerWidth; cv.height=window.innerHeight
-    const W=cv.width, H=cv.height
-    const parts:VP[]=Array.from({length:360},()=>{
-      const a=Math.random()*Math.PI*2, s=Math.random()*9+2
-      return {x:W/2,y:H/2,vx:Math.cos(a)*s,vy:Math.sin(a)*s,
-              r:Math.random()*3+0.5,life:0,max:Math.random()*160+60,
-              hue:Math.random()<0.65?Math.random()*25+38:Math.random()*180+160}
-    })
-    const tick=()=>{
-      ctx.clearRect(0,0,W,H)
-      for(let i=parts.length-1;i>=0;i--){
-        const p=parts[i]; if(++p.life>=p.max){parts.splice(i,1);continue}
-        p.x+=p.vx;p.y+=p.vy;p.vx*=0.960;p.vy*=0.960;p.vy+=0.08
-        const t=p.life/p.max,op=Math.pow(1-t,0.80),rN=p.r*(1+t*1.0)
-        ctx.beginPath();ctx.arc(p.x,p.y,rN*3.5,0,Math.PI*2)
-        ctx.fillStyle=`hsla(${p.hue},90%,58%,${op*0.22})`;ctx.fill()
-        ctx.beginPath();ctx.arc(p.x,p.y,rN,0,Math.PI*2)
-        ctx.fillStyle=`hsla(${p.hue},96%,92%,${op})`;ctx.fill()
-      }
-      vRafRef.current=requestAnimationFrame(tick)
-      if(parts.length===0) cancelAnimationFrame(vRafRef.current)
-    }
-    tick()
-    return ()=>cancelAnimationFrame(vRafRef.current)
-  }, [phase])
 
   // ── Click handler ────────────────────────────────────────────────────────
 
@@ -537,19 +487,13 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
         <canvas ref={cinRef} className="cinematic-canvas" />
       )}
 
-      {/* ── GLORY ──────────────────────────────────────────────────────── */}
+      {/* ── COMPLETION ─────────────────────────────────────────────────── */}
       {phase === 'glory' && (
-        <div className="victory-overlay">
-          <canvas ref={vRef} className="victory-canvas" />
-          <div className="victory-content">
-            <h1 className="victory-glory">GLORY!</h1>
-            <p className="victory-message">You saved them all, Warrior!</p>
-            <p className="victory-verse">"By faith Noah… became heir of the righteousness that comes by faith" — Hebrews 11:7</p>
-            {onComplete && (
-              <button className="victory-continue" onClick={onComplete}>CONTINUE →</button>
-            )}
-          </div>
-        </div>
+        <CompletionScreen
+          verse="By faith Noah became heir of the righteousness that comes by faith."
+          verseRef="Hebrews 11:7"
+          onComplete={onComplete}
+        />
       )}
     </div>
   )
