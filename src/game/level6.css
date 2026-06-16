@@ -1,0 +1,519 @@
+/* ── Level 6: The Call of Abram ─────────────────────────────────────────── */
+
+.level6 {
+  position: fixed;
+  inset: 0;
+  overflow: hidden;
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #D4A017;
+  user-select: none;
+}
+
+.l6-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Header ─────────────────────────────────────────────────────────────── */
+
+.l6-header {
+  position: absolute;
+  top: clamp(12px, 2.5vh, 22px);
+  left: clamp(14px, 2.5vw, 28px);
+  z-index: 20;
+  pointer-events: none;
+}
+
+.l6-label {
+  margin: 0;
+  font-size: clamp(11px, 1.4vw, 15px);
+  letter-spacing: 0.20em;
+  color: rgba(212,160,23,0.65);
+  text-transform: uppercase;
+}
+
+.l6-title {
+  margin: 2px 0 0;
+  font-size: clamp(18px, 2.8vw, 30px);
+  font-weight: 700;
+  color: #FFD700;
+  text-shadow: 0 0 22px rgba(255,215,0,0.70), 0 0 6px rgba(255,180,0,0.50);
+  letter-spacing: 0.06em;
+}
+
+/* ── Intro: Abram figure ────────────────────────────────────────────────── */
+
+.l6-abram-intro {
+  position: absolute;
+  left: clamp(60px, 12vw, 160px);
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 15;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  animation: l6-abram-in 1.2s 0.3s ease-out both;
+}
+
+@keyframes l6-abram-in {
+  from { opacity: 0; transform: translateY(calc(-50% + 30px)); }
+  to   { opacity: 1; transform: translateY(-50%); }
+}
+
+.l6-abram-glow {
+  position: absolute;
+  inset: -40px;
+  border-radius: 50%;
+  background: radial-gradient(
+    circle,
+    rgba(255, 210, 60, 0.38) 0%,
+    rgba(255, 180, 20, 0.15) 50%,
+    transparent 80%
+  );
+  animation: l6-glow-pulse 2.2s ease-in-out infinite;
+  pointer-events: none;
+}
+
+@keyframes l6-glow-pulse {
+  0%, 100% { transform: scale(1);    opacity: 0.85; }
+  50%       { transform: scale(1.18); opacity: 1; }
+}
+
+.l6-abram-figure-lg {
+  font-size: clamp(60px, 10vw, 110px);
+  filter: drop-shadow(0 0 18px rgba(255,210,60,1.0)) drop-shadow(0 0 40px rgba(255,180,20,0.75));
+  animation: l6-abram-bob 2.8s ease-in-out infinite;
+}
+
+@keyframes l6-abram-bob {
+  0%, 100% { transform: translateY(0); }
+  50%       { transform: translateY(-10px); }
+}
+
+.l6-abram-name-tag {
+  font-size: clamp(14px, 2vw, 22px);
+  font-weight: 700;
+  color: #FFD700;
+  letter-spacing: 0.28em;
+  text-shadow: 0 0 14px rgba(255,215,0,0.90);
+}
+
+/* ── Intro: divine beam ─────────────────────────────────────────────────── */
+
+.l6-god-beam {
+  position: absolute;
+  left: clamp(60px, 12vw, 160px);
+  top: 0;
+  width: clamp(4px, 0.6vw, 8px);
+  height: 50%;
+  transform: translateX(-50%);
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 200, 0.00) 0%,
+    rgba(255, 240, 120, 0.90) 55%,
+    rgba(255, 210, 60, 0.60)  85%,
+    transparent 100%
+  );
+  filter: blur(3px);
+  z-index: 12;
+  animation: l6-beam-in 0.9s 1.0s ease-out both;
+  transform-origin: top center;
+}
+
+.l6-god-beam::before {
+  content: '';
+  position: absolute;
+  left: 50%; top: 0;
+  transform: translateX(-50%);
+  width: clamp(50px, 10vw, 100px);
+  height: 100%;
+  background: linear-gradient(
+    180deg,
+    transparent 0%,
+    rgba(255, 230, 80, 0.16) 40%,
+    rgba(255, 200, 40, 0.06) 100%
+  );
+  filter: blur(18px);
+  pointer-events: none;
+}
+
+@keyframes l6-beam-in {
+  from { transform: translateX(-50%) scaleY(0); opacity: 0; }
+  to   { transform: translateX(-50%) scaleY(1); opacity: 1; }
+}
+
+/* ── Intro: God's words ─────────────────────────────────────────────────── */
+
+.l6-god-words {
+  position: absolute;
+  right: clamp(30px, 8vw, 120px);
+  top: 50%;
+  transform: translateY(-50%);
+  max-width: clamp(260px, 40vw, 480px);
+  z-index: 20;
+  text-align: center;
+  animation: l6-godtext-in 0.8s ease-out both;
+}
+
+@keyframes l6-godtext-in {
+  from { opacity: 0; transform: translateY(calc(-50% + 20px)); }
+  to   { opacity: 1; transform: translateY(-50%); }
+}
+
+.l6-god-quote {
+  margin: 0 0 12px;
+  font-size: clamp(18px, 2.8vw, 30px);
+  font-style: italic;
+  font-weight: 700;
+  color: #FFE680;
+  line-height: 1.52;
+  text-shadow:
+    0 0 28px rgba(255,230,60,0.85),
+    0 0 8px rgba(255,200,40,0.60);
+}
+
+.l6-god-ref {
+  margin: 0;
+  font-size: clamp(12px, 1.6vw, 17px);
+  color: rgba(212,160,23,0.80);
+  letter-spacing: 0.08em;
+}
+
+/* ── Map container ──────────────────────────────────────────────────────── */
+
+.l6-map-wrap {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -45%);
+  width: clamp(320px, 86vw, 860px);
+  height: clamp(260px, 60vh, 540px);
+  z-index: 10;
+
+  background: linear-gradient(
+    150deg,
+    rgba(55, 28, 8, 0.96)  0%,
+    rgba(40, 22, 6, 0.97)  35%,
+    rgba(28, 38, 18, 0.95) 70%,
+    rgba(20, 32, 14, 0.96) 100%
+  );
+  border: 2px solid rgba(212, 160, 23, 0.60);
+  border-radius: 14px;
+  box-shadow:
+    0 0 0 1px rgba(212, 160, 23, 0.18),
+    0 0 50px rgba(212, 160, 23, 0.14),
+    inset 0 0 60px rgba(0, 0, 0, 0.55);
+}
+
+/* Decorative corners */
+.l6-map-corner {
+  position: absolute;
+  font-size: clamp(14px, 2.2vw, 22px);
+  color: rgba(212, 160, 23, 0.70);
+  text-shadow: 0 0 10px rgba(255,215,0,0.60);
+  pointer-events: none;
+  z-index: 3;
+}
+.l6-mc--tl { top: 8px;  left: 10px;  }
+.l6-mc--tr { top: 8px;  right: 10px; }
+.l6-mc--bl { bottom: 8px; left: 10px; }
+.l6-mc--br { bottom: 8px; right: 10px; }
+
+.l6-map-title {
+  position: absolute;
+  top: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: clamp(11px, 1.5vw, 16px);
+  font-weight: 700;
+  color: rgba(255, 215, 0, 0.80);
+  letter-spacing: 0.22em;
+  text-shadow: 0 0 12px rgba(255,215,0,0.55);
+  white-space: nowrap;
+  z-index: 3;
+  pointer-events: none;
+}
+
+.l6-map-instruction {
+  position: absolute;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  margin: 0;
+  font-size: clamp(11px, 1.4vw, 15px);
+  color: rgba(212, 160, 23, 0.65);
+  letter-spacing: 0.06em;
+  white-space: nowrap;
+  z-index: 3;
+  pointer-events: none;
+}
+
+/* ── Map SVG ────────────────────────────────────────────────────────────── */
+
+.l6-map-svg {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 2;
+  pointer-events: none;
+}
+
+/* ── Cities ─────────────────────────────────────────────────────────────── */
+
+.l6-city {
+  position: absolute;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  z-index: 4;
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+}
+
+.l6-city-dot {
+  width: clamp(10px, 1.6vw, 16px);
+  height: clamp(10px, 1.6vw, 16px);
+  border-radius: 50%;
+  border: 2px solid rgba(255,255,255,0.50);
+  animation: l6-city-pulse 2.6s ease-in-out infinite;
+}
+
+@keyframes l6-city-pulse {
+  0%, 100% { transform: scale(1);    filter: brightness(1); }
+  50%       { transform: scale(1.20); filter: brightness(1.35); }
+}
+
+.l6-city-label {
+  font-size: clamp(10px, 1.3vw, 14px);
+  font-weight: 700;
+  color: #FFD700;
+  letter-spacing: 0.18em;
+  text-shadow: 0 0 10px rgba(255,215,0,0.80), 0 1px 3px rgba(0,0,0,0.90);
+  white-space: nowrap;
+}
+
+.l6-city-label--promise {
+  color: #44FFCC;
+  text-shadow: 0 0 14px rgba(68,255,204,0.90), 0 1px 3px rgba(0,0,0,0.90);
+}
+
+/* ── Waypoints ──────────────────────────────────────────────────────────── */
+
+.l6-waypoint {
+  position: absolute;
+  width:  clamp(28px, 4.5vw, 48px);
+  height: clamp(28px, 4.5vw, 48px);
+  border-radius: 50%;
+  border: 3px solid var(--wpc, #FFD700);
+  background: rgba(0, 0, 0, 0.72);
+  color: var(--wpc, #FFD700);
+  font-size: clamp(12px, 1.8vw, 18px);
+  font-weight: 700;
+  cursor: pointer;
+  z-index: 8;
+  transform: translate(-50%, -50%);
+  transition: transform 0.15s ease;
+  box-shadow:
+    0 0 0 2px rgba(0,0,0,0.65),
+    0 0 14px 3px var(--wpg, rgba(255,215,0,0.50));
+  font-family: Georgia, serif;
+}
+
+.l6-waypoint:hover:not(:disabled) {
+  transform: translate(-50%, -50%) scale(1.14);
+}
+
+/* Active — next one to click */
+.l6-wp--active {
+  animation: l6-wp-pulse 1.1s ease-in-out infinite;
+  border-color: var(--wpc);
+  background: rgba(0,0,0,0.80);
+}
+
+@keyframes l6-wp-pulse {
+  0%, 100% {
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.65), 0 0 14px 3px var(--wpg);
+    transform: translate(-50%, -50%) scale(1);
+  }
+  50% {
+    box-shadow: 0 0 0 2px rgba(0,0,0,0.65), 0 0 30px 10px var(--wpg);
+    transform: translate(-50%, -50%) scale(1.12);
+  }
+}
+
+/* Done — completed */
+.l6-wp--done {
+  background: rgba(20, 100, 30, 0.75);
+  border-color: #44FF88;
+  color: #88FFAA;
+  box-shadow: 0 0 0 2px rgba(0,0,0,0.55), 0 0 18px 5px rgba(68,255,136,0.55);
+  animation: none;
+  cursor: default;
+}
+
+/* Locked — future waypoint */
+.l6-wp--locked {
+  opacity: 0.30;
+  cursor: default;
+  animation: none;
+}
+
+/* ── Abram on map ───────────────────────────────────────────────────────── */
+
+.l6-abram-map {
+  position: absolute;
+  font-size: clamp(18px, 3vw, 30px);
+  z-index: 6;
+  transform: translate(-50%, -100%);
+  filter: drop-shadow(0 0 8px rgba(255,200,50,0.95));
+  transition:
+    left 1.4s cubic-bezier(0.30, 1.25, 0.50, 1),
+    top  1.4s cubic-bezier(0.30, 1.25, 0.50, 1);
+  pointer-events: none;
+}
+
+/* ── Progress text ──────────────────────────────────────────────────────── */
+
+.l6-progress {
+  position: absolute;
+  top: 30px;
+  right: 18px;
+  margin: 0;
+  font-size: clamp(10px, 1.3vw, 14px);
+  color: rgba(212,160,23,0.70);
+  letter-spacing: 0.08em;
+  pointer-events: none;
+  z-index: 5;
+}
+
+/* ── Quiz overlay ───────────────────────────────────────────────────────── */
+
+.l6-quiz-overlay {
+  position: fixed;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 40;
+  background: rgba(4, 2, 20, 0.72);
+  backdrop-filter: blur(6px);
+  animation: l6-quiz-fade 0.38s ease-out both;
+}
+
+@keyframes l6-quiz-fade {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.l6-quiz-card {
+  background: linear-gradient(160deg, rgba(10,6,30,0.98) 0%, rgba(8,4,22,0.99) 100%);
+  border: 2.5px solid var(--wpc, #FFD700);
+  border-radius: 18px;
+  padding: clamp(20px, 4vh, 40px) clamp(22px, 4vw, 50px);
+  width: min(90vw, 520px);
+  text-align: center;
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,0.06),
+    0 0 40px 8px var(--wpg, rgba(255,215,0,0.35)),
+    0 8px 60px rgba(0,0,0,0.80);
+  animation: l6-card-in 0.42s cubic-bezier(0.30, 1.4, 0.5, 1) both;
+}
+
+@keyframes l6-card-in {
+  from { opacity: 0; transform: scale(0.88) translateY(18px); }
+  to   { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.l6-quiz-wpnum {
+  margin: 0 0 8px;
+  font-size: clamp(11px, 1.4vw, 15px);
+  font-weight: 700;
+  letter-spacing: 0.24em;
+  text-transform: uppercase;
+}
+
+.l6-quiz-q {
+  margin: 0 0 clamp(16px, 3vh, 28px);
+  font-size: clamp(18px, 2.6vw, 26px);
+  font-weight: 700;
+  color: #F5E8C0;
+  line-height: 1.38;
+}
+
+/* 2×2 button grid */
+.l6-quiz-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: clamp(10px, 1.8vh, 16px);
+}
+
+.l6-quiz-btn {
+  padding: clamp(12px, 2.2vh, 20px) clamp(10px, 2vw, 18px);
+  border-radius: 12px;
+  border: 2px solid rgba(212, 160, 23, 0.38);
+  background: rgba(255, 255, 255, 0.04);
+  color: #E8D8A0;
+  font-size: clamp(15px, 2vw, 20px);
+  font-family: Georgia, serif;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.18s ease;
+}
+
+.l6-quiz-btn:hover:not(:disabled) {
+  border-color: var(--wpc, #FFD700);
+  background: rgba(255,255,255,0.10);
+  color: #fff;
+  box-shadow: 0 0 18px 4px var(--wpg, rgba(255,215,0,0.35));
+  transform: translateY(-2px);
+}
+
+.l6-quiz-btn:disabled {
+  cursor: default;
+}
+
+.l6-qb--correct {
+  background: rgba(30, 120, 50, 0.50) !important;
+  border-color: #44FF88 !important;
+  color: #88FFBB !important;
+  box-shadow: 0 0 22px 6px rgba(68,255,136,0.55) !important;
+  animation: l6-correct-pop 0.4s ease-out both;
+}
+
+@keyframes l6-correct-pop {
+  0%   { transform: scale(0.94); }
+  60%  { transform: scale(1.06); }
+  100% { transform: scale(1); }
+}
+
+.l6-qb--wrong {
+  background: rgba(160, 20, 20, 0.50) !important;
+  border-color: #FF4444 !important;
+  color: #FFAAAA !important;
+  animation: l6-wrong-shake 0.42s ease-out both;
+}
+
+@keyframes l6-wrong-shake {
+  0%, 100% { transform: translateX(0); }
+  25%       { transform: translateX(-8px); }
+  75%       { transform: translateX(8px); }
+}
+
+.l6-quiz-feedback {
+  margin: clamp(10px, 2vh, 16px) 0 0;
+  font-size: clamp(13px, 1.6vw, 16px);
+  color: #FF9966;
+  font-style: italic;
+  animation: l6-fb-in 0.35s ease-out both;
+}
+
+@keyframes l6-fb-in {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0); }
+}

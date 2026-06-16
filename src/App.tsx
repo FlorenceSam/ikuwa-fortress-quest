@@ -11,6 +11,7 @@ import Level2 from './game/Level2'
 import Level3 from './game/Level3'
 import Level4 from './game/Level4'
 import Level5 from './game/Level5'
+import Level6 from './game/Level6'
 import FailScreen from './game/FailScreen'
 import './App.css'
 
@@ -147,7 +148,7 @@ function mkParticles(cx: number, cy: number): Particle[] {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AppScreen      = 'account-type' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5'
+type AppScreen      = 'account-type' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6'
 type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -377,7 +378,11 @@ export default function App() {
   }
   if (appScreen === 'level5') {
     if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level5 key={levelKey} onFail={handleFail} showHint={showHint} />
+    return <Level5 key={levelKey} onComplete={() => advanceLevel('level6')} onFail={handleFail} showHint={showHint} />
+  }
+  if (appScreen === 'level6') {
+    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+    return <Level6 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
   }
 
   // Cinematic
