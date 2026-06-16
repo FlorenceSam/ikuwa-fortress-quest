@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './level5.css'
+import './FailScreen.css'
 import CompletionScreen from './CompletionScreen'
 import CoinHUD from './CoinHUD'
 import { getCoins, addCoins } from './coins'
@@ -398,7 +399,7 @@ function getSweetSpot(bricks: number): number {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function Level5({ onComplete }: { onComplete?: () => void }) {
+export default function Level5({ onComplete, onFail, showHint }: { onComplete?: () => void; onFail?: (hint: string) => void; showHint?: boolean }) {
   const [phase,         setPhase]         = useState<Phase>('building')
   const [bricksPlaced,  setBricksPlaced]  = useState(0)
   const [timeLeft,      setTimeLeft]      = useState(TIMER_SECONDS)
@@ -564,7 +565,14 @@ export default function Level5({ onComplete }: { onComplete?: () => void }) {
       setTimeLeft(t => {
         if (t <= 1) {
           clearInterval(id)
-          if (!divineRef.current) { divineRef.current = true; setPhase('god1') }
+          if (!divineRef.current) {
+            divineRef.current = true
+            if (bricksRef.current < 8) {
+              setTimeout(() => onFail?.(HINT), 300)
+            } else {
+              setPhase('god1')
+            }
+          }
           return 0
         }
         return t - 1
@@ -694,6 +702,10 @@ export default function Level5({ onComplete }: { onComplete?: () => void }) {
       />
 
       {flash && <div className="l5-flash" />}
+
+      {showHint && inBuilding && (
+        <div className="level-hint-banner">💡 {HINT}</div>
+      )}
 
       <header className="l5-header">
         <p className="l5-label">LEVEL 1-5</p>

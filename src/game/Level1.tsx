@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './level1.css'
+import './FailScreen.css'
 import CompletionScreen from './CompletionScreen'
 import CoinHUD from './CoinHUD'
 import { getCoins, addCoins } from './coins'
@@ -68,7 +69,7 @@ function shuffle<T>(arr: T[]): T[] {
 
 // ─── Component ─────────────────────────────────────────────────────────────
 
-export default function Level1({ onComplete }: { onComplete?: () => void }) {
+export default function Level1({ onComplete, onFail, showHint }: { onComplete?: () => void; onFail?: (hint: string) => void; showHint?: boolean }) {
   const [hand,       setHand]       = useState<number[]>(() => shuffle([1,2,3,4,5,6,7]))
   const [slots,      setSlots]      = useState<(number|null)[]>(Array(7).fill(null))
   const [correct,    setCorrect]    = useState<Set<number>>(new Set())
@@ -77,6 +78,7 @@ export default function Level1({ onComplete }: { onComplete?: () => void }) {
   const [wrongSlots, setWrongSlots] = useState<Set<number>>(new Set())
   const [victory,    setVictory]    = useState(false)
   const [coins,      setCoins]      = useState(() => getCoins())
+  const wrongCountRef = useRef(0)
 
   const bgRef      = useRef<HTMLCanvasElement>(null)
   const bgRafRef   = useRef<number>(0)
@@ -98,6 +100,8 @@ export default function Level1({ onComplete }: { onComplete?: () => void }) {
       // Shake the slot, card stays in hand (ghost disappears = visual "return")
       setWrongSlots(w => { const n=new Set(w); n.add(slotIdx); return n })
       setTimeout(() => setWrongSlots(w => { const n=new Set(w); n.delete(slotIdx); return n }), 600)
+      wrongCountRef.current += 1
+      if (wrongCountRef.current >= 5) onFail?.(HINT)
     }
   }
 
@@ -251,6 +255,10 @@ export default function Level1({ onComplete }: { onComplete?: () => void }) {
     <div className="level1">
       <canvas ref={bgRef} className="level1-bg" />
       <CoinHUD coins={coins} hint={HINT} onCoinsChange={setCoins} />
+
+      {showHint && (
+        <div className="level-hint-banner">💡 {HINT}</div>
+      )}
 
       <header className="level1-header">
         <p className="level1-day-label">DAY 1 OF 7</p>

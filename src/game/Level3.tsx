@@ -3,6 +3,7 @@ import CompletionScreen from './CompletionScreen'
 import CoinHUD from './CoinHUD'
 import { getCoins, addCoins } from './coins'
 import './level3.css'
+import './FailScreen.css'
 
 const HINTS: Record<string, string> = {
   drag:    'Drag the lamb 🐑 to the altar — Abel offered a lamb in faith and God accepted it.',
@@ -121,7 +122,7 @@ function speakVoice(text: string, rate = 0.88, pitch = 1.1) {
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function Level3({ onComplete }: { onComplete?: () => void }) {
+export default function Level3({ onComplete, onFail, showHint }: { onComplete?: () => void; onFail?: (hint: string) => void; showHint?: boolean }) {
   const [phase,       setPhase]       = useState<Phase>('drag')
   const [timeLeft,    setTimeLeft]    = useState(30)
   const [altarState,  setAltarState]  = useState<AltarState>('lit')
@@ -241,14 +242,15 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {
-          speakVoice('Hurry! Place the correct offering!', 1.05, 1.2)
-          return 30
+          if (timerRef.current) clearInterval(timerRef.current)
+          setTimeout(() => onFail?.(HINTS.drag), 300)
+          return 0
         }
         return t - 1
       })
     }, 1000)
     return () => { if (timerRef.current) clearInterval(timerRef.current) }
-  }, [phase])
+  }, [phase, onFail])
 
   // ── Jealousy canvas animation ────────────────────────────────────────────
 
@@ -463,6 +465,10 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
         onCoinsChange={setCoins}
         disabled={phase === 'jealousy' || phase === 'victory'}
       />
+
+      {showHint && (
+        <div className="level-hint-banner">💡 {HINTS[phase] || HINTS.drag}</div>
+      )}
 
       <header className="level3-header">
         <p className="level3-label">LEVEL 1-3</p>

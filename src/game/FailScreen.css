@@ -1,0 +1,241 @@
+/* ─── Fail / Game-Over screen ─────────────────────────────────────────────── */
+
+.fail-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: radial-gradient(
+    ellipse at 50% 44%,
+    #1a0800 0%,
+    #0e0400 48%,
+    #030100 100%
+  );
+  animation: fail-fade-in 0.75s ease-out;
+}
+
+@keyframes fail-fade-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.fail-canvas {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+}
+
+/* ── Content ── */
+
+.fail-content {
+  position: relative;
+  z-index: 2;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 0 clamp(22px, 5vw, 64px);
+  max-width: 560px;
+  width: 92vw;
+  gap: clamp(8px, 1.6vh, 16px);
+}
+
+.fail-coins {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(1.0rem, 1.5vw, 1.15rem);
+  color: rgba(212, 160, 23, 0.65);
+  letter-spacing: 0.18em;
+  animation: fail-coin-in 0.6s 0.2s ease-out both;
+}
+
+@keyframes fail-coin-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+.fail-name {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(2.6rem, 9vw, 5.2rem);
+  font-weight: normal;
+  color: #D4A017;
+  letter-spacing: 0.07em;
+  text-shadow:
+    0 0 44px rgba(212, 160, 23, 0.80),
+    0 0 90px rgba(212, 140, 10, 0.38),
+    0 0 140px rgba(200, 100,  5, 0.18);
+  animation: fail-name-in 1.0s 0.4s ease-out both;
+}
+
+@keyframes fail-name-in {
+  from { opacity: 0; transform: translateY(20px); filter: blur(5px); }
+  to   { opacity: 1; transform: translateY(0);    filter: blur(0);   }
+}
+
+.fail-message {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: clamp(1.05rem, 2.0vw, 1.32rem);
+  color: rgba(212, 160, 23, 0.84);
+  line-height: 1.55;
+  letter-spacing: 0.03em;
+  animation: fail-msg-in 0.9s 1.1s ease-out both;
+}
+
+@keyframes fail-msg-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+/* Thin divider */
+.fail-content::after {
+  content: '';
+  display: block;
+  width: clamp(50px, 12vw, 110px);
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(212,160,23,0.38), transparent);
+  animation: fail-divider-in 0.8s 1.8s ease-out both;
+}
+
+@keyframes fail-divider-in {
+  from { opacity: 0; width: 0; }
+  to   { opacity: 1; width: clamp(50px, 12vw, 110px); }
+}
+
+.fail-verse {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: clamp(0.95rem, 1.5vw, 1.12rem);
+  color: rgba(212, 160, 23, 0.60);
+  line-height: 1.65;
+  animation: fail-verse-in 0.8s 2.0s ease-out both;
+}
+
+.fail-verse-ref {
+  margin: 0;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.88rem, 1.2vw, 1.0rem);
+  color: rgba(212, 160, 23, 0.40);
+  letter-spacing: 0.14em;
+  animation: fail-verse-in 0.8s 2.2s ease-out both;
+}
+
+@keyframes fail-verse-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* ── Buttons ── */
+
+.fail-actions {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: clamp(10px, 1.8vh, 15px);
+  width: 100%;
+  margin-top: clamp(4px, 1.2vh, 12px);
+  animation: fail-btns-in 0.9s 2.6s ease-out both;
+}
+
+@keyframes fail-btns-in {
+  from { opacity: 0; transform: translateY(16px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}
+
+.fail-btn {
+  width: 100%;
+  max-width: 400px;
+  padding: clamp(13px, 2.2vh, 18px) clamp(18px, 3.5vw, 34px);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.95rem, 1.4vw, 1.1rem);
+  letter-spacing: 0.13em;
+  cursor: pointer;
+  border-radius: 3px;
+  transition: background 0.25s, border-color 0.25s, color 0.25s, box-shadow 0.25s;
+}
+
+.fail-btn--primary {
+  background: transparent;
+  border: 1.5px solid rgba(212, 160, 23, 0.68);
+  color: rgba(212, 160, 23, 0.94);
+}
+
+.fail-btn--primary:hover {
+  background: rgba(212, 160, 23, 0.09);
+  border-color: rgba(212, 160, 23, 0.88);
+  color: #D4A017;
+  box-shadow: 0 0 30px rgba(212, 160, 23, 0.20);
+}
+
+.fail-btn--hint {
+  background: rgba(212, 160, 23, 0.08);
+  border: 1.5px solid rgba(212, 160, 23, 0.42);
+  color: rgba(212, 160, 23, 0.78);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+}
+
+.fail-btn--hint:hover:not(:disabled) {
+  background: rgba(212, 160, 23, 0.16);
+  border-color: rgba(212, 160, 23, 0.68);
+  color: #D4A017;
+  box-shadow: 0 0 22px rgba(212, 160, 23, 0.15);
+}
+
+.fail-btn--locked {
+  opacity: 0.38;
+  cursor: not-allowed;
+}
+
+.fail-hint-sub {
+  font-size: clamp(0.78rem, 1.1vw, 0.9rem);
+  opacity: 0.75;
+  letter-spacing: 0.06em;
+}
+
+.fail-btn--restart {
+  background: transparent;
+  border: 1px solid rgba(212, 160, 23, 0.26);
+  color: rgba(212, 160, 23, 0.52);
+  font-size: clamp(0.85rem, 1.2vw, 0.95rem);
+}
+
+.fail-btn--restart:hover {
+  border-color: rgba(212, 160, 23, 0.48);
+  color: rgba(212, 160, 23, 0.80);
+}
+
+/* ── Hint banner shown at start of retry ─────────────────────────────────── */
+
+.level-hint-banner {
+  position: absolute;
+  top: clamp(55px, 9.5vh, 78px);
+  left: 0;
+  right: clamp(110px, 16vw, 165px);
+  z-index: 50;
+  padding: clamp(8px, 1.3vh, 12px) clamp(14px, 2.5vw, 22px);
+  background: rgba(14, 8, 0, 0.90);
+  border-top: 1px solid rgba(212, 160, 23, 0.22);
+  border-bottom: 1px solid rgba(212, 160, 23, 0.35);
+  font-family: Georgia, 'Times New Roman', serif;
+  font-style: italic;
+  font-size: clamp(0.92rem, 1.4vw, 1.08rem);
+  color: rgba(212, 160, 23, 0.90);
+  text-align: center;
+  line-height: 1.5;
+  pointer-events: none;
+  animation: fail-banner-in 0.55s ease-out;
+}
+
+@keyframes fail-banner-in {
+  from { opacity: 0; transform: translateY(-6px); }
+  to   { opacity: 1; transform: translateY(0);    }
+}

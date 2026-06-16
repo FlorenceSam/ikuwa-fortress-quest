@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './level4.css'
+import './FailScreen.css'
 import CompletionScreen from './CompletionScreen'
 import CoinHUD from './CoinHUD'
 import { getCoins, addCoins } from './coins'
@@ -167,7 +168,7 @@ function drawArk(ctx:CanvasRenderingContext2D, W:number, H:number, rise:number, 
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
-export default function Level4({ onComplete }:{ onComplete?: () => void }) {
+export default function Level4({ onComplete, onFail, showHint }:{ onComplete?: () => void; onFail?: (hint: string) => void; showHint?: boolean }) {
   const [phase,        setPhase]       = useState<Phase>('matching')
   const [timeLeft,     setTimeLeft]    = useState(45)
   const [animals]                      = useState<Animal[]>(generateAnimals)
@@ -236,14 +237,15 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
     timerRef.current = setInterval(() => {
       setTimeLeft(t => {
         if (t <= 1) {
-          speakVoice('Hurry! Get the animals onto the ark!', 1.05, 1.2)
-          return 45
+          if (timerRef.current) clearInterval(timerRef.current)
+          setTimeout(() => onFail?.(HINT), 300)
+          return 0
         }
         return t - 1
       })
     }, 1000)
     return () => { if(timerRef.current) clearInterval(timerRef.current) }
-  }, [phase])
+  }, [phase, onFail])
 
   // ── Cinematic canvas ─────────────────────────────────────────────────────
 
@@ -441,6 +443,10 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
 
       {/* Rain overlay */}
       {phase==='matching' && <div className="rain-layer" />}
+
+      {showHint && phase === 'matching' && (
+        <div className="level-hint-banner">💡 {HINT}</div>
+      )}
 
       <header className="level4-header">
         <p className="level4-label">LEVEL 1-4</p>

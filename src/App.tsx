@@ -11,6 +11,7 @@ import Level2 from './game/Level2'
 import Level3 from './game/Level3'
 import Level4 from './game/Level4'
 import Level5 from './game/Level5'
+import FailScreen from './game/FailScreen'
 import './App.css'
 
 // ─── Audio ─────────────────────────────────────────────────────────────────
@@ -156,6 +157,17 @@ export default function App() {
   const [cinematicPhase, setCinematicPhase] = useState<CinematicPhase>('dark')
   const [firstName,      setFirstName]      = useState('')
   const [showContinue,   setShowContinue]   = useState(false)
+
+  // ── Fail-screen state ─────────────────────────────────────────────────────
+  const [failActive, setFailActive] = useState(false)
+  const [levelKey,   setLevelKey]   = useState(0)
+  const [showHint,   setShowHint]   = useState(false)
+
+  const handleFail      = (_hint: string) => setFailActive(true)
+  const handleRetry     = () => { setFailActive(false); setShowHint(false); setLevelKey(k => k + 1) }
+  const handleHintRetry = () => { setFailActive(false); setShowHint(true);  setLevelKey(k => k + 1) }
+  const handleRestart   = () => { setFailActive(false); setShowHint(false); setLevelKey(k => k + 1); setAppScreen('game') }
+  const advanceLevel    = (next: AppScreen) => { setShowHint(false); setAppScreen(next) }
 
   const audioRef       = useRef<AudioContext | null>(null)
   const canvasRef      = useRef<HTMLCanvasElement>(null)
@@ -347,11 +359,26 @@ export default function App() {
     return <CharacterNameScreen firstName={firstName} onEnter={enterKingdom} />
   }
 
-  if (appScreen === 'game')   return <Level1 onComplete={() => setAppScreen('level2')} />
-  if (appScreen === 'level2') return <Level2 onComplete={() => setAppScreen('level3')} />
-  if (appScreen === 'level3') return <Level3 onComplete={() => setAppScreen('level4')} />
-  if (appScreen === 'level4') return <Level4 onComplete={() => setAppScreen('level5')} />
-  if (appScreen === 'level5') return <Level5 />
+  if (appScreen === 'game') {
+    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+    return <Level1 key={levelKey} onComplete={() => advanceLevel('level2')} onFail={handleFail} showHint={showHint} />
+  }
+  if (appScreen === 'level2') {
+    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+    return <Level2 key={levelKey} onComplete={() => advanceLevel('level3')} onFail={handleFail} showHint={showHint} />
+  }
+  if (appScreen === 'level3') {
+    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+    return <Level3 key={levelKey} onComplete={() => advanceLevel('level4')} onFail={handleFail} showHint={showHint} />
+  }
+  if (appScreen === 'level4') {
+    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+    return <Level4 key={levelKey} onComplete={() => advanceLevel('level5')} onFail={handleFail} showHint={showHint} />
+  }
+  if (appScreen === 'level5') {
+    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+    return <Level5 key={levelKey} onFail={handleFail} showHint={showHint} />
+  }
 
   // Cinematic
   return (

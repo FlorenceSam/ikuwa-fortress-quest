@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import './level2.css'
+import './FailScreen.css'
 import CompletionScreen from './CompletionScreen'
 import CoinHUD from './CoinHUD'
 import { getCoins, addCoins } from './coins'
@@ -135,7 +136,7 @@ function speakVoice(text: string) {
 
 // ─── Component ─────────────────────────────────────────────────────────────
 
-export default function Level2({ onComplete }: { onComplete?: () => void }) {
+export default function Level2({ onComplete, onFail, showHint }: { onComplete?: () => void; onFail?: (hint: string) => void; showHint?: boolean }) {
   const [currentQ,    setCurrentQ]    = useState(0)
   const [feedback,    setFeedback]    = useState<'correct'|'wrong'|null>(null)
   const [selectedIdx, setSelectedIdx] = useState<number|null>(null)
@@ -144,8 +145,9 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
   const [victory,     setVictory]     = useState(false)
   const [coins,       setCoins]       = useState(() => getCoins())
 
-  const bgRef    = useRef<HTMLCanvasElement>(null)
-  const bgRafRef = useRef<number>(0)
+  const bgRef       = useRef<HTMLCanvasElement>(null)
+  const bgRafRef    = useRef<number>(0)
+  const wrongCountRef = useRef(0)
 
   // ── Garden background ────────────────────────────────────────────────────
 
@@ -247,7 +249,12 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
     } else {
       setFeedback('wrong')
       playWrongSound()
-      setTimeout(() => { setFeedback(null); setSelectedIdx(null) }, 1800)
+      wrongCountRef.current += 1
+      if (wrongCountRef.current >= 3) {
+        setTimeout(() => onFail?.(HINTS[currentQ]), 900)
+      } else {
+        setTimeout(() => { setFeedback(null); setSelectedIdx(null) }, 1800)
+      }
     }
   }
 
@@ -259,6 +266,10 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
     <div className="level2">
       <canvas ref={bgRef} className="level2-bg" />
       <CoinHUD coins={coins} hint={HINTS[currentQ]} onCoinsChange={setCoins} disabled={victory} />
+
+      {showHint && (
+        <div className="level-hint-banner">💡 {HINTS[currentQ]}</div>
+      )}
 
       <header className="level2-header">
         <p className="level2-label">LEVEL 1-2</p>
