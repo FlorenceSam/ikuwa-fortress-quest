@@ -3,7 +3,7 @@ import './screens.css'
 
 // ─── localStorage helpers ──────────────────────────────────────────────────
 
-interface Account { firstName: string; email: string; password: string }
+interface Account { firstName: string; email: string; password: string; accountType: string }
 
 const getAccounts = (): Account[] =>
   JSON.parse(localStorage.getItem('iq_accounts') || '[]')
@@ -12,6 +12,56 @@ const saveAccount = (acc: Account) => {
   const list = getAccounts()
   list.push(acc)
   localStorage.setItem('iq_accounts', JSON.stringify(list))
+}
+
+// ─── Eye icons ─────────────────────────────────────────────────────────────
+
+const EyeOpen = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
+    <circle cx="12" cy="12" r="3"/>
+  </svg>
+)
+
+const EyeClosed = () => (
+  <svg width="20" height="20" viewBox="0 0 24 24" fill="none"
+    stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M17.94 17.94A10.07 10.07 0 0112 20c-7 0-11-8-11-8a18.45 18.45 0 015.06-5.94M9.9 4.24A9.12 9.12 0 0112 4c7 0 11 8 11 8a18.5 18.5 0 01-2.16 3.19"/>
+    <line x1="1" y1="1" x2="23" y2="23"/>
+  </svg>
+)
+
+// ─── Account Type Screen ───────────────────────────────────────────────────
+
+interface AccountTypeProps {
+  onSelect: () => void
+}
+
+export function AccountTypeScreen({ onSelect }: AccountTypeProps) {
+  const choose = (type: 'personal' | 'church') => {
+    localStorage.setItem('iq_account_type', type)
+    onSelect()
+  }
+
+  return (
+    <div className="screen account-type-screen">
+      <div className="account-type-content">
+        <p className="account-type-sub">WELCOME TO</p>
+        <h1 className="account-type-title">Ikuwa Fortress Quest</h1>
+        <div className="gold-rule narrow" />
+        <h2 className="account-type-question">How are you joining?</h2>
+        <div className="account-type-actions">
+          <button className="gold-btn" onClick={() => choose('personal')}>
+            Personal
+          </button>
+          <button className="gold-btn gold-btn--outline" onClick={() => choose('church')}>
+            Under a Church
+          </button>
+        </div>
+      </div>
+    </div>
+  )
 }
 
 // ─── Welcome Screen ────────────────────────────────────────────────────────
@@ -53,7 +103,9 @@ interface CreateProps {
 
 export function CreateAccountScreen({ onSuccess, onLogin }: CreateProps) {
   const [form, setForm] = useState({ firstName: '', email: '', password: '', confirm: '' })
-  const [error, setError] = useState('')
+  const [error, setError]         = useState('')
+  const [showPw, setShowPw]       = useState(false)
+  const [showConfirm, setShowConfirm] = useState(false)
 
   const set = (field: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -62,15 +114,16 @@ export function CreateAccountScreen({ onSuccess, onLogin }: CreateProps) {
   const submit = (e: React.FormEvent) => {
     e.preventDefault()
     setError('')
-    if (!form.firstName.trim())                         return setError('First name is required.')
-    if (!form.email.includes('@'))                      return setError('Please enter a valid email.')
-    if (form.password.length < 6)                       return setError('Password must be at least 6 characters.')
-    if (form.password !== form.confirm)                 return setError('Passwords do not match.')
+    if (!form.firstName.trim())   return setError('First name is required.')
+    if (!form.email.includes('@')) return setError('Please enter a valid email.')
+    if (form.password.length < 6) return setError('Password must be at least 6 characters.')
+    if (form.password !== form.confirm) return setError('Passwords do not match.')
     if (getAccounts().find(a => a.email.toLowerCase() === form.email.toLowerCase()))
-                                                        return setError('An account with this email already exists.')
+                                  return setError('An account with this email already exists.')
 
-    const firstName = form.firstName.trim()
-    saveAccount({ firstName, email: form.email.trim(), password: form.password })
+    const firstName   = form.firstName.trim()
+    const accountType = localStorage.getItem('iq_account_type') || 'personal'
+    saveAccount({ firstName, email: form.email.trim(), password: form.password, accountType })
     localStorage.setItem('iq_session', JSON.stringify({ firstName, email: form.email.trim() }))
     onSuccess(firstName)
   }
@@ -92,13 +145,37 @@ export function CreateAccountScreen({ onSuccess, onLogin }: CreateProps) {
         </div>
         <div className="field-group">
           <label>PASSWORD</label>
-          <input type="password" value={form.password} onChange={set('password')}
-            placeholder="Create a password" autoComplete="new-password" />
+          <div className="password-row">
+            <input
+              type={showPw ? 'text' : 'password'}
+              value={form.password}
+              onChange={set('password')}
+              placeholder="Create a password"
+              autoComplete="new-password"
+            />
+            <button type="button" className="pw-toggle"
+              onClick={() => setShowPw(v => !v)}
+              aria-label={showPw ? 'Hide password' : 'Show password'}>
+              {showPw ? <EyeOpen /> : <EyeClosed />}
+            </button>
+          </div>
         </div>
         <div className="field-group">
           <label>CONFIRM PASSWORD</label>
-          <input type="password" value={form.confirm} onChange={set('confirm')}
-            placeholder="Confirm your password" autoComplete="new-password" />
+          <div className="password-row">
+            <input
+              type={showConfirm ? 'text' : 'password'}
+              value={form.confirm}
+              onChange={set('confirm')}
+              placeholder="Confirm your password"
+              autoComplete="new-password"
+            />
+            <button type="button" className="pw-toggle"
+              onClick={() => setShowConfirm(v => !v)}
+              aria-label={showConfirm ? 'Hide password' : 'Show password'}>
+              {showConfirm ? <EyeOpen /> : <EyeClosed />}
+            </button>
+          </div>
         </div>
         {error && <p className="form-error">{error}</p>}
         <button type="submit" className="gold-btn form-btn">CREATE ACCOUNT</button>
@@ -121,6 +198,7 @@ interface LoginProps {
 export function LoginScreen({ onSuccess, onCreateAccount }: LoginProps) {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
+  const [showPw, setShowPw] = useState(false)
 
   const set = (field: keyof typeof form) =>
     (e: React.ChangeEvent<HTMLInputElement>) =>
@@ -153,8 +231,20 @@ export function LoginScreen({ onSuccess, onCreateAccount }: LoginProps) {
         </div>
         <div className="field-group">
           <label>PASSWORD</label>
-          <input type="password" value={form.password} onChange={set('password')}
-            placeholder="Your password" autoComplete="current-password" />
+          <div className="password-row">
+            <input
+              type={showPw ? 'text' : 'password'}
+              value={form.password}
+              onChange={set('password')}
+              placeholder="Your password"
+              autoComplete="current-password"
+            />
+            <button type="button" className="pw-toggle"
+              onClick={() => setShowPw(v => !v)}
+              aria-label={showPw ? 'Hide password' : 'Show password'}>
+              {showPw ? <EyeOpen /> : <EyeClosed />}
+            </button>
+          </div>
         </div>
         {error && <p className="form-error">{error}</p>}
         <button type="submit" className="gold-btn form-btn">LOGIN</button>

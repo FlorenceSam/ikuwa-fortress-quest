@@ -1,10 +1,20 @@
 import { useEffect, useRef, useState } from 'react'
 import CompletionScreen from './CompletionScreen'
+import CoinHUD from './CoinHUD'
+import { getCoins, addCoins } from './coins'
 import './level3.css'
+
+const HINTS: Record<string, string> = {
+  drag:    'Drag the lamb 🐑 to the altar — Abel offered a lamb in faith and God accepted it.',
+  quiz1:   'Cain was a farmer. He brought crops. Abel was a shepherd. He brought a lamb.',
+  quiz2:   'Jealousy filled Cain when his offering was rejected. He turned on his own brother.',
+  quiz3:   'Cain rose against the person closest to him — his brother Abel.',
+  victory: '',
+}
 
 // ─── Types ──────────────────────────────────────────────────────────────────
 
-type Phase     = 'drag' | 'quiz1' | 'jealousy' | 'quiz2' | 'victory'
+type Phase     = 'drag' | 'quiz1' | 'jealousy' | 'quiz2' | 'quiz3' | 'victory'
 type AltarState = 'lit' | 'correct' | 'wrong'
 type ItemId    = 'grain' | 'lamb' | 'fruit' | 'gold'
 
@@ -18,13 +28,18 @@ const ITEMS: Item[] = [
 ]
 
 const QUIZ1 = {
-  text: 'Whose offering was accepted by God?',
-  options: ['Cain', 'Lemuel', 'Solomon', 'Abel'],
-  correct: 3,
+  text: 'What did Cain offer to God?',
+  options: ['Lamb', 'Grain', 'Fruit', 'Gold'],
+  correct: 1,
 }
 const QUIZ2 = {
-  text: 'Who is about to sin?',
-  options: ['Oseka', 'Makafan', 'Cain', 'Mosi'],
+  text: 'Who was the first murderer?',
+  options: ['Abel', 'Noah', 'Cain', 'Adam'],
+  correct: 2,
+}
+const QUIZ3 = {
+  text: 'Who did the murderer murder?',
+  options: ['Noah', 'Adam', 'Abel', 'Seth'],
   correct: 2,
 }
 
@@ -104,10 +119,6 @@ function speakVoice(text: string, rate = 0.88, pitch = 1.1) {
   } catch (_) {}
 }
 
-// ─── Particle type ───────────────────────────────────────────────────────────
-
-interface VP { x:number; y:number; vx:number; vy:number; r:number; life:number; max:number; hue:number }
-
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function Level3({ onComplete }: { onComplete?: () => void }) {
@@ -128,6 +139,12 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
   const [q2Sel,    setQ2Sel]    = useState<number|null>(null)
   const [q2Locked, setQ2Locked] = useState(false)
   const [q2Wrong,  setQ2Wrong]  = useState(false)
+  // Quiz 3
+  const [q3Sel,    setQ3Sel]    = useState<number|null>(null)
+  const [q3Locked, setQ3Locked] = useState(false)
+  const [q3Wrong,  setQ3Wrong]  = useState(false)
+
+  const [coins, setCoins] = useState(() => getCoins())
 
   const bgRef        = useRef<HTMLCanvasElement>(null)
   const jealousyRef  = useRef<HTMLCanvasElement>(null)
@@ -145,13 +162,14 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
       setAltarState('correct')
       setHeavenLight(true)
       setShaking(true)
+      setCoins(addCoins(10))
       playHeavenSound()
       speakVoice('Heaven approves your offering!')
       setTimeout(() => setShaking(false), 1300)
       setTimeout(() => setHeavenLight(false), 3200)
       setTimeout(() => {
         setPhase('quiz1')
-        setTimeout(() => speakVoice('Whose offering was accepted?'), 400)
+        setTimeout(() => speakVoice('What did Cain offer to God?'), 400)
       }, 3600)
     } else {
       setAltarState('wrong')
@@ -371,14 +389,15 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
     setQ1Sel(idx)
     if (idx === QUIZ1.correct) {
       setQ1Locked(true)
+      setCoins(addCoins(10))
       playQuizCorrectSound()
-      speakVoice('Correct! Abel offered a lamb in faith.')
+      speakVoice('Correct! Cain offered grain from his harvest.')
       setTimeout(() => {
         setPhase('jealousy')
         setTimeout(() => speakVoice('Sin is crouching at your door. You must master it.'), 900)
         setTimeout(() => {
           setPhase('quiz2')
-          setTimeout(() => speakVoice('Who is about to sin?'), 400)
+          setTimeout(() => speakVoice('Who was the first murderer?'), 400)
         }, 5800)
       }, 2000)
     } else {
@@ -394,17 +413,38 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
     setQ2Sel(idx)
     if (idx === QUIZ2.correct) {
       setQ2Locked(true)
+      setCoins(addCoins(10))
       playQuizCorrectSound()
-      speakVoice('Yes — Cain. But God gave him a chance to repent.')
+      speakVoice('Yes — Cain. Jealousy led him to commit the first murder.')
       setTimeout(() => {
-        playVictorySound()
-        setPhase('victory')
+        setPhase('quiz3')
+        setTimeout(() => speakVoice('Who did the murderer murder?'), 400)
       }, 2500)
     } else {
       setQ2Wrong(true)
       playWrongOfferingSound()
       speakVoice('Who let jealousy lead them to sin? Try again!')
       setTimeout(() => { setQ2Wrong(false); setQ2Sel(null) }, 1800)
+    }
+  }
+
+  const handleQ3 = (idx: number) => {
+    if (q3Locked) return
+    setQ3Sel(idx)
+    if (idx === QUIZ3.correct) {
+      setQ3Locked(true)
+      setCoins(addCoins(10))
+      playQuizCorrectSound()
+      speakVoice('Correct! Cain killed his brother Abel.')
+      setTimeout(() => {
+        playVictorySound()
+        setPhase('victory')
+      }, 2500)
+    } else {
+      setQ3Wrong(true)
+      playWrongOfferingSound()
+      speakVoice('Remember — who was the victim? Try again!')
+      setTimeout(() => { setQ3Wrong(false); setQ3Sel(null) }, 1800)
     }
   }
 
@@ -417,6 +457,12 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
   return (
     <div className={`level3${shaking ? ' level3--shake' : ''}`}>
       <canvas ref={bgRef} className="level3-bg" />
+      <CoinHUD
+        coins={coins}
+        hint={HINTS[phase] ?? ''}
+        onCoinsChange={setCoins}
+        disabled={phase === 'jealousy' || phase === 'victory'}
+      />
 
       <header className="level3-header">
         <p className="level3-label">LEVEL 1-3</p>
@@ -451,6 +497,7 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
               <div className="altar-fire altar-fire--3" />
             </div>
             <div className="altar-stone" />
+            <div className="altar-name-label">ALTAR</div>
           </div>
 
           {/* Heaven beam */}
@@ -516,7 +563,7 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
       {/* ── QUIZ 2 ─────────────────────────────────────────────────────── */}
       {phase === 'quiz2' && (
         <div className="quiz-card l3-quiz">
-          <p className="quiz-q-num">The Warning</p>
+          <p className="quiz-q-num">The Murder</p>
           <h2 className="quiz-question">{QUIZ2.text}</h2>
           <div className="quiz-options">
             {QUIZ2.options.map((opt, i) => (
@@ -534,6 +581,31 @@ export default function Level3({ onComplete }: { onComplete?: () => void }) {
           </div>
           {q2Wrong && (
             <p className="quiz-feedback quiz-feedback--wrong">Who let jealousy win? Try again!</p>
+          )}
+        </div>
+      )}
+
+      {/* ── QUIZ 3 ─────────────────────────────────────────────────────── */}
+      {phase === 'quiz3' && (
+        <div className="quiz-card l3-quiz">
+          <p className="quiz-q-num">The Victim</p>
+          <h2 className="quiz-question">{QUIZ3.text}</h2>
+          <div className="quiz-options">
+            {QUIZ3.options.map((opt, i) => (
+              <button
+                key={i}
+                disabled={q3Locked}
+                className={[
+                  'quiz-option',
+                  q3Locked && q3Sel === i ? 'quiz-option--correct' : '',
+                  q3Wrong  && q3Sel === i ? 'quiz-option--wrong'   : '',
+                ].filter(Boolean).join(' ')}
+                onClick={() => handleQ3(i)}
+              >{opt}</button>
+            ))}
+          </div>
+          {q3Wrong && (
+            <p className="quiz-feedback quiz-feedback--wrong">Remember who the victim was — try again!</p>
           )}
         </div>
       )}

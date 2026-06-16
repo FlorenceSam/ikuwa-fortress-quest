@@ -1,6 +1,15 @@
 import { useEffect, useRef, useState } from 'react'
 import './level2.css'
 import CompletionScreen from './CompletionScreen'
+import CoinHUD from './CoinHUD'
+import { getCoins, addCoins } from './coins'
+
+const HINTS = [
+  'The garden was called Eden — planted by God in the east.',
+  'One tree was strictly forbidden. It held the knowledge of good and evil.',
+  'A crafty creature tempted Eve — it was not human. It slithered.',
+  'Despite their sin, God showed love. He clothed them and sought them out.',
+]
 
 // ─── Data ──────────────────────────────────────────────────────────────────
 
@@ -131,8 +140,9 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
   const [feedback,    setFeedback]    = useState<'correct'|'wrong'|null>(null)
   const [selectedIdx, setSelectedIdx] = useState<number|null>(null)
   const [burstIdx,    setBurstIdx]    = useState<number|null>(null)
-  const [celebIdx,    setCelebIdx]    = useState<number|null>(null)   // which reaction to show
+  const [celebIdx,    setCelebIdx]    = useState<number|null>(null)
   const [victory,     setVictory]     = useState(false)
+  const [coins,       setCoins]       = useState(() => getCoins())
 
   const bgRef    = useRef<HTMLCanvasElement>(null)
   const bgRafRef = useRef<number>(0)
@@ -215,7 +225,8 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
     if (idx === q.correct) {
       setFeedback('correct')
       setBurstIdx(idx)
-      setCelebIdx(currentQ)                     // show this question's unique reaction
+      setCelebIdx(currentQ)
+      setCoins(addCoins(10))
       playCorrectSound(currentQ)
       speakVoice(REACTIONS[currentQ].voice)
 
@@ -247,6 +258,7 @@ export default function Level2({ onComplete }: { onComplete?: () => void }) {
   return (
     <div className="level2">
       <canvas ref={bgRef} className="level2-bg" />
+      <CoinHUD coins={coins} hint={HINTS[currentQ]} onCoinsChange={setCoins} disabled={victory} />
 
       <header className="level2-header">
         <p className="level2-label">LEVEL 1-2</p>

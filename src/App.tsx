@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import {
+  AccountTypeScreen,
   WelcomeScreen,
   CreateAccountScreen,
   LoginScreen,
@@ -145,13 +146,13 @@ function mkParticles(cx: number, cy: number): Particle[] {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AppScreen      = 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5'
+type AppScreen      = 'account-type' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5'
 type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [appScreen,      setAppScreen]      = useState<AppScreen>('welcome')
+  const [appScreen,      setAppScreen]      = useState<AppScreen>('account-type')
   const [cinematicPhase, setCinematicPhase] = useState<CinematicPhase>('dark')
   const [firstName,      setFirstName]      = useState('')
   const [showContinue,   setShowContinue]   = useState(false)
@@ -315,6 +316,10 @@ export default function App() {
   }, [cinematicPhase])
 
   // ── Render ────────────────────────────────────────────────────────────────
+
+  if (appScreen === 'account-type') {
+    return <AccountTypeScreen onSelect={() => setAppScreen('welcome')} />
+  }
 
   if (appScreen === 'welcome') {
     return <WelcomeScreen onLogin={goLogin} onCreateAccount={goCreate} />

@@ -38,7 +38,7 @@
 .level2-label {
   color: #D4A017;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.6rem, 1.3vw, 0.78rem);
+  font-size: clamp(1.0rem, 1.5vw, 1.15rem);
   letter-spacing: 0.40em;
   text-transform: uppercase;
   margin: 0 0 0.25rem;
@@ -104,9 +104,9 @@
 }
 
 .quiz-q-num {
-  color: rgba(212,160,23,0.40);
+  color: rgba(212,160,23,0.55);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.60rem, 1.2vw, 0.75rem);
+  font-size: clamp(1.0rem, 1.4vw, 1.1rem);
   letter-spacing: 0.28em;
   text-transform: uppercase;
   margin: 0;
@@ -115,7 +115,7 @@
 .quiz-question {
   color: #D4A017;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(1rem, 2.5vw, 1.55rem);
+  font-size: clamp(1.2rem, 2.5vw, 1.65rem);
   font-weight: bold;
   line-height: 1.5;
   letter-spacing: 0.03em;
@@ -135,13 +135,13 @@
 
 .quiz-option {
   width: 100%;
-  padding: clamp(0.65rem, 1.4vh, 0.88rem) clamp(0.9rem, 2.5vw, 1.4rem);
+  padding: clamp(0.75rem, 1.5vh, 1.0rem) clamp(0.9rem, 2.5vw, 1.4rem);
   background: rgba(212,160,23,0.04);
   border: 1.5px solid rgba(212,160,23,0.28);
   border-radius: 6px;
-  color: rgba(212,160,23,0.78);
+  color: rgba(212,160,23,0.88);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.74rem, 1.55vw, 0.93rem);
+  font-size: clamp(1.1rem, 1.8vw, 1.2rem);
   line-height: 1.45;
   letter-spacing: 0.025em;
   text-align: left;
@@ -212,7 +212,7 @@
 
 .quiz-feedback {
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.82rem, 1.8vw, 1rem);
+  font-size: clamp(1.1rem, 1.8vw, 1.2rem);
   font-style: italic;
   letter-spacing: 0.06em;
   text-align: center;

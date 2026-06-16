@@ -40,7 +40,7 @@
 .level1-day-label {
   color: #D4A017;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.65rem, 1.4vw, 0.85rem);
+  font-size: clamp(1.0rem, 1.6vw, 1.2rem);
   letter-spacing: 0.40em;
   text-transform: uppercase;
   margin: 0 0 0.3rem;
@@ -58,9 +58,9 @@
 }
 
 .level1-hint {
-  color: rgba(212,160,23,0.42);
+  color: rgba(212,160,23,0.55);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.65rem, 1.2vw, 0.8rem);
+  font-size: clamp(1.0rem, 1.5vw, 1.15rem);
   font-style: italic;
   margin: 0;
 }
@@ -83,9 +83,9 @@
 }
 
 .hand-empty {
-  color: rgba(212,160,23,0.30);
+  color: rgba(212,160,23,0.45);
   font-family: Georgia, serif;
-  font-size: 0.82rem;
+  font-size: 1.1rem;
   font-style: italic;
   letter-spacing: 0.06em;
   margin: 0;
@@ -185,9 +185,9 @@
 }
 
 .card-title {
-  color: rgba(212,160,23,0.80);
+  color: rgba(212,160,23,0.90);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.44rem, 0.9vw, 0.66rem);
+  font-size: clamp(0.70rem, 1.1vw, 0.90rem);
   letter-spacing: 0.03em;
   text-align: center;
   line-height: 1.25;
@@ -195,9 +195,9 @@
 }
 
 .card-verse {
-  color: rgba(212,160,23,0.32);
+  color: rgba(212,160,23,0.45);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.38rem, 0.75vw, 0.55rem);
+  font-size: clamp(0.60rem, 0.85vw, 0.75rem);
   font-style: italic;
   text-align: center;
 }
@@ -262,9 +262,9 @@
   position: absolute;
   top: 0.28rem;
   left: 0.38rem;
-  color: rgba(212,160,23,0.35);
+  color: rgba(212,160,23,0.50);
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.58rem, 1.1vw, 0.78rem);
+  font-size: clamp(0.85rem, 1.3vw, 1.0rem);
   font-weight: bold;
   letter-spacing: 0.04em;
   pointer-events: none;

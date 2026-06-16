@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import './level4.css'
 import CompletionScreen from './CompletionScreen'
+import CoinHUD from './CoinHUD'
+import { getCoins, addCoins } from './coins'
+
+const HINT = 'Find two animals of the SAME type and click them both to pair them — send all 14 pairs to the ark!'
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -11,23 +15,31 @@ interface Animal { id: string; type: string; emoji: string; x: number; y: number
 // ─── Data ────────────────────────────────────────────────────────────────────
 
 const TYPES = [
-  { type: 'lion',     emoji: '🦁' },
-  { type: 'elephant', emoji: '🐘' },
-  { type: 'dove',     emoji: '🕊️' },
-  { type: 'snake',    emoji: '🐍' },
-  { type: 'giraffe',  emoji: '🦒' },
-  { type: 'bear',     emoji: '🐻' },
+  { type: 'lion',      emoji: '🦁' },
+  { type: 'elephant',  emoji: '🐘' },
+  { type: 'dove',      emoji: '🕊️' },
+  { type: 'snake',     emoji: '🐍' },
+  { type: 'giraffe',   emoji: '🦒' },
+  { type: 'bear',      emoji: '🐻' },
+  { type: 'tiger',     emoji: '🐅' },
+  { type: 'zebra',     emoji: '🦓' },
+  { type: 'crocodile', emoji: '🐊' },
+  { type: 'rhino',     emoji: '🦏' },
+  { type: 'leopard',   emoji: '🐆' },
+  { type: 'kangaroo',  emoji: '🦘' },
+  { type: 'gorilla',   emoji: '🦍' },
+  { type: 'goat',      emoji: '🐐' },
 ]
 
 function generateAnimals(): Animal[] {
-  // 4-col × 3-row grid — left 62% of screen, top 17%-62% vertically
-  // Ark occupies right ~32%, header top ~12%; animals never go too low
+  // 4-col × 7-row grid = 28 positions — left 62% of screen, top 13%-76% vertically
+  // Ark occupies right ~32%; header top ~12%; animals never go too low
   const grid: Array<{x:number;y:number}> = []
-  for (let r = 0; r < 3; r++) {
+  for (let r = 0; r < 7; r++) {
     for (let c = 0; c < 4; c++) {
-      const x =  6 + (c / 3) * 53 + (Math.random()-0.5)*7   // 6% → 59%
-      const y = 18 + (r / 2) * 40 + (Math.random()-0.5)*5   // 18% → 58%
-      grid.push({ x: Math.max(4,Math.min(60,x)), y: Math.max(15,Math.min(61,y)) })
+      const x =  6 + (c / 3) * 52 + (Math.random()-0.5)*5   // 6% → 58%
+      const y = 13 + (r / 6) * 60 + (Math.random()-0.5)*4   // 13% → 73%
+      grid.push({ x: Math.max(4,Math.min(60,x)), y: Math.max(11,Math.min(75,y)) })
     }
   }
   for (let i=grid.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[grid[i],grid[j]]=[grid[j],grid[i]]}
@@ -164,6 +176,7 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
   const [animOut,      setAnimOut]     = useState<Set<string>>(new Set())
   const [removed,      setRemoved]     = useState<Set<string>>(new Set())
   const [wrongIds,     setWrongIds]    = useState<string[]>([])
+  const [coins,        setCoins]       = useState(() => getCoins())
 
   const bgRef          = useRef<HTMLCanvasElement>(null)
   const cinRef         = useRef<HTMLCanvasElement>(null)
@@ -255,7 +268,6 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
       ctx.clearRect(0,0,W,H)
 
       // ── Sky colour lerps storm → dusk → dawn ──
-      const stormPhase   = Math.max(0,1-p/0.30)         // 1→0 during first 30%
       const clearPhase   = Math.min(1,Math.max(0,(p-0.35)/0.35)) // 0→1 p 35%-70%
       const goldenPhase  = Math.min(1,Math.max(0,(p-0.65)/0.25)) // 0→1 p 65%-90%
 
@@ -389,9 +401,10 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
       pairsFoundRef.current += 1
       const newCount = pairsFoundRef.current
       setPairsFound(newCount)
-      const sid = selected   // capture before clearing
+      const sid = selected
       setAnimOut(s=>{const n=new Set(s);n.add(sid);n.add(id);return n})
       setSelected(null)
+      setCoins(addCoins(10))
       playMatchSound()
       speakVoice('Two by two, as God commanded!')
 
@@ -400,7 +413,7 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
         setAnimOut(s=>{const n=new Set(s);n.delete(sid);n.delete(id);return n})
       }, 950)
 
-      if (newCount === 6 && !glorySentRef.current) {
+      if (newCount === 14 && !glorySentRef.current) {
         if(timerRef.current) clearInterval(timerRef.current)
         setTimeout(()=>setPhase('cinematic'), 1500)
       }
@@ -419,6 +432,12 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
   return (
     <div className="level4">
       <canvas ref={bgRef} className="level4-bg" />
+      <CoinHUD
+        coins={coins}
+        hint={HINT}
+        onCoinsChange={setCoins}
+        disabled={phase !== 'matching'}
+      />
 
       {/* Rain overlay */}
       {phase==='matching' && <div className="rain-layer" />}
@@ -444,11 +463,11 @@ export default function Level4({ onComplete }:{ onComplete?: () => void }) {
               <div className="ark-plank-2" />
               <div className="ark-plank-3" />
             </div>
-            <div className="ark-badge">{pairsFound} / 6 pairs aboard 🐾</div>
+            <div className="ark-badge">{pairsFound} / 14 pairs aboard 🐾</div>
           </div>
 
-          {/* Hint */}
-          <p className="match-hint">Click two matching animals to pair them</p>
+          {/* Instruction — top of play area */}
+          <p className="match-hint">Click two matching animals to pair them!</p>
 
           {/* Rising water */}
           <div

@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import './level5.css'
 import CompletionScreen from './CompletionScreen'
+import CoinHUD from './CoinHUD'
+import { getCoins, addCoins } from './coins'
+
+const HINT = 'Tap when the brick is in the GOLD zone — wait for it to reach the center of the track!'
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 
@@ -21,19 +25,13 @@ interface CrumblePiece {
   color: string; alpha: number
 }
 
-interface ScatterFigure {
-  x: number; y: number
-  vx: number; vy: number
-  alpha: number
-}
-
 interface LangBubble {
   name: string
   bg: string
   textColor: string
-  x: number
-  y: number
   delay: number
+  tx: string
+  ty: string
 }
 
 // ─── Constants ──────────────────────────────────────────────────────────────
@@ -55,11 +53,6 @@ const LANGUAGES = [
   { name: 'Portuguese', bg: '#F57F17', textColor: '#111' },
 ]
 
-const BUBBLE_POS = [
-  { x:  8, y: 13 }, { x: 38, y:  8 }, { x: 65, y: 12 }, { x: 84, y: 21 },
-  { x: 14, y: 40 }, { x: 52, y: 36 }, { x: 77, y: 44 },
-  { x:  6, y: 63 }, { x: 32, y: 69 }, { x: 61, y: 66 }, { x: 88, y: 61 },
-]
 
 // ─── Audio ──────────────────────────────────────────────────────────────────
 
@@ -414,6 +407,7 @@ export default function Level5({ onComplete }: { onComplete?: () => void }) {
   const [shaking,       setShaking]       = useState(false)
   const [bubbles,       setBubbles]       = useState<LangBubble[]>([])
   const [showPrideText, setShowPrideText] = useState(false)
+  const [coins,         setCoins]         = useState(() => getCoins())
 
   const canvasRef    = useRef<HTMLCanvasElement>(null)
   const rafRef       = useRef<number>(0)
@@ -444,9 +438,7 @@ export default function Level5({ onComplete }: { onComplete?: () => void }) {
     let angelAlpha = 0
     let lightAlpha = 0
     let crumblePieces: CrumblePiece[] = []
-    let scatterFigs:   ScatterFigure[] = []
     let crumbleReady = false
-    let scatterReady = false
     let lastNow      = -1
 
     const draw = (now: number) => {
@@ -525,39 +517,6 @@ export default function Level5({ onComplete }: { onComplete?: () => void }) {
         }
       }
 
-      // Scatter people
-      if (p === 'scatter') {
-        if (!scatterReady) {
-          const groundY = H * 0.78
-          const cx = W * 0.50
-          scatterFigs = Array.from({ length: 8 }, (_, i) => ({
-            x:     cx + (Math.random() - 0.5) * 45,
-            y:     groundY - 12,
-            vx:    (i % 2 === 0 ? -1 : 1) * (Math.random() * 6 + 2.5)
-                   + (Math.random() - 0.5) * 2.5,
-            vy:    -(Math.random() * 5 + 2),
-            alpha: 1,
-          }))
-          scatterReady = true
-        }
-
-        for (const fig of scatterFigs) {
-          fig.vy += 0.22; fig.y += fig.vy; fig.x += fig.vx
-          fig.alpha = Math.max(0, fig.alpha - 0.0045)
-          if (fig.alpha < 0.01) continue
-          ctx.save(); ctx.globalAlpha = fig.alpha
-          ctx.fillStyle = ctx.strokeStyle = '#0b0600'
-          ctx.lineWidth = 1.6
-          const fx = fig.x, fy = fig.y
-          ctx.beginPath(); ctx.arc(fx, fy - 10, 4, 0, Math.PI * 2); ctx.fill()
-          ctx.beginPath()
-          ctx.moveTo(fx, fy - 6);  ctx.lineTo(fx, fy + 4)
-          ctx.moveTo(fx - 5, fy - 1); ctx.lineTo(fx + 5, fy - 1)
-          ctx.moveTo(fx, fy + 4);  ctx.lineTo(fx - 3.5, fy + 13)
-          ctx.moveTo(fx, fy + 4);  ctx.lineTo(fx + 3.5, fy + 13)
-          ctx.stroke(); ctx.restore()
-        }
-      }
 
       rafRef.current = requestAnimationFrame(draw)
     }
@@ -651,12 +610,16 @@ export default function Level5({ onComplete }: { onComplete?: () => void }) {
     }
 
     if (phase === 'scatter') {
-      const bubblesData: LangBubble[] = LANGUAGES.map((l, i) => ({
-        ...l,
-        x:     BUBBLE_POS[i].x,
-        y:     BUBBLE_POS[i].y,
-        delay: i * 210,
-      }))
+      const count = LANGUAGES.length
+      const bubblesData: LangBubble[] = LANGUAGES.map((l, i) => {
+        const angle = (i / count) * Math.PI * 2 - Math.PI / 2
+        return {
+          ...l,
+          delay: i * 190,
+          tx: `${Math.round(Math.cos(angle) * 44)}vw`,
+          ty: `${Math.round(Math.sin(angle) * 32)}vh`,
+        }
+      })
       const t1 = setTimeout(() => setBubbles(bubblesData), 350)
       const t2 = setTimeout(() => {
         setShowPrideText(true)
@@ -688,6 +651,7 @@ export default function Level5({ onComplete }: { onComplete?: () => void }) {
       const nb = bricksRef.current + 1
       bricksRef.current = nb
       setBricksPlaced(nb)
+      setCoins(addCoins(10))
       setHitFeedback('hit')
       setTimeout(() => setHitFeedback(null), 480)
 
@@ -722,6 +686,12 @@ export default function Level5({ onComplete }: { onComplete?: () => void }) {
   return (
     <div className={`level5${shaking ? ' level5--shake' : ''}`}>
       <canvas ref={canvasRef} className="l5-canvas" />
+      <CoinHUD
+        coins={coins}
+        hint={HINT}
+        onCoinsChange={setCoins}
+        disabled={phase !== 'building'}
+      />
 
       {flash && <div className="l5-flash" />}
 
@@ -741,7 +711,7 @@ export default function Level5({ onComplete }: { onComplete?: () => void }) {
         </div>
       )}
 
-      {/* Brick counter */}
+      {/* Brick counter — top-center to avoid CoinHUD overlap */}
       {inBuilding && (
         <div className="l5-brick-count">
           {bricksPlaced} / {TARGET_BRICKS} bricks
@@ -794,20 +764,18 @@ export default function Level5({ onComplete }: { onComplete?: () => void }) {
         </div>
       )}
 
-      {/* Language bubbles (scatter phase) */}
+      {/* Scatter people with language speech bubbles above their heads */}
       {bubbles.map(b => (
         <div
           key={b.name}
-          className="l5-bubble"
-          style={{
-            left:            `${b.x}%`,
-            top:             `${b.y}%`,
-            background:      b.bg,
-            color:           b.textColor,
-            animationDelay:  `${b.delay}ms`,
-          }}
+          className="scatter-person"
+          style={{ '--tx': b.tx, '--ty': b.ty, animationDelay: `${b.delay}ms` } as React.CSSProperties}
         >
-          {b.name}
+          <div className="scatter-speech" style={{ background: b.bg, color: b.textColor }}>
+            {b.name}
+          </div>
+          <div className="scatter-tail" style={{ borderTopColor: b.bg }} />
+          <span className="scatter-figure">🧍</span>
         </div>
       ))}
 

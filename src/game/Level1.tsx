@@ -1,6 +1,10 @@
 import { useEffect, useRef, useState } from 'react'
 import './level1.css'
 import CompletionScreen from './CompletionScreen'
+import CoinHUD from './CoinHUD'
+import { getCoins, addCoins } from './coins'
+
+const HINT = 'Day 1: Light 🌑 | Day 2: Water 🌊 | Day 3: Land 🌿 | Day 4: Stars ⭐ | Day 5: Fish 🐟 | Day 6: Animals 🦁 | Day 7: Rest 😴'
 
 // ─── Data ──────────────────────────────────────────────────────────────────
 
@@ -72,6 +76,7 @@ export default function Level1({ onComplete }: { onComplete?: () => void }) {
   const [hoverSlot,  setHoverSlot]  = useState<number|null>(null)
   const [wrongSlots, setWrongSlots] = useState<Set<number>>(new Set())
   const [victory,    setVictory]    = useState(false)
+  const [coins,      setCoins]      = useState(() => getCoins())
 
   const bgRef      = useRef<HTMLCanvasElement>(null)
   const bgRafRef   = useRef<number>(0)
@@ -87,6 +92,7 @@ export default function Level1({ onComplete }: { onComplete?: () => void }) {
       setHand(h => h.filter(id => id !== cardId))
       setSlots(s => { const n=[...s]; n[slotIdx]=cardId; return n })
       setCorrect(c => { const n=new Set(c); n.add(cardId); return n })
+      setCoins(addCoins(10))
       playChime(NOTES[slotIdx])
     } else {
       // Shake the slot, card stays in hand (ghost disappears = visual "return")
@@ -244,6 +250,7 @@ export default function Level1({ onComplete }: { onComplete?: () => void }) {
   return (
     <div className="level1">
       <canvas ref={bgRef} className="level1-bg" />
+      <CoinHUD coins={coins} hint={HINT} onCoinsChange={setCoins} />
 
       <header className="level1-header">
         <p className="level1-day-label">DAY 1 OF 7</p>

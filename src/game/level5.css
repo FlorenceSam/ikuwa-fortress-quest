@@ -42,17 +42,17 @@
 .l5-label {
   margin: 0;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.52rem, 1.0vw, 0.70rem);
-  color: rgba(212, 160, 23, 0.50);
+  font-size: clamp(1.0rem, 1.4vw, 1.1rem);
+  color: rgba(212, 160, 23, 0.60);
   letter-spacing: 0.24em;
 }
 
 .l5-title {
   margin: 3px 0 0;
   font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.90rem, 2.0vw, 1.40rem);
+  font-size: clamp(1.2rem, 2.2vw, 1.6rem);
   font-weight: normal;
-  color: rgba(212, 160, 23, 0.78);
+  color: rgba(212, 160, 23, 0.88);
   letter-spacing: 0.06em;
   text-shadow: 0 0 22px rgba(212, 160, 23, 0.22);
 }
@@ -88,8 +88,8 @@
   top: 50%;
   transform: translateY(-160%);
   font-family: Georgia, serif;
-  font-size: clamp(0.52rem, 0.95vw, 0.68rem);
-  color: rgba(212, 160, 23, 0.50);
+  font-size: clamp(1.0rem, 1.2vw, 1.1rem);
+  color: rgba(212, 160, 23, 0.65);
   letter-spacing: 0.12em;
 }
 
@@ -98,13 +98,15 @@
 .l5-brick-count {
   position: absolute;
   top: clamp(10px, 2vh, 18px);
-  right: clamp(14px, 3vw, 26px);
+  left: 50%;
+  transform: translateX(-50%);
   z-index: 10;
   font-family: Georgia, serif;
-  font-size: clamp(0.58rem, 1.0vw, 0.74rem);
-  color: rgba(212, 160, 23, 0.52);
+  font-size: 1.1rem;
+  color: rgba(212, 160, 23, 0.65);
   letter-spacing: 0.12em;
   pointer-events: none;
+  white-space: nowrap;
 }
 
 /* ── Play zone (bottom strip) ── */
@@ -131,8 +133,8 @@
   margin: 0 0 clamp(8px, 1.6vh, 14px);
   font-family: Georgia, 'Times New Roman', serif;
   font-style: italic;
-  font-size: clamp(0.66rem, 1.38vw, 0.92rem);
-  color: rgba(212, 160, 23, 0.68);
+  font-size: clamp(1.1rem, 1.6vw, 1.25rem);
+  color: rgba(212, 160, 23, 0.80);
   letter-spacing: 0.05em;
   text-align: center;
   min-height: 1.4em;
@@ -226,7 +228,7 @@
 }
 
 .l5-divine--god .l5-divine-text {
-  font-size: clamp(1.05rem, 2.5vw, 1.75rem);
+  font-size: clamp(1.3rem, 2.8vw, 2.0rem);
   color: #e8bc1a;
   text-shadow:
     0 0 28px rgba(212, 160, 23, 0.85),
@@ -235,8 +237,8 @@
 }
 
 .l5-divine--angel .l5-divine-text {
-  font-size: clamp(0.82rem, 1.85vw, 1.28rem);
-  color: rgba(245, 238, 220, 0.93);
+  font-size: clamp(1.1rem, 2.0vw, 1.5rem);
+  color: rgba(245, 238, 220, 0.95);
   text-shadow:
     0 0 22px rgba(255, 245, 200, 0.55),
     0 0 55px rgba(220, 205, 160, 0.25);
@@ -247,30 +249,54 @@
   to   { opacity: 1; transform: translateX(-50%) translateY(0);    }
 }
 
-/* ── Language bubbles ── */
+/* ── Scatter people with speech bubbles ── */
 
-.l5-bubble {
+.scatter-person {
   position: absolute;
+  left: 50%;
+  top: 76%;
   z-index: 60;
-  padding: clamp(5px, 1vh, 9px) clamp(11px, 2.2vw, 20px);
-  border-radius: 999px;
-  font-family: Georgia, 'Times New Roman', serif;
-  font-size: clamp(0.60rem, 1.25vw, 0.82rem);
-  font-weight: bold;
-  letter-spacing: 0.07em;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0;
   pointer-events: none;
-  transform: translate(-50%, -50%);
-  animation: l5-bubble-pop 0.50s ease-out both;
-  box-shadow:
-    0 2px 14px rgba(0, 0, 0, 0.40),
-    0 0 0 1px rgba(255, 255, 255, 0.10);
-  white-space: nowrap;
+  opacity: 0;
+  animation: l5-scatter-out 4.5s ease-out forwards;
 }
 
-@keyframes l5-bubble-pop {
-  0%   { opacity: 0; transform: translate(-50%, -50%) scale(0.25) rotate(-8deg); }
-  55%  {              transform: translate(-50%, -50%) scale(1.18) rotate(1deg);  }
-  100% { opacity: 1; transform: translate(-50%, -50%) scale(1)    rotate(0deg);  }
+@keyframes l5-scatter-out {
+  0%   { opacity: 0; transform: translate(-50%, -100%) scale(0.25); }
+  13%  { opacity: 1; transform: translate(-50%, -100%) scale(1.10); }
+  72%  { opacity: 1; transform: translate(calc(-50% + var(--tx)), calc(-100% + var(--ty))) scale(0.88); }
+  100% { opacity: 0; transform: translate(calc(-50% + var(--tx)), calc(-100% + var(--ty))) scale(0.82); }
+}
+
+.scatter-speech {
+  padding: clamp(4px, 0.8vh, 8px) clamp(10px, 1.8vw, 18px);
+  border-radius: 999px;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.9rem, 1.4vw, 1.1rem);
+  font-weight: bold;
+  letter-spacing: 0.07em;
+  white-space: nowrap;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.50);
+}
+
+.scatter-tail {
+  width: 0;
+  height: 0;
+  border-left: 6px solid transparent;
+  border-right: 6px solid transparent;
+  border-top-width: 8px;
+  border-top-style: solid;
+  margin-top: -1px;
+}
+
+.scatter-figure {
+  font-size: clamp(1.4rem, 2.4vw, 1.9rem);
+  line-height: 1;
+  margin-top: 2px;
 }
 
 /* ── Pride quote ── */
@@ -283,8 +309,8 @@
   z-index: 70;
   font-family: Georgia, 'Times New Roman', serif;
   font-style: italic;
-  font-size: clamp(0.88rem, 1.95vw, 1.38rem);
-  color: rgba(212, 160, 23, 0.92);
+  font-size: clamp(1.2rem, 2.2vw, 1.65rem);
+  color: rgba(212, 160, 23, 0.95);
   text-align: center;
   max-width: min(80vw, 530px);
   line-height: 1.6;
