@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import './level10.css'
 import CompletionScreen from './CompletionScreen'
-import { addCoins, getCoins } from './coins'
+import { addCoins, getCoins, penalizeCoins } from './coins'
 
 // ── Audio ─────────────────────────────────────────────────────────────────────
 let _ac: AudioContext | null = null
@@ -387,7 +387,11 @@ export default function Level10({ onComplete, onFail }: Props) {
     setIsCorrect(correct)
     const ac = getAC()
     if (correct) { playCorrect(ac); earnCoins(q.coins); setTimeout(() => speakVO(q.vo), 200) }
-    else         { playWrong(ac) }
+    else {
+      playWrong(ac)
+      setCoins(penalizeCoins(50))
+      window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
+    }
     setTimeout(() => {
       setSelected(null); setIsCorrect(null)
       if (dayRef.current >= 40) triggerClimax()

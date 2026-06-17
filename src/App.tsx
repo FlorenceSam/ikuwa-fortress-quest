@@ -18,6 +18,9 @@ import Level9 from './game/Level9'
 import Level10 from './game/Level10'
 import FailScreen from './game/FailScreen'
 import ContinuePromptScreen from './screens/ContinuePromptScreen'
+import DailyMannaScreen from './screens/DailyMannaScreen'
+import CoinShopModal from './screens/CoinShopModal'
+import { checkDailyManna, getCoins } from './game/coins'
 import './App.css'
 
 // ─── Progress helpers ──────────────────────────────────────────────────────────
@@ -170,13 +173,19 @@ function mkParticles(cx: number, cy: number): Particle[] {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8' | 'level9' | 'level10'
+type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8' | 'level9' | 'level10' | 'manna'
 type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [appScreen,      setAppScreen]      = useState<AppScreen>(() => hasSavedSession() ? 'continue-prompt' : 'account-type')
+  const [appScreen, setAppScreen] = useState<AppScreen>(() => {
+    if (hasSavedSession()) {
+      if (checkDailyManna().shouldShow) return 'manna'
+      return 'continue-prompt'
+    }
+    return 'account-type'
+  })
   const [cinematicPhase, setCinematicPhase] = useState<CinematicPhase>('dark')
   const [firstName,      setFirstName]      = useState('')
   const [showContinue,   setShowContinue]   = useState(false)
@@ -186,6 +195,13 @@ export default function App() {
   const [levelKey,   setLevelKey]   = useState(0)
   const [showHint,   setShowHint]   = useState(false)
 
+  // ── Shop / penalty / manna state ─────────────────────────────────────────
+  const [shopOpen,        setShopOpen]        = useState(false)
+  const [penaltyKey,      setPenaltyKey]      = useState(0)
+  const [showLowCoin,     setShowLowCoin]     = useState(false)
+  const [postMannaScreen, setPostMannaScreen] = useState<AppScreen>('continue-prompt')
+  const lowCoinShownRef = useRef(false)
+
   const handleFail      = (_hint: string) => setFailActive(true)
   const handleRetry     = () => { setFailActive(false); setShowHint(false); setLevelKey(k => k + 1) }
   const handleHintRetry = () => { setFailActive(false); setShowHint(true);  setLevelKey(k => k + 1) }
@@ -193,7 +209,6 @@ export default function App() {
 
   const advanceLevel = (next: AppScreen) => {
     setShowHint(false)
-    // Persist progress whenever entering a level, clear it when all levels done
     if (isLevelScreen(next)) {
       try { localStorage.setItem(PROGRESS_KEY, next) } catch (_) {}
     } else if (next === 'welcome') {
@@ -202,14 +217,12 @@ export default function App() {
     setAppScreen(next)
   }
 
-  // Continue from saved progress
   const handleContinue = () => {
     const saved = (localStorage.getItem(PROGRESS_KEY) || 'game') as AppScreen
     setFailActive(false); setShowHint(false)
     setAppScreen(saved)
   }
 
-  // Restart from Level 1-1, wiping progress
   const handleRestartFresh = () => {
     try { localStorage.removeItem(PROGRESS_KEY) } catch (_) {}
     setFailActive(false); setShowHint(false)
@@ -248,51 +261,67 @@ export default function App() {
 
   useEffect(() => () => stopVoice(), [])
 
+  // ── Coin penalty and shop events ──────────────────────────────────────────
+
+  useEffect(() => {
+    const onPenalty = () => {
+      setPenaltyKey(k => k + 1)
+      const c = getCoins()
+      if (c < 100 && !lowCoinShownRef.current) {
+        lowCoinShownRef.current = true
+        setShowLowCoin(true)
+        setTimeout(() => setShowLowCoin(false), 6200)
+      }
+    }
+    const onShop = () => setShopOpen(true)
+    window.addEventListener('iq-coin-penalty', onPenalty)
+    window.addEventListener('iq-open-shop',    onShop)
+    return () => {
+      window.removeEventListener('iq-coin-penalty', onPenalty)
+      window.removeEventListener('iq-open-shop',    onShop)
+    }
+  }, [])
+
   // ── Screen transitions ────────────────────────────────────────────────────
 
-  const goLogin = () => {
-    startVoice()
-    setAppScreen('login')
-  }
-
-  const goCreate = () => {
-    startVoice()
-    setAppScreen('create-account')
-  }
+  const goLogin = () => { startVoice(); setAppScreen('login') }
+  const goCreate = () => { startVoice(); setAppScreen('create-account') }
 
   const afterAuth = (name: string) => {
     setFirstName(name)
-    const savedChar    = localStorage.getItem('iq_character')
+    const savedChar     = localStorage.getItem('iq_character')
     const savedProgress = localStorage.getItem(PROGRESS_KEY)
-    if (savedChar && savedProgress) {
-      // Returning player — show continue prompt
-      setAppScreen('continue-prompt')
-    } else if (savedChar) {
-      // Character already set, no saved level yet — skip naming screen, go to Level 1-1
-      try { localStorage.setItem(PROGRESS_KEY, 'game') } catch (_) {}
-      setAppScreen('game')
+    if (savedChar) {
+      const manna = checkDailyManna()
+      if (manna.shouldShow) {
+        const next: AppScreen = savedProgress ? 'continue-prompt' : 'game'
+        setPostMannaScreen(next)
+        setAppScreen('manna')
+        return
+      }
+      if (savedProgress) {
+        setAppScreen('continue-prompt')
+      } else {
+        try { localStorage.setItem(PROGRESS_KEY, 'game') } catch (_) {}
+        setAppScreen('game')
+      }
     } else {
-      // New player — let them name their character
       setAppScreen('character-name')
     }
   }
 
-  // ── Cinematic launch (called from ENTER THE KINGDOM click — user gesture) ─
+  // ── Cinematic launch ──────────────────────────────────────────────────────
 
   const enterKingdom = (characterName: string) => {
     stopVoice()
     localStorage.setItem('iq_character', characterName)
-
-    // AudioContext MUST be created inside a user gesture handler
     audioRef.current = launchSound()
-
     setShowContinue(false)
     setAppScreen('cinematic')
     setCinematicPhase('dark')
     setTimeout(() => setCinematicPhase('reveal'),   1000)
     setTimeout(() => setCinematicPhase('creation'), 4000)
     setTimeout(() => setCinematicPhase('cosmos'),   6000)
-    // Show "Begin Journey" button 5 s after cosmos fully fades in
     setTimeout(() => setShowContinue(true), 11000)
   }
 
@@ -389,97 +418,109 @@ export default function App() {
 
   // ── Render ────────────────────────────────────────────────────────────────
 
-  if (appScreen === 'continue-prompt') {
-    return <ContinuePromptScreen onContinue={handleContinue} onRestart={handleRestartFresh} />
-  }
+  let mainContent: React.ReactNode
 
-  if (appScreen === 'account-type') {
-    return <AccountTypeScreen onSelect={() => setAppScreen('welcome')} />
-  }
-
-  if (appScreen === 'welcome') {
-    return <WelcomeScreen onLogin={goLogin} onCreateAccount={goCreate} />
-  }
-
-  if (appScreen === 'create-account') {
-    return (
+  if (appScreen === 'manna') {
+    mainContent = (
+      <DailyMannaScreen onCollect={() => {
+        lowCoinShownRef.current = false
+        setAppScreen(postMannaScreen)
+      }} />
+    )
+  } else if (appScreen === 'continue-prompt') {
+    mainContent = <ContinuePromptScreen onContinue={handleContinue} onRestart={handleRestartFresh} />
+  } else if (appScreen === 'account-type') {
+    mainContent = <AccountTypeScreen onSelect={() => setAppScreen('welcome')} />
+  } else if (appScreen === 'welcome') {
+    mainContent = <WelcomeScreen onLogin={goLogin} onCreateAccount={goCreate} />
+  } else if (appScreen === 'create-account') {
+    mainContent = (
       <CreateAccountScreen
         onSuccess={afterAuth}
         onLogin={() => setAppScreen('login')}
       />
     )
-  }
-
-  if (appScreen === 'login') {
-    return (
+  } else if (appScreen === 'login') {
+    mainContent = (
       <LoginScreen
         onSuccess={afterAuth}
         onCreateAccount={() => setAppScreen('create-account')}
       />
     )
+  } else if (appScreen === 'character-name') {
+    mainContent = <CharacterNameScreen firstName={firstName} onEnter={enterKingdom} />
+  } else if (appScreen === 'game') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level1 key={levelKey} onComplete={() => advanceLevel('level2')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level2') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level2 key={levelKey} onComplete={() => advanceLevel('level3')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level3') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level3 key={levelKey} onComplete={() => advanceLevel('level4')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level4') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level4 key={levelKey} onComplete={() => advanceLevel('level5')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level5') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level5 key={levelKey} onComplete={() => advanceLevel('level6')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level6') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level6 key={levelKey} onComplete={() => advanceLevel('level7')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level7') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level7 key={levelKey} onComplete={() => advanceLevel('level8')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level8') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level8 key={levelKey} onComplete={() => advanceLevel('level9')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level9') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level9 key={levelKey} onComplete={() => advanceLevel('level10')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level10') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level10 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
+  } else {
+    mainContent = (
+      <div className="opening-screen">
+        {cinematicPhase === 'cosmos'   && <canvas ref={canvasRef} className="cosmos-canvas" />}
+        {cinematicPhase === 'creation' && <div className="creation-ball" />}
+        {cinematicPhase === 'creation' && <div className="creation-flash" />}
+        {(cinematicPhase === 'reveal' || cinematicPhase === 'creation') && (
+          <h1 className={`opening-text${cinematicPhase === 'reveal' ? ' visible' : ' fade-out'}`}>
+            Let there be light
+          </h1>
+        )}
+        {cinematicPhase === 'cosmos' && showContinue && (
+          <button className="continue-btn" onClick={() => setAppScreen('game')}>
+            BEGIN YOUR JOURNEY
+          </button>
+        )}
+      </div>
+    )
   }
 
-  if (appScreen === 'character-name') {
-    return <CharacterNameScreen firstName={firstName} onEnter={enterKingdom} />
-  }
+  const playerName = localStorage.getItem('iq_character') || 'Warrior'
 
-  if (appScreen === 'game') {
-    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level1 key={levelKey} onComplete={() => advanceLevel('level2')} onFail={handleFail} showHint={showHint} />
-  }
-  if (appScreen === 'level2') {
-    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level2 key={levelKey} onComplete={() => advanceLevel('level3')} onFail={handleFail} showHint={showHint} />
-  }
-  if (appScreen === 'level3') {
-    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level3 key={levelKey} onComplete={() => advanceLevel('level4')} onFail={handleFail} showHint={showHint} />
-  }
-  if (appScreen === 'level4') {
-    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level4 key={levelKey} onComplete={() => advanceLevel('level5')} onFail={handleFail} showHint={showHint} />
-  }
-  if (appScreen === 'level5') {
-    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level5 key={levelKey} onComplete={() => advanceLevel('level6')} onFail={handleFail} showHint={showHint} />
-  }
-  if (appScreen === 'level6') {
-    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level6 key={levelKey} onComplete={() => advanceLevel('level7')} onFail={handleFail} showHint={showHint} />
-  }
-  if (appScreen === 'level7') {
-    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level7 key={levelKey} onComplete={() => advanceLevel('level8')} onFail={handleFail} showHint={showHint} />
-  }
-  if (appScreen === 'level8') {
-    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level8 key={levelKey} onComplete={() => advanceLevel('level9')} onFail={handleFail} showHint={showHint} />
-  }
-  if (appScreen === 'level9') {
-    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level9 key={levelKey} onComplete={() => advanceLevel('level10')} onFail={handleFail} showHint={showHint} />
-  }
-  if (appScreen === 'level10') {
-    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level10 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
-  }
-
-  // Cinematic
   return (
-    <div className="opening-screen">
-      {cinematicPhase === 'cosmos'   && <canvas ref={canvasRef} className="cosmos-canvas" />}
-      {cinematicPhase === 'creation' && <div className="creation-ball" />}
-      {cinematicPhase === 'creation' && <div className="creation-flash" />}
-      {(cinematicPhase === 'reveal' || cinematicPhase === 'creation') && (
-        <h1 className={`opening-text${cinematicPhase === 'reveal' ? ' visible' : ' fade-out'}`}>
-          Let there be light
-        </h1>
+    <>
+      {mainContent}
+      {shopOpen && <CoinShopModal onClose={() => setShopOpen(false)} />}
+      {penaltyKey > 0 && <div key={penaltyKey} className="coin-penalty-float">-50 🪙</div>}
+      {showLowCoin && (
+        <p className="low-coin-warning">
+          {playerName} — your treasury is running low. Log in tomorrow for your Daily Manna or visit The Treasury! 🙏
+        </p>
       )}
-      {cinematicPhase === 'cosmos' && showContinue && (
-        <button className="continue-btn" onClick={() => setAppScreen('game')}>
-          BEGIN YOUR JOURNEY
-        </button>
-      )}
-    </div>
+    </>
   )
 }

@@ -1,0 +1,167 @@
+.shop-backdrop {
+  position: fixed; inset: 0;
+  background: rgba(0,0,0,0.82);
+  z-index: 9000;
+  display: flex; align-items: center; justify-content: center;
+  animation: shop-fade 0.22s ease-out;
+  backdrop-filter: blur(3px);
+}
+@keyframes shop-fade {
+  from { opacity: 0; } to { opacity: 1; }
+}
+
+.shop-modal {
+  position: relative;
+  background: linear-gradient(160deg, #0d0800, #1a1000, #0a0600);
+  border: 2px solid rgba(212,160,23,0.6);
+  border-radius: 20px;
+  width: min(94vw, 480px);
+  max-height: 90vh;
+  overflow-y: auto;
+  overflow-x: hidden;
+  box-shadow: 0 0 80px rgba(212,160,23,0.22), 0 20px 60px rgba(0,0,0,0.8);
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #D4A017;
+  animation: shop-slide-up 0.28s cubic-bezier(.22,.68,0,1.2);
+}
+@keyframes shop-slide-up {
+  from { transform: translateY(40px) scale(0.95); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.shop-modal::-webkit-scrollbar { width: 4px; }
+.shop-modal::-webkit-scrollbar-thumb { background: rgba(212,160,23,0.3); border-radius: 2px; }
+
+.shop-coin-shower {
+  position: absolute; inset: 0;
+  pointer-events: none; border-radius: 20px; z-index: 0;
+}
+
+/* ── Header ────────────────────────────────────────────────────────────────── */
+
+.shop-header {
+  position: relative; z-index: 1;
+  text-align: center;
+  padding: 1.6rem 1.5rem 1rem;
+  border-bottom: 1px solid rgba(212,160,23,0.22);
+  background: linear-gradient(180deg, rgba(212,160,23,0.08) 0%, transparent 100%);
+}
+
+.shop-title {
+  margin: 0;
+  font-size: clamp(1.6rem, 5vw, 2rem);
+  letter-spacing: 0.22em;
+  color: #FFD700;
+  text-shadow: 0 0 30px rgba(255,215,0,0.6), 0 2px 8px rgba(0,0,0,0.8);
+  font-weight: 900;
+}
+
+.shop-sub {
+  margin: 0.2rem 0 0.8rem;
+  font-size: 0.8rem; letter-spacing: 0.1em;
+  color: rgba(212,160,23,0.6); font-style: italic;
+}
+
+.shop-balance {
+  display: flex; align-items: center; justify-content: center; gap: 1rem;
+  font-size: 0.9rem; font-weight: 700;
+}
+
+.shop-bal-coins  { color: #FFD700; }
+.shop-bal-streak { color: rgba(212,160,23,0.8); }
+
+.shop-close-btn {
+  position: absolute; top: 1rem; right: 1rem;
+  background: transparent;
+  border: 1px solid rgba(212,160,23,0.35);
+  color: rgba(212,160,23,0.65);
+  font-size: 1.1rem;
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  transition: background 0.15s, color 0.15s;
+  line-height: 1;
+}
+.shop-close-btn:hover { background: rgba(212,160,23,0.12); color: #FFD700; }
+
+/* ── Packages ──────────────────────────────────────────────────────────────── */
+
+.shop-packages {
+  position: relative; z-index: 1;
+  display: grid; grid-template-columns: 1fr 1fr;
+  gap: 0.7rem; padding: 1rem;
+}
+
+.shop-pkg {
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center; gap: 0.25rem;
+  background: linear-gradient(145deg, rgba(212,160,23,0.08), rgba(212,160,23,0.04));
+  border: 1.5px solid rgba(212,160,23,0.38);
+  border-radius: 12px;
+  padding: 0.9rem 0.5rem;
+  cursor: pointer;
+  color: #D4A017;
+  font-family: Georgia, 'Times New Roman', serif;
+  transition: background 0.18s, box-shadow 0.18s, border-color 0.18s, transform 0.15s;
+  text-align: center; min-height: 110px;
+}
+.shop-pkg:hover {
+  background: linear-gradient(145deg, rgba(212,160,23,0.22), rgba(212,160,23,0.10));
+  border-color: #FFD700;
+  box-shadow: 0 0 24px rgba(212,160,23,0.42), inset 0 0 16px rgba(255,215,0,0.06);
+  transform: translateY(-2px) scale(1.03);
+}
+
+.shop-pkg-emoji  { font-size: 1.8rem; }
+.shop-pkg-label  { font-size: 0.62rem; letter-spacing: 0.12em; font-weight: 700; text-transform: uppercase; color: rgba(212,160,23,0.75); line-height: 1.3; }
+.shop-pkg-coins  { font-size: 0.95rem; font-weight: 900; color: #FFD700; }
+.shop-pkg-price  { font-size: 0.72rem; color: rgba(255,255,255,0.55); margin-top: 0.1rem; }
+
+/* ── Free section ──────────────────────────────────────────────────────────── */
+
+.shop-free-section {
+  position: relative; z-index: 1;
+  padding: 0 1rem 0.5rem;
+}
+
+.shop-free-title {
+  text-align: center; font-size: 0.7rem;
+  letter-spacing: 0.2em; color: rgba(212,160,23,0.5);
+  margin: 0 0 0.6rem;
+}
+
+.shop-free-items { display: flex; flex-direction: column; gap: 0.5rem; }
+
+.shop-free-item {
+  display: flex; justify-content: space-between; align-items: center;
+  background: rgba(212,160,23,0.05);
+  border: 1px solid rgba(212,160,23,0.2);
+  border-radius: 8px; padding: 0.5rem 0.8rem;
+  font-size: 0.78rem; letter-spacing: 0.06em;
+}
+
+.shop-free-coins { font-weight: 700; color: rgba(212,160,23,0.7); }
+
+.shop-coming-soon {
+  font-size: 0.65rem; color: rgba(255,255,255,0.35);
+  font-style: italic; font-weight: normal; margin-left: 0.3rem;
+}
+
+/* ── Footer notes ──────────────────────────────────────────────────────────── */
+
+.shop-manna-note {
+  position: relative; z-index: 1;
+  text-align: center; font-size: 0.72rem;
+  color: rgba(212,160,23,0.55);
+  margin: 0.5rem 1rem; line-height: 1.5; font-style: italic;
+  padding-top: 0.5rem;
+  border-top: 1px solid rgba(212,160,23,0.15);
+}
+
+.shop-player-note {
+  position: relative; z-index: 1;
+  text-align: center; font-size: 0.68rem;
+  color: rgba(212,160,23,0.35); margin: 0 0 1rem;
+}
+.shop-player-note strong { color: rgba(212,160,23,0.55); }

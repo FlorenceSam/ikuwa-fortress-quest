@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import './level8.css'
 import CompletionScreen from './CompletionScreen'
 import CoinHUD from './CoinHUD'
-import { getCoins, addCoins } from './coins'
+import { getCoins, addCoins, penalizeCoins } from './coins'
 
 const HINT = "Tap shadow creatures to destroy them! Answer correctly to protect God's heart!"
 
@@ -311,6 +311,8 @@ export default function Level8({ onComplete, onFail, showHint }:{
       },2200)
     } else {
       setWrongFlash(true); playWrong()
+      setCoins(penalizeCoins(50))
+      window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
       setShadows(prev=>[...prev,mkShadow(),mkShadow(),mkShadow()])
       setHeartCracks(c=>Math.min(6,c+1))
       setTimeout(()=>{ setWrongFlash(false); setSel(null) },1800)
@@ -335,6 +337,8 @@ export default function Level8({ onComplete, onFail, showHint }:{
       },1700)
     } else {
       setWrongFlash(true); playWrong()
+      setCoins(penalizeCoins(50))
+      window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
       setTimeout(()=>{ setWrongFlash(false); setSel(null) },1800)
     }
   }

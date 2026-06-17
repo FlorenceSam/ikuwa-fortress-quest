@@ -48,7 +48,14 @@
   text-shadow: 0 0 18px rgba(212,160,23,0.30);
 }
 
-/* ─── Match hint ─────────────────────────────────────────────────────────── */
+.level4-instruct {
+  margin: 2px 0 0;
+  font-size: clamp(0.70rem, 1.0vw, 0.84rem);
+  letter-spacing: 0.06em;
+  color: rgba(212,160,23,0.65);
+}
+
+/* ─── Match hint (unused — kept for safety) ─────────────────────────────── */
 
 .match-hint {
   position: absolute;

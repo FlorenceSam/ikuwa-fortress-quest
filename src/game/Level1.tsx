@@ -3,7 +3,7 @@ import './level1.css'
 import './FailScreen.css'
 import CompletionScreen from './CompletionScreen'
 import CoinHUD from './CoinHUD'
-import { getCoins, addCoins } from './coins'
+import { getCoins, addCoins, penalizeCoins } from './coins'
 
 const HINT = 'Day 1: Light 🌑 | Day 2: Water 🌊 | Day 3: Land 🌿 | Day 4: Stars ⭐ | Day 5: Fish 🐟 | Day 6: Animals 🦁 | Day 7: Rest 😴'
 
@@ -101,6 +101,8 @@ export default function Level1({ onComplete, onFail, showHint }: { onComplete?: 
       setWrongSlots(w => { const n=new Set(w); n.add(slotIdx); return n })
       setTimeout(() => setWrongSlots(w => { const n=new Set(w); n.delete(slotIdx); return n }), 600)
       wrongCountRef.current += 1
+      setCoins(penalizeCoins(50))
+      window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
       if (wrongCountRef.current >= 5) onFail?.(HINT)
     }
   }

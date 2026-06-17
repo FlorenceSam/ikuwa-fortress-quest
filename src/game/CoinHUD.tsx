@@ -32,6 +32,13 @@ export default function CoinHUD({ coins, hint, onCoinsChange, disabled }: Props)
         >
           Hint 💡
         </button>
+        <button
+          className="shop-btn"
+          onClick={() => window.dispatchEvent(new CustomEvent('iq-open-shop'))}
+          title="The Treasury — Coin Shop"
+        >
+          🏛
+        </button>
       </div>
 
       {showHint && (

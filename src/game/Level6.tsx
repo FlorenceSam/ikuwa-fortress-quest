@@ -3,7 +3,7 @@ import './level6.css'
 import './FailScreen.css'
 import CompletionScreen from './CompletionScreen'
 import CoinHUD from './CoinHUD'
-import { getCoins, addCoins } from './coins'
+import { getCoins, addCoins, penalizeCoins } from './coins'
 
 const HINT = 'Click the next glowing waypoint on the map — answer each question to guide Abram on his Journey of Faith!'
 
@@ -511,6 +511,8 @@ export default function Level6({ onComplete, onFail, showHint }: {
     } else {
       setWrongFlash(true)
       playWrong()
+      setCoins(penalizeCoins(50))
+      window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
       const newWrong = wrongPerWP + 1
       setWrongPerWP(newWrong)
       if (newWrong >= 3) {

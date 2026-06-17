@@ -3,7 +3,7 @@ import './level4.css'
 import './FailScreen.css'
 import CompletionScreen from './CompletionScreen'
 import CoinHUD from './CoinHUD'
-import { getCoins, addCoins } from './coins'
+import { getCoins, addCoins, penalizeCoins } from './coins'
 
 const HINT = 'Find two animals of the SAME type and click them both to pair them — send all 14 pairs to the ark!'
 
@@ -425,6 +425,8 @@ export default function Level4({ onComplete, onFail, showHint }:{ onComplete?: (
       setWrongIds([sid, id])
       setSelected(null)
       playWrongSound()
+      setCoins(penalizeCoins(50))
+      window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
       speakVoice('We have to be fearfully and wonderfully made alike!')
       setTimeout(()=>setWrongIds([]), 1600)
     }
@@ -451,6 +453,7 @@ export default function Level4({ onComplete, onFail, showHint }:{ onComplete?: (
       <header className="level4-header">
         <p className="level4-label">LEVEL 1-4</p>
         <h1 className="level4-title">The Great Flood — Noah's Ark</h1>
+        <p className="level4-instruct">Click two matching animals to pair them!</p>
       </header>
 
       {/* ── MATCHING PHASE ─────────────────────────────────────────────── */}
@@ -471,9 +474,6 @@ export default function Level4({ onComplete, onFail, showHint }:{ onComplete?: (
             </div>
             <div className="ark-badge">{pairsFound} / 14 pairs aboard 🐾</div>
           </div>
-
-          {/* Instruction — top of play area */}
-          <p className="match-hint">Click two matching animals to pair them!</p>
 
           {/* Rising water */}
           <div

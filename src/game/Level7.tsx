@@ -3,7 +3,7 @@ import './level7.css'
 import './FailScreen.css'
 import CompletionScreen from './CompletionScreen'
 import CoinHUD from './CoinHUD'
-import { getCoins, addCoins } from './coins'
+import { getCoins, addCoins, penalizeCoins } from './coins'
 
 const HINT = 'Click the glowing branch to meet the next ancestor — answer correctly to light up the Living Family Tree!'
 
@@ -617,6 +617,8 @@ export default function Level7({ onComplete, onFail, showHint }: {
     } else {
       setWrongFlash(true)
       playWrong()
+      setCoins(penalizeCoins(50))
+      window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
       const nw = wrongPerWP + 1; setWrongPerWP(nw)
       if (nw >= 3) {
         setTimeout(() => onFail?.(wp.hint), 900)

@@ -3,7 +3,7 @@ import './level2.css'
 import './FailScreen.css'
 import CompletionScreen from './CompletionScreen'
 import CoinHUD from './CoinHUD'
-import { getCoins, addCoins } from './coins'
+import { getCoins, addCoins, penalizeCoins } from './coins'
 
 const HINTS = [
   'The garden was called Eden — planted by God in the east.',
@@ -249,6 +249,8 @@ export default function Level2({ onComplete, onFail, showHint }: { onComplete?: 
     } else {
       setFeedback('wrong')
       playWrongSound()
+      setCoins(penalizeCoins(50))
+      window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
       wrongCountRef.current += 1
       if (wrongCountRef.current >= 3) {
         setTimeout(() => onFail?.(HINTS[currentQ]), 900)

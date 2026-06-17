@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react'
 import CompletionScreen from './CompletionScreen'
 import CoinHUD from './CoinHUD'
-import { getCoins, addCoins } from './coins'
+import { getCoins, addCoins, penalizeCoins } from './coins'
 import './level3.css'
 import './FailScreen.css'
 
@@ -176,6 +176,8 @@ export default function Level3({ onComplete, onFail, showHint }: { onComplete?: 
       setAltarState('wrong')
       setWrongId(id)
       playWrongOfferingSound()
+      setCoins(penalizeCoins(50))
+      window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
       speakVoice('God looks at the heart — try again!')
       setTimeout(() => { setAltarState('lit'); setWrongId(null) }, 2000)
     }
@@ -405,6 +407,8 @@ export default function Level3({ onComplete, onFail, showHint }: { onComplete?: 
     } else {
       setQ1Wrong(true)
       playWrongOfferingSound()
+      setCoins(penalizeCoins(50))
+      window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
       speakVoice('Search the scriptures — try again!')
       setTimeout(() => { setQ1Wrong(false); setQ1Sel(null) }, 1800)
     }
@@ -425,6 +429,8 @@ export default function Level3({ onComplete, onFail, showHint }: { onComplete?: 
     } else {
       setQ2Wrong(true)
       playWrongOfferingSound()
+      setCoins(penalizeCoins(50))
+      window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
       speakVoice('Who let jealousy lead them to sin? Try again!')
       setTimeout(() => { setQ2Wrong(false); setQ2Sel(null) }, 1800)
     }
@@ -445,6 +451,8 @@ export default function Level3({ onComplete, onFail, showHint }: { onComplete?: 
     } else {
       setQ3Wrong(true)
       playWrongOfferingSound()
+      setCoins(penalizeCoins(50))
+      window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
       speakVoice('Remember — who was the victim? Try again!')
       setTimeout(() => { setQ3Wrong(false); setQ3Sel(null) }, 1800)
     }

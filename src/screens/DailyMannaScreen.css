@@ -1,0 +1,224 @@
+.manna-screen {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 50% 40%, #3a2200 0%, #1a0f00 40%, #080400 100%);
+  font-family: Georgia, 'Times New Roman', serif;
+  color: #D4A017;
+  overflow: hidden;
+  z-index: 2000;
+}
+
+.manna-screen--day7 {
+  background: radial-gradient(ellipse at 50% 40%, #5a3800 0%, #2a1800 40%, #0a0500 100%);
+  animation: manna-d7-pulse 2s ease-in-out infinite alternate;
+}
+@keyframes manna-d7-pulse {
+  from { box-shadow: inset 0 0 120px rgba(255,200,50,0.08); }
+  to   { box-shadow: inset 0 0 200px rgba(255,200,50,0.18); }
+}
+
+.manna-canvas {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 1;
+}
+
+.manna-stars {
+  position: absolute; inset: 0; z-index: 0;
+  background-image:
+    radial-gradient(1.5px 1.5px at 12% 18%, rgba(212,160,23,0.7) 0%, transparent 100%),
+    radial-gradient(1px 1px at 34% 8%,  rgba(212,160,23,0.5) 0%, transparent 100%),
+    radial-gradient(2px 2px at 56% 22%, rgba(255,220,80,0.6)  0%, transparent 100%),
+    radial-gradient(1px 1px at 78% 12%, rgba(212,160,23,0.4) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 88% 35%, rgba(255,200,60,0.6) 0%, transparent 100%),
+    radial-gradient(1px 1px at 6%  55%, rgba(212,160,23,0.5) 0%, transparent 100%),
+    radial-gradient(2px 2px at 22% 72%, rgba(255,210,70,0.4) 0%, transparent 100%),
+    radial-gradient(1px 1px at 45% 88%, rgba(212,160,23,0.5) 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 66% 68%, rgba(255,200,60,0.55) 0%, transparent 100%),
+    radial-gradient(1px 1px at 91% 80%, rgba(212,160,23,0.4) 0%, transparent 100%);
+  pointer-events: none;
+}
+
+.manna-body {
+  position: relative; z-index: 10;
+  display: flex; flex-direction: column;
+  align-items: center; gap: 1.2rem;
+  padding: 2rem;
+  text-align: center;
+  max-width: 440px; width: 92%;
+}
+
+.manna-eyebrow {
+  margin: 0;
+  font-size: clamp(0.65rem, 1.6vw, 0.82rem);
+  letter-spacing: 0.32em;
+  color: rgba(212,160,23,0.65);
+  text-transform: uppercase;
+  animation: manna-blink 2.2s ease-in-out infinite;
+}
+@keyframes manna-blink {
+  0%, 100% { opacity: 0.5; } 50% { opacity: 1; }
+}
+
+/* ── Envelope ────────────────────────────────────────────────────────────── */
+
+.manna-envelope {
+  position: relative;
+  animation: manna-env-fly 1.0s cubic-bezier(.22,.68,0,1.2) forwards;
+}
+@keyframes manna-env-fly {
+  from { opacity: 0; transform: translateX(120px) scale(0.5); }
+  to   { opacity: 1; transform: translateX(0) scale(1); }
+}
+
+.manna-envelope--open .manna-env-icon {
+  animation: manna-env-open 0.5s cubic-bezier(.36,.07,.19,.97) forwards;
+}
+@keyframes manna-env-open {
+  0%   { transform: scale(1); }
+  40%  { transform: scale(1.25) rotate(-4deg); }
+  70%  { transform: scale(1.4) rotate(3deg); }
+  100% { transform: scale(1.2) rotate(0deg); }
+}
+
+.manna-env-icon {
+  font-size: 5rem;
+  display: block;
+  filter: drop-shadow(0 0 24px rgba(255,200,50,0.55));
+}
+
+.manna-env-glow {
+  position: absolute; inset: -20px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(255,200,50,0.35) 0%, transparent 70%);
+  animation: manna-glow-pulse 1s ease-in-out infinite alternate;
+  pointer-events: none;
+}
+@keyframes manna-glow-pulse {
+  from { opacity: 0.6; transform: scale(1); }
+  to   { opacity: 1;   transform: scale(1.15); }
+}
+
+/* ── Reveal ──────────────────────────────────────────────────────────────── */
+
+.manna-reveal {
+  display: flex; flex-direction: column; align-items: center; gap: 1.1rem;
+  animation: manna-rise 0.7s ease-out;
+  width: 100%;
+}
+@keyframes manna-rise {
+  from { opacity: 0; transform: translateY(24px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ── Streak badge ────────────────────────────────────────────────────────── */
+
+.manna-streak-badge {
+  display: flex; align-items: center; gap: 0.5rem;
+  background: rgba(0,0,0,0.50);
+  border: 1px solid rgba(212,160,23,0.35);
+  border-radius: 30px;
+  padding: 0.4rem 1.2rem;
+}
+
+.manna-fire { font-size: 1.4rem; }
+
+.manna-streak-num {
+  font-size: 2rem; font-weight: 900; color: #fff;
+  text-shadow: 0 0 20px rgba(255,180,50,0.8);
+  line-height: 1;
+}
+
+.manna-streak-lbl {
+  font-size: 0.72rem; letter-spacing: 0.12em;
+  color: rgba(212,160,23,0.7); font-weight: 700;
+  text-transform: uppercase; line-height: 1;
+}
+
+/* ── Reward block ────────────────────────────────────────────────────────── */
+
+.manna-reward-block {
+  display: flex; align-items: center; justify-content: center;
+  gap: 0.4rem; flex-wrap: wrap;
+  background: linear-gradient(135deg, rgba(212,160,23,0.18) 0%, rgba(255,200,60,0.08) 100%);
+  border: 2px solid rgba(212,160,23,0.55);
+  border-radius: 16px;
+  padding: 0.8rem 2rem;
+  box-shadow: 0 0 30px rgba(212,160,23,0.18);
+  width: 100%;
+}
+
+.manna-reward-block--day7 {
+  border-color: #ffd700;
+  box-shadow: 0 0 60px rgba(255,215,0,0.45);
+  background: linear-gradient(135deg, rgba(255,200,50,0.25) 0%, rgba(255,150,0,0.12) 100%);
+  animation: manna-day7-throb 1.2s ease-in-out infinite alternate;
+}
+@keyframes manna-day7-throb {
+  from { box-shadow: 0 0 40px rgba(255,215,0,0.35); }
+  to   { box-shadow: 0 0 80px rgba(255,215,0,0.65); }
+}
+
+.manna-reward-amount {
+  font-size: clamp(2.8rem, 8vw, 4rem);
+  font-weight: 900; color: #FFD700;
+  text-shadow: 0 0 30px rgba(255,215,0,0.8), 0 2px 6px rgba(0,0,0,0.9);
+  line-height: 1;
+}
+
+.manna-reward-coin { font-size: 2.4rem; }
+
+.manna-legendary {
+  width: 100%; text-align: center;
+  font-size: 0.82rem; letter-spacing: 0.22em;
+  color: #ffd700; font-weight: 900;
+  text-shadow: 0 0 15px rgba(255,215,0,0.7);
+  margin: 0.2rem 0 0;
+  animation: manna-legendary-glow 0.8s ease-in-out infinite alternate;
+}
+@keyframes manna-legendary-glow {
+  from { opacity: 0.8; text-shadow: 0 0 10px rgba(255,215,0,0.5); }
+  to   { opacity: 1;   text-shadow: 0 0 25px rgba(255,215,0,0.9), 0 0 50px rgba(255,180,0,0.5); }
+}
+
+/* ── Message ─────────────────────────────────────────────────────────────── */
+
+.manna-message {
+  font-size: clamp(1.0rem, 2.8vw, 1.2rem);
+  color: rgba(255,230,120,0.95);
+  line-height: 1.55;
+  margin: 0;
+  font-style: italic;
+  text-shadow: 0 1px 8px rgba(0,0,0,0.7);
+}
+
+/* ── Claim button ────────────────────────────────────────────────────────── */
+
+.manna-btn {
+  background: linear-gradient(135deg, #8B6914, #c49a1e, #8B6914);
+  border: 2px solid #FFD700;
+  color: #000;
+  font-family: Georgia, 'Times New Roman', serif;
+  font-size: clamp(0.9rem, 2.5vw, 1.05rem);
+  font-weight: 900;
+  letter-spacing: 0.18em;
+  padding: 0.9rem 2rem;
+  border-radius: 8px;
+  cursor: pointer;
+  box-shadow: 0 0 25px rgba(212,160,23,0.45), 0 4px 16px rgba(0,0,0,0.5);
+  transition: box-shadow 0.2s, transform 0.15s;
+  white-space: nowrap;
+}
+.manna-btn:hover:not(:disabled) {
+  box-shadow: 0 0 40px rgba(255,215,0,0.65), 0 4px 20px rgba(0,0,0,0.6);
+  transform: translateY(-2px);
+}
+.manna-btn:disabled { opacity: 0.7; cursor: default; transform: none; }
+
+.manna-btn--day7 {
+  background: linear-gradient(135deg, #a07010, #FFD700, #a07010);
+  animation: manna-btn-glow 1s ease-in-out infinite alternate;
+}
+@keyframes manna-btn-glow {
+  from { box-shadow: 0 0 30px rgba(255,215,0,0.5), 0 4px 16px rgba(0,0,0,0.5); }
+  to   { box-shadow: 0 0 70px rgba(255,215,0,0.9), 0 4px 24px rgba(0,0,0,0.6); }
+}
