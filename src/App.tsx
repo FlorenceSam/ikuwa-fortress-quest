@@ -14,6 +14,8 @@ import Level5 from './game/Level5'
 import Level6 from './game/Level6'
 import Level7 from './game/Level7'
 import Level8 from './game/Level8'
+import Level9 from './game/Level9'
+import Level10 from './game/Level10'
 import FailScreen from './game/FailScreen'
 import ContinuePromptScreen from './screens/ContinuePromptScreen'
 import './App.css'
@@ -168,7 +170,7 @@ function mkParticles(cx: number, cy: number): Particle[] {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8'
+type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8' | 'level9' | 'level10'
 type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -451,7 +453,15 @@ export default function App() {
   }
   if (appScreen === 'level8') {
     if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level8 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
+    return <Level8 key={levelKey} onComplete={() => advanceLevel('level9')} onFail={handleFail} showHint={showHint} />
+  }
+  if (appScreen === 'level9') {
+    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+    return <Level9 key={levelKey} onComplete={() => advanceLevel('level10')} onFail={handleFail} showHint={showHint} />
+  }
+  if (appScreen === 'level10') {
+    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+    return <Level10 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
   }
 
   // Cinematic

@@ -10,6 +10,8 @@ const LEVEL_NAMES: Record<string, string> = {
   level6:  '1-6: The Call of Abram',
   level7:  '1-7: The Living Family Tree',
   level8:  '1-8: The Nephilim',
+  level9:  '1-9: Noah\'s Ark Construction',
+  level10: '1-10: The Great Flood',
 }
 
 function getLevelLabel(screen: string): string {
