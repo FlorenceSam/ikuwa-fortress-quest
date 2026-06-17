@@ -13,8 +13,27 @@ import Level4 from './game/Level4'
 import Level5 from './game/Level5'
 import Level6 from './game/Level6'
 import Level7 from './game/Level7'
+import Level8 from './game/Level8'
 import FailScreen from './game/FailScreen'
+import ContinuePromptScreen from './screens/ContinuePromptScreen'
 import './App.css'
+
+// ─── Progress helpers ──────────────────────────────────────────────────────────
+const PROGRESS_KEY = 'iq_progress'
+
+function isLevelScreen(s: string): boolean {
+  return s === 'game' || /^level\d+$/.test(s)
+}
+
+function hasSavedSession(): boolean {
+  try {
+    return !!(
+      localStorage.getItem('iq_session') &&
+      localStorage.getItem(PROGRESS_KEY) &&
+      localStorage.getItem('iq_character')
+    )
+  } catch (_) { return false }
+}
 
 // ─── Audio ─────────────────────────────────────────────────────────────────
 
@@ -149,13 +168,13 @@ function mkParticles(cx: number, cy: number): Particle[] {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AppScreen      = 'account-type' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7'
+type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8'
 type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 // ─── Component ───────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [appScreen,      setAppScreen]      = useState<AppScreen>('account-type')
+  const [appScreen,      setAppScreen]      = useState<AppScreen>(() => hasSavedSession() ? 'continue-prompt' : 'account-type')
   const [cinematicPhase, setCinematicPhase] = useState<CinematicPhase>('dark')
   const [firstName,      setFirstName]      = useState('')
   const [showContinue,   setShowContinue]   = useState(false)
@@ -169,7 +188,32 @@ export default function App() {
   const handleRetry     = () => { setFailActive(false); setShowHint(false); setLevelKey(k => k + 1) }
   const handleHintRetry = () => { setFailActive(false); setShowHint(true);  setLevelKey(k => k + 1) }
   const handleRestart   = () => { setFailActive(false); setShowHint(false); setLevelKey(k => k + 1); setAppScreen('game') }
-  const advanceLevel    = (next: AppScreen) => { setShowHint(false); setAppScreen(next) }
+
+  const advanceLevel = (next: AppScreen) => {
+    setShowHint(false)
+    // Persist progress whenever entering a level, clear it when all levels done
+    if (isLevelScreen(next)) {
+      try { localStorage.setItem(PROGRESS_KEY, next) } catch (_) {}
+    } else if (next === 'welcome') {
+      try { localStorage.removeItem(PROGRESS_KEY) } catch (_) {}
+    }
+    setAppScreen(next)
+  }
+
+  // Continue from saved progress
+  const handleContinue = () => {
+    const saved = (localStorage.getItem(PROGRESS_KEY) || 'game') as AppScreen
+    setFailActive(false); setShowHint(false)
+    setAppScreen(saved)
+  }
+
+  // Restart from Level 1-1, wiping progress
+  const handleRestartFresh = () => {
+    try { localStorage.removeItem(PROGRESS_KEY) } catch (_) {}
+    setFailActive(false); setShowHint(false)
+    setAppScreen('game')
+    try { localStorage.setItem(PROGRESS_KEY, 'game') } catch (_) {}
+  }
 
   const audioRef       = useRef<AudioContext | null>(null)
   const canvasRef      = useRef<HTMLCanvasElement>(null)
@@ -216,7 +260,19 @@ export default function App() {
 
   const afterAuth = (name: string) => {
     setFirstName(name)
-    setAppScreen('character-name')
+    const savedChar    = localStorage.getItem('iq_character')
+    const savedProgress = localStorage.getItem(PROGRESS_KEY)
+    if (savedChar && savedProgress) {
+      // Returning player — show continue prompt
+      setAppScreen('continue-prompt')
+    } else if (savedChar) {
+      // Character already set, no saved level yet — skip naming screen, go to Level 1-1
+      try { localStorage.setItem(PROGRESS_KEY, 'game') } catch (_) {}
+      setAppScreen('game')
+    } else {
+      // New player — let them name their character
+      setAppScreen('character-name')
+    }
   }
 
   // ── Cinematic launch (called from ENTER THE KINGDOM click — user gesture) ─
@@ -331,6 +387,10 @@ export default function App() {
 
   // ── Render ────────────────────────────────────────────────────────────────
 
+  if (appScreen === 'continue-prompt') {
+    return <ContinuePromptScreen onContinue={handleContinue} onRestart={handleRestartFresh} />
+  }
+
   if (appScreen === 'account-type') {
     return <AccountTypeScreen onSelect={() => setAppScreen('welcome')} />
   }
@@ -387,7 +447,11 @@ export default function App() {
   }
   if (appScreen === 'level7') {
     if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-    return <Level7 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
+    return <Level7 key={levelKey} onComplete={() => advanceLevel('level8')} onFail={handleFail} showHint={showHint} />
+  }
+  if (appScreen === 'level8') {
+    if (failActive) return <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+    return <Level8 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
   }
 
   // Cinematic

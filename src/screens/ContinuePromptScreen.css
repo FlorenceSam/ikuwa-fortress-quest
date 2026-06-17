@@ -1,0 +1,149 @@
+.cp-screen {
+  position: fixed; inset: 0;
+  display: flex; align-items: center; justify-content: center;
+  background: radial-gradient(ellipse at 50% 60%, #1a0535 0%, #060114 100%);
+  overflow: hidden;
+  font-family: 'Georgia', serif;
+}
+
+/* CSS star field */
+.cp-stars {
+  position: absolute; inset: 0; pointer-events: none;
+  background-image:
+    radial-gradient(1.2px 1.2px at 12% 14%, #FFE066 0%, transparent 100%),
+    radial-gradient(1.0px 1.0px at 28% 8%,  #FFFFFF 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 44% 22%, #FFD700 0%, transparent 100%),
+    radial-gradient(0.9px 0.9px at 62% 6%,  #CCFFEE 0%, transparent 100%),
+    radial-gradient(1.2px 1.2px at 78% 16%, #FFFFFF 0%, transparent 100%),
+    radial-gradient(1.0px 1.0px at 90% 28%, #FFE066 0%, transparent 100%),
+    radial-gradient(0.8px 0.8px at 6%  42%, #FFFFFF 0%, transparent 100%),
+    radial-gradient(1.4px 1.4px at 20% 55%, #FFD700 0%, transparent 100%),
+    radial-gradient(1.0px 1.0px at 36% 48%, #CCFFEE 0%, transparent 100%),
+    radial-gradient(0.9px 0.9px at 52% 38%, #FFFFFF 0%, transparent 100%),
+    radial-gradient(1.3px 1.3px at 68% 52%, #FFE066 0%, transparent 100%),
+    radial-gradient(1.1px 1.1px at 82% 44%, #FFFFFF 0%, transparent 100%),
+    radial-gradient(0.8px 0.8px at 94% 60%, #FFD700 0%, transparent 100%),
+    radial-gradient(1.5px 1.5px at 10% 72%, #FFFFFF 0%, transparent 100%),
+    radial-gradient(1.0px 1.0px at 30% 68%, #FFE066 0%, transparent 100%),
+    radial-gradient(0.9px 0.9px at 50% 78%, #CCFFEE 0%, transparent 100%),
+    radial-gradient(1.2px 1.2px at 70% 82%, #FFD700 0%, transparent 100%),
+    radial-gradient(1.0px 1.0px at 88% 76%, #FFFFFF 0%, transparent 100%);
+  animation: cp-star-twinkle 4s ease-in-out infinite alternate;
+}
+@keyframes cp-star-twinkle {
+  from { opacity: 0.55; }
+  to   { opacity: 1.00; }
+}
+
+.cp-card {
+  position: relative; z-index: 1;
+  width: min(92vw, 520px);
+  background: rgba(10, 2, 28, 0.88);
+  border: 2px solid rgba(255, 215, 0, 0.55);
+  border-radius: 24px;
+  box-shadow: 0 0 60px rgba(255, 215, 0, 0.22), 0 0 20px rgba(255, 215, 0, 0.12);
+  padding: clamp(28px, 5vw, 52px) clamp(24px, 5vw, 48px);
+  display: flex; flex-direction: column; align-items: center; gap: 18px;
+  text-align: center;
+  animation: cp-card-in 0.8s cubic-bezier(0.22, 1, 0.36, 1);
+}
+@keyframes cp-card-in {
+  from { opacity: 0; transform: translateY(32px) scale(0.94); }
+  to   { opacity: 1; transform: translateY(0)    scale(1.00); }
+}
+
+.cp-eyebrow {
+  font-size: clamp(0.55rem, 1.3vw, 0.70rem);
+  letter-spacing: 0.28em; color: #FFD700; opacity: 0.80;
+  text-transform: uppercase; margin: 0;
+}
+
+.cp-name {
+  margin: 0;
+  font-size: clamp(1.6rem, 5vw, 2.6rem);
+  font-weight: 800; line-height: 1.20;
+  color: #FFD700;
+  text-shadow: 0 0 28px rgba(255, 215, 0, 0.70), 0 2px 8px rgba(0,0,0,0.90);
+}
+
+.cp-tagline {
+  margin: 0;
+  font-size: clamp(0.72rem, 1.6vw, 0.90rem);
+  color: rgba(255, 220, 140, 0.78); font-style: italic;
+}
+
+.cp-stats-row {
+  display: flex; align-items: center; gap: 20px;
+  background: rgba(255, 215, 0, 0.06);
+  border: 1px solid rgba(255, 215, 0, 0.22);
+  border-radius: 14px;
+  padding: 14px 24px;
+}
+.cp-stat {
+  display: flex; flex-direction: column; align-items: center; gap: 3px;
+}
+.cp-stat-icon { font-size: clamp(1.2rem, 3vw, 1.6rem); }
+.cp-stat-val {
+  font-size: clamp(0.85rem, 2vw, 1.10rem);
+  font-weight: 700; color: #FFD700;
+  text-shadow: 0 0 10px rgba(255,215,0,0.55);
+}
+.cp-stat-lbl {
+  font-size: clamp(0.48rem, 1.0vw, 0.60rem);
+  color: rgba(255,215,0,0.60); letter-spacing: 0.12em; text-transform: uppercase;
+}
+.cp-stat-sep {
+  width: 1px; height: 48px;
+  background: rgba(255,215,0,0.30);
+}
+
+.cp-btns {
+  display: flex; flex-direction: column; gap: 12px; width: 100%;
+}
+
+.cp-btn {
+  width: 100%; padding: clamp(14px,2.5vw,20px) 16px;
+  border-radius: 14px;
+  font-size: clamp(0.82rem, 1.8vw, 1.02rem);
+  font-weight: 700; letter-spacing: 0.08em;
+  cursor: pointer; border: none; line-height: 1.35;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.cp-btn:hover { transform: translateY(-2px); }
+.cp-btn:active { transform: translateY(0) scale(0.98); }
+
+.cp-btn--primary {
+  background: linear-gradient(135deg, #FFB800, #FF8C00);
+  color: #1a0800;
+  box-shadow: 0 4px 20px rgba(255,140,0,0.45), 0 2px 6px rgba(0,0,0,0.50);
+}
+.cp-btn--primary:hover {
+  box-shadow: 0 6px 28px rgba(255,160,0,0.60), 0 2px 6px rgba(0,0,0,0.50);
+}
+.cp-btn-lvl {
+  font-size: 0.78em; font-weight: 800; letter-spacing: 0.12em;
+  opacity: 0.85;
+}
+
+.cp-btn--secondary {
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,220,140,0.80);
+  border: 1.5px solid rgba(255,215,0,0.25);
+}
+.cp-btn--secondary:hover {
+  background: rgba(255,215,0,0.10);
+  border-color: rgba(255,215,0,0.50);
+  color: #FFD700;
+}
+
+.cp-verse {
+  margin: 0;
+  font-size: clamp(0.60rem, 1.3vw, 0.74rem);
+  font-style: italic; color: rgba(255,220,140,0.55);
+  display: flex; flex-direction: column; gap: 3px;
+  line-height: 1.5;
+}
+.cp-verse-ref {
+  font-style: normal; font-size: 0.88em;
+  color: rgba(255,215,0,0.45); letter-spacing: 0.10em;
+}
