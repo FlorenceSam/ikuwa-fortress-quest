@@ -54,13 +54,9 @@ const QUESTIONS: Q[] = [
     correct: 2, ptype: 'gold-ribbons',    aff: "God's Favored One!" },
 ]
 
-// Arrow config by qIndex range
-function arrowConfig(qi: number): { interval: number; travelMs: number; double: boolean } {
-  if (qi <= 3)  return { interval: 4000, travelMs: 5500, double: false }
-  if (qi <= 7)  return { interval: 3000, travelMs: 4000, double: false }
-  if (qi <= 10) return { interval: 2000, travelMs: 2800, double: false }
-  return              { interval: 2000, travelMs: 2300, double: true  }
-}
+// Flat 6-second arrow pace throughout the entire level
+const ARROW_INTERVAL = 6000   // ms between arrow spawns
+const ARROW_TRAVEL   = 9000   // ms to cross the screen to Noah
 
 // Particle hue presets  [hMin, hMax, count, speed]
 const FX: Record<string, [number,number,number,number]> = {
@@ -138,6 +134,7 @@ export default function Level12({ onComplete }: Props) {
   const [shieldFlash,   setShieldFlash]   = useState<{x:number;y:number;k:number}|null>(null)
   const [hitFlash,      setHitFlash]      = useState(0)   // key to re-trigger hit flash
   const [arrowTick,     setArrowTick]     = useState(0)   // forces arrow re-render
+  const [quizReady,     setQuizReady]     = useState(false) // 4s delay before answers unlock
 
   // Refs for game loop (no state updates per frame)
   const arrowsRef      = useRef<Arrow[]>([])
@@ -202,14 +199,7 @@ export default function Level12({ onComplete }: Props) {
   // ── Spawn arrow ────────────────────────────────────────────────────────────
   const spawnArrow = useCallback(() => {
     if (phaseRef.current !== 'game') return
-    const cfg = arrowConfig(qIndexRef.current)
-    const arr = makeArrow(cfg.travelMs)
-    arrowsRef.current.push(arr)
-    if (cfg.double) {
-      const arr2 = makeArrow(cfg.travelMs)
-      arr2.y = arr.y > 50 ? arr.y - 28 : arr.y + 28
-      arrowsRef.current.push(arr2)
-    }
+    arrowsRef.current.push(makeArrow(ARROW_TRAVEL))
     setArrowTick(k => k+1)
   }, [])
 
@@ -225,7 +215,7 @@ export default function Level12({ onComplete }: Props) {
       if (a.hit || a.blocked) continue
       const delta  = now - a.lastTick
       a.lastTick   = now
-      a.effectiveMs += delta * (quizActiveRef.current ? 0.28 : 1.0)
+      a.effectiveMs += delta * (quizActiveRef.current ? 0 : 1.0)  // fully pause during quiz
 
       const progress = a.effectiveMs / a.travelMs
       const el = arrowElsRef.current.get(a.id)
@@ -261,6 +251,19 @@ export default function Level12({ onComplete }: Props) {
     rafRef.current = requestAnimationFrame(gameLoopRef.current)
   }
 
+  // ── Restartable spawn loop — call after quiz to resume with fresh 6s cycle ──
+  const startSpawning = useCallback((initialDelay: number) => {
+    if (spawnRef.current) clearTimeout(spawnRef.current)
+    const tick = (delay: number) => {
+      spawnRef.current = setTimeout(() => {
+        if (phaseRef.current !== 'game') return
+        spawnArrow()
+        tick(ARROW_INTERVAL)
+      }, delay)
+    }
+    tick(initialDelay)
+  }, [spawnArrow])
+
   // ── Start game ─────────────────────────────────────────────────────────────
   const startGame = useCallback(() => {
     arrowsRef.current = []
@@ -270,18 +273,9 @@ export default function Level12({ onComplete }: Props) {
     healthRef.current = MAX_HEALTH
     setQIndex(0)
     qIndexRef.current = 0
-
-    const scheduleNext = (delay: number) => {
-      spawnRef.current = setTimeout(() => {
-        if (phaseRef.current !== 'game') return
-        spawnArrow()
-        scheduleNext(arrowConfig(qIndexRef.current).interval)
-      }, delay)
-    }
-    scheduleNext(1200)
-
+    startSpawning(1200)
     rafRef.current = requestAnimationFrame(gameLoopRef.current)
-  }, [spawnArrow])
+  }, [spawnArrow, startSpawning])
 
   // ── Tap arrow (block) ──────────────────────────────────────────────────────
   const handleBlock = useCallback((arrowId:number, e:React.MouseEvent|React.TouchEvent) => {
@@ -304,11 +298,14 @@ export default function Level12({ onComplete }: Props) {
     const c = addCoins(2); setCoins(c)
     burst(cx, cy, 'golden-flash')
 
-    // Show quiz if questions remain
+    // Show quiz if questions remain — stop spawning and freeze arrows
     const qi = qIndexRef.current
     if (qi < 13 && !quizActiveRef.current) {
+      if (spawnRef.current) clearTimeout(spawnRef.current)
       quizActiveRef.current = true
+      setQuizReady(false)
       setActiveQuiz(QUESTIONS[qi])
+      setTimeout(() => setQuizReady(true), 4000)
     }
   }, [burst])
 
@@ -330,11 +327,16 @@ export default function Level12({ onComplete }: Props) {
       setTimeout(() => {
         setQuizAnswer(null)
         setActiveQuiz(null)
+        setQuizReady(false)
         quizActiveRef.current = false
 
         const newQi = qi+1
         qIndexRef.current = newQi
         setQIndex(newQi)
+
+        // Reset arrow timestamps so they don't leap forward after the pause
+        const now = Date.now()
+        for (const a of arrowsRef.current) a.lastTick = now
 
         if (newQi >= 13) {
           // REDEMPTION
@@ -354,18 +356,26 @@ export default function Level12({ onComplete }: Props) {
           speak('HONOUR PREVAILS! You have defended Noah with courage and truth!')
           const bonus = addCoins(100); setCoins(bonus)
           setTimeout(() => setPhase('complete'), 6500)
+        } else {
+          // Resume arrows after 2-second breather (6s cycle restarts)
+          startSpawning(2000)
         }
       }, 2000)
     } else {
+      // Wrong answer — resume arrows 2s after dismiss
       const c = penalizeCoins(50); setCoins(c)
       window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
       setTimeout(() => {
         setQuizAnswer(null)
         setActiveQuiz(null)
+        setQuizReady(false)
         quizActiveRef.current = false
+        const now = Date.now()
+        for (const a of arrowsRef.current) a.lastTick = now
+        startSpawning(2000)
       }, 1800)
     }
-  }, [quizAnswer, activeQuiz, burst, speak])
+  }, [quizAnswer, activeQuiz, burst, speak, startSpawning])
 
   // ── Cleanup on unmount ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -473,6 +483,12 @@ export default function Level12({ onComplete }: Props) {
         Q {Math.min(qIndex+1,13)}/13
       </div>
 
+      {/* Gameplay instruction banner — always visible, small gold italic */}
+      <div className="l12-instruct-banner">
+        TAP each shame word before it reaches Noah! Hit all dishonour arrows to protect his legacy.
+        Answer each question correctly to keep the vineyard alive!
+      </div>
+
       {/* Noah sleeping — right side */}
       <div className="l12-noah">
         <div className="l12-noah-glow" />
@@ -522,13 +538,18 @@ export default function Level12({ onComplete }: Props) {
         <div key={affKey} className="l12-affirmation">{affirmation}</div>
       )}
 
-      {/* Quiz overlay */}
+      {/* Quiz overlay — arrows fully paused while this is visible */}
       {activeQuiz && (
         <div className="l12-quiz-overlay">
           <div className="l12-quiz-card">
             <div className="l12-quiz-qnum">Question {qIndex+1} of 13</div>
             <p className="l12-quiz-q">{activeQuiz.q}</p>
-            <div className="l12-quiz-opts">
+            {!quizReady && (
+              <div className="l12-quiz-reading">
+                📖 Read the question carefully…
+              </div>
+            )}
+            <div className={`l12-quiz-opts${quizReady ? ' l12-quiz-opts-ready' : ' l12-quiz-opts-locked'}`}>
               {activeQuiz.opts.map((opt,i) => (
                 <button
                   key={i}
@@ -538,13 +559,15 @@ export default function Level12({ onComplete }: Props) {
                       : quizAnswer!==null && i===activeQuiz.correct ? ' correct' : ''
                   }`}
                   onClick={() => handleAnswer(i)}
-                  disabled={quizAnswer!==null}
+                  disabled={quizAnswer!==null || !quizReady}
                 >
                   {opt}
                 </button>
               ))}
             </div>
-            <p className="l12-quiz-hint">⚠️ Arrows continue — answer quickly!</p>
+            {quizReady && quizAnswer === null && (
+              <p className="l12-quiz-hint">🛡️ Arrows paused — tap your answer!</p>
+            )}
           </div>
         </div>
       )}
