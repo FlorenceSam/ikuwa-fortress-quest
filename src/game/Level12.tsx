@@ -115,7 +115,28 @@ function makeArrow(travelMs:number): Arrow {
 
 // ── Types ─────────────────────────────────────────────────────────────────────
 
-type Phase = 'intro' | 'game' | 'redemption' | 'complete'
+type Phase = 'intro' | 'game' | 'voiceover' | 'redemption' | 'complete'
+
+const VOICEOVER_TEXT =
+  'Even when our parents — or those older than us — are in the wrong, ' +
+  'our calling is not to expose them, mock them, or make it worse. ' +
+  'Like Shem and Japheth, we are called to cover them with honour, ' +
+  'pray for them, and help right the wrong as much as we can. ' +
+  'That is the way of wisdom. That is the way of love.'
+
+// Phrases shown one at a time, each for its duration in ms
+const VO_PHRASES: { text: string; ms: number }[] = [
+  { text: 'Even when our parents —',                                    ms: 3200 },
+  { text: 'or those older than us — are in the wrong,',                 ms: 4800 },
+  { text: 'our calling is not to expose them,',                         ms: 4200 },
+  { text: 'mock them, or make it worse.',                               ms: 3800 },
+  { text: 'Like Shem and Japheth,',                                     ms: 3200 },
+  { text: 'we are called to cover them with honour,',                   ms: 5000 },
+  { text: 'pray for them,',                                             ms: 2800 },
+  { text: 'and help right the wrong as much as we can.',                ms: 5500 },
+  { text: 'That is the way of wisdom.',                                 ms: 4200 },
+  { text: 'That is the way of love.',                                   ms: 4000 },
+]
 interface Props { onComplete:()=>void; onFail?:(h:string)=>void; showHint?:boolean }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -130,6 +151,8 @@ export default function Level12({ onComplete }: Props) {
   const [activeQuiz,    setActiveQuiz]    = useState<Q|null>(null)
   const [quizAnswer,    setQuizAnswer]    = useState<number|null>(null)
   const [affirmation,   setAffirmation]   = useState<string|null>(null)
+  const [voicePhrase,   setVoicePhrase]   = useState<string|null>(null)
+  const [voPhraseKey,   setVoPhraseKey]   = useState(0)
   const [affKey,        setAffKey]        = useState(0)
   const [shieldFlash,   setShieldFlash]   = useState<{x:number;y:number;k:number}|null>(null)
   const [hitFlash,      setHitFlash]      = useState(0)   // key to re-trigger hit flash
@@ -339,23 +362,13 @@ export default function Level12({ onComplete }: Props) {
         for (const a of arrowsRef.current) a.lastTick = now
 
         if (newQi >= 13) {
-          // REDEMPTION
-          phaseRef.current = 'redemption'
-          setPhase('redemption')
+          // Stop arrows, then play voiceover before the cascade
           if (spawnRef.current) clearTimeout(spawnRef.current)
           cancelAnimationFrame(rafRef.current)
           arrowsRef.current = []
           setArrowTick(k => k+1)
-          // Burst all particles
-          for (let i=0;i<6;i++) {
-            setTimeout(() => {
-              burst(Math.random()*window.innerWidth, Math.random()*window.innerHeight*.7, 'gold-ribbons')
-              burst(Math.random()*window.innerWidth, Math.random()*window.innerHeight*.7, 'violet-shockwave')
-            }, i*280)
-          }
-          speak('HONOUR PREVAILS! You have defended Noah with courage and truth!')
-          const bonus = addCoins(100); setCoins(bonus)
-          setTimeout(() => setPhase('complete'), 6500)
+          phaseRef.current = 'voiceover'
+          setPhase('voiceover')
         } else {
           // Resume arrows after 2-second breather (6s cycle restarts)
           startSpawning(2000)
@@ -376,6 +389,61 @@ export default function Level12({ onComplete }: Props) {
       }, 1800)
     }
   }, [quizAnswer, activeQuiz, burst, speak, startSpawning])
+
+  // ── Voiceover sequence — runs once when phase === 'voiceover' ─────────────
+  useEffect(() => {
+    if (phase !== 'voiceover') return
+
+    const timers: ReturnType<typeof setTimeout>[] = []
+    let cascadeTriggered = false
+
+    const triggerCascade = () => {
+      if (cascadeTriggered) return
+      cascadeTriggered = true
+      setVoicePhrase(null)
+      phaseRef.current = 'redemption'
+      setPhase('redemption')
+      // Particle bursts spread across cascade
+      for (let i = 0; i < 6; i++) {
+        setTimeout(() => {
+          burst(Math.random()*window.innerWidth, Math.random()*window.innerHeight*.7, 'gold-ribbons')
+          burst(Math.random()*window.innerWidth, Math.random()*window.innerHeight*.7, 'violet-shockwave')
+        }, i*280)
+      }
+      speak('HONOUR PREVAILS! You have defended Noah with courage and truth!')
+      const bonus = addCoins(100); setCoins(bonus)
+      setTimeout(() => setPhase('complete'), 6500)
+    }
+
+    // Speak the full voiceover — onend is the authoritative trigger
+    try {
+      window.speechSynthesis.cancel()
+      const utt = new SpeechSynthesisUtterance(VOICEOVER_TEXT)
+      utt.rate = 0.72; utt.pitch = 0.94; utt.volume = 1
+      const warm = speechSynthesis.getVoices()
+        .find(v => /female|woman|zira|samantha|karen|victoria|moira/i.test(v.name))
+      if (warm) utt.voice = warm
+      utt.onend = triggerCascade
+      window.speechSynthesis.speak(utt)
+    } catch(_) {}
+
+    // Animate phrases across the screen in sync with estimated voice timing
+    let elapsed = 1200  // small lead-in before first phrase
+    for (const phrase of VO_PHRASES) {
+      const t = elapsed
+      timers.push(setTimeout(() => {
+        setVoicePhrase(phrase.text)
+        setVoPhraseKey(k => k+1)
+      }, t))
+      elapsed += phrase.ms
+    }
+
+    // Fallback: cascade after estimated total + 3s buffer if onend never fires
+    const fallback = setTimeout(triggerCascade, elapsed + 3000)
+    timers.push(fallback)
+
+    return () => timers.forEach(clearTimeout)
+  }, [phase, burst, speak])   // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Cleanup on unmount ─────────────────────────────────────────────────────
   useEffect(() => {
@@ -426,6 +494,21 @@ export default function Level12({ onComplete }: Props) {
           <div className="l12-japheth">👱‍♂️</div>
           <div className="l12-reden-banner">⭐ HONOUR PREVAILS! ⭐</div>
           <div className="l12-master-banner">MASTER OF WISDOM AND HONOUR!</div>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Voiceover screen ─────────────────────────────────────────────────────
+  if (phase === 'voiceover') {
+    return (
+      <div className="l12-wrap">
+        <div className="l12-bg l12-bg-voiceover" />
+        <div className="l12-vignette l12-vignette-vo" />
+        <div className="l12-vo-stage">
+          {voicePhrase && (
+            <p key={voPhraseKey} className="l12-vo-phrase">{voicePhrase}</p>
+          )}
         </div>
       </div>
     )
