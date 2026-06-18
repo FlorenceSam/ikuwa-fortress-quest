@@ -483,10 +483,10 @@ export default function Level12({ onComplete }: Props) {
         Q {Math.min(qIndex+1,13)}/13
       </div>
 
-      {/* Gameplay instruction banner — always visible, small gold italic */}
+      {/* Gameplay instruction banner — always visible, bold gold */}
       <div className="l12-instruct-banner">
-        TAP each shame word before it reaches Noah! Hit all dishonour arrows to protect his legacy.
-        Answer each question correctly to keep the vineyard alive!
+        TAP shame words before they reach Noah!<br/>
+        Answer questions to protect his honour!
       </div>
 
       {/* Noah sleeping — right side */}
