@@ -193,6 +193,19 @@ type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 export default function App() {
   const [appScreen, setAppScreen] = useState<AppScreen>(() => {
+    // Dev shortcut: ?level=N skips all login and goes straight to that level
+    const devLevel = new URLSearchParams(window.location.search).get('level')
+    if (devLevel) {
+      const n = parseInt(devLevel, 10)
+      if (!isNaN(n) && n >= 1 && n <= 11) {
+        if (!localStorage.getItem('iq_character')) {
+          localStorage.setItem('iq_character', 'DevPlayer')
+          localStorage.setItem('ikuwa_player', 'DevPlayer')
+        }
+        console.log(`[IKUWA DEV] Jumping to level ${n} via URL param`)
+        return (n === 1 ? 'game' : `level${n}`) as AppScreen
+      }
+    }
     if (hasSavedSession()) {
       if (checkDailyManna().shouldShow) return 'manna'
       return 'continue-prompt'
