@@ -16,6 +16,7 @@ import Level7 from './game/Level7'
 import Level8 from './game/Level8'
 import Level9 from './game/Level9'
 import Level10 from './game/Level10'
+import Level11 from './game/Level11'
 import FailScreen from './game/FailScreen'
 import ContinuePromptScreen from './screens/ContinuePromptScreen'
 import DailyMannaScreen from './screens/DailyMannaScreen'
@@ -173,7 +174,7 @@ function mkParticles(cx: number, cy: number): Particle[] {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8' | 'level9' | 'level10' | 'manna'
+type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8' | 'level9' | 'level10' | 'level11' | 'manna'
 type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -488,7 +489,11 @@ export default function App() {
   } else if (appScreen === 'level10') {
     mainContent = failActive
       ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-      : <Level10 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
+      : <Level10 key={levelKey} onComplete={() => advanceLevel('level11')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level11') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level11 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
   } else {
     mainContent = (
       <div className="opening-screen">
