@@ -22,54 +22,34 @@ import ContinuePromptScreen from './screens/ContinuePromptScreen'
 import DailyMannaScreen from './screens/DailyMannaScreen'
 import CoinShopModal from './screens/CoinShopModal'
 import { checkDailyManna, getCoins } from './game/coins'
+import {
+  setCurrentPlayer, getCurrentPlayer, loadPlayerSave,
+  saveProgress, screenToLevel, levelToScreen,
+} from './game/save'
 import './App.css'
 
-// ─── Progress helpers ──────────────────────────────────────────────────────────
+// ─── Session helpers ──────────────────────────────────────────────────────────
 
 function safeKey(s: string): string {
   return s.replace(/\s+/g, '_').toLowerCase()
 }
 
-// Read the logged-in player's firstName from session (safe key form)
-function sessionPlayer(): string {
-  try {
-    const raw = localStorage.getItem('iq_session')
-    if (!raw) return 'guest'
-    const { firstName } = JSON.parse(raw) as { firstName?: string }
-    return firstName ? safeKey(firstName) : 'guest'
-  } catch (_) { return 'guest' }
-}
-
-// Per-player character name: maps login firstName → chosen character display name
+// Maps login firstName → chosen in-game character name
 function charKey(firstName: string): string {
   return `iq_char_${safeKey(firstName)}`
-}
-
-// Per-player progress key (the next level to resume from)
-function progressKey(player?: string): string {
-  return `ikuwa_progress_${player ?? sessionPlayer()}`
-}
-
-// Per-player current-level key (the level actively being played)
-function currentLevelKey(player?: string): string {
-  return `ikuwa_currentlevel_${player ?? sessionPlayer()}`
 }
 
 function isLevelScreen(s: string): boolean {
   return s === 'game' || /^level\d+$/.test(s)
 }
 
+// True when ikuwa_player exists and has an entry in ikuwa_save
 function hasSavedSession(): boolean {
   try {
-    const raw = localStorage.getItem('iq_session')
-    if (!raw) return false
-    const { firstName } = JSON.parse(raw) as { firstName?: string }
-    if (!firstName) return false
-    // Player must have a character name set (completed character creation)
-    if (!localStorage.getItem(charKey(firstName))) return false
-    // Player must have a saved progress entry
-    const p = safeKey(firstName)
-    return localStorage.getItem(progressKey(p)) !== null
+    const player = localStorage.getItem('ikuwa_player')
+    if (!player) return false
+    const all = JSON.parse(localStorage.getItem('ikuwa_save') || '{}')
+    return !!all[player]
   } catch (_) { return false }
 }
 
@@ -242,30 +222,32 @@ export default function App() {
 
   const advanceLevel = (next: AppScreen) => {
     setShowHint(false)
-    const player = sessionPlayer()
+    const player = getCurrentPlayer()
     if (isLevelScreen(next)) {
-      // Save where they should resume (next level to play)
-      try { localStorage.setItem(progressKey(player), next) } catch (_) {}
-      // Also track which level is currently active
-      try { localStorage.setItem(currentLevelKey(player), next) } catch (_) {}
+      // Save immediately — both "level completing" and "next level starting"
+      const levelNum = screenToLevel(next)
+      saveProgress(player, levelNum, getCoins())
+      console.log(`[IKUWA] Level ${levelNum} started — progress saved`)
     } else if (next === 'welcome') {
-      // All levels complete — clear progress so they start fresh next time
-      try { localStorage.removeItem(progressKey(player)) } catch (_) {}
-      try { localStorage.removeItem(currentLevelKey(player)) } catch (_) {}
+      // Finished all levels — leave save intact so they can replay
+      console.log('[IKUWA] All levels complete!')
     }
     setAppScreen(next)
   }
 
   const handleContinue = () => {
-    const saved = (localStorage.getItem(progressKey()) || 'game') as AppScreen
+    const player = getCurrentPlayer()
+    const save   = loadPlayerSave(player)
+    const screen = save ? levelToScreen(save.level) as AppScreen : 'game'
+    console.log(`[IKUWA] Continuing ${player} from screen: ${screen}`)
     setFailActive(false); setShowHint(false)
-    setAppScreen(saved)
+    setAppScreen(screen)
   }
 
   const handleRestartFresh = () => {
-    const player = sessionPlayer()
-    try { localStorage.setItem(progressKey(player), 'game') } catch (_) {}
-    try { localStorage.setItem(currentLevelKey(player), 'game') } catch (_) {}
+    const player = getCurrentPlayer()
+    saveProgress(player, 1, getCoins())
+    console.log(`[IKUWA] ${player} restarting from Level 1`)
     setFailActive(false); setShowHint(false)
     setAppScreen('game')
   }
@@ -329,39 +311,35 @@ export default function App() {
 
   const afterAuth = (name: string) => {
     setFirstName(name)
-    const player = safeKey(name)
 
-    // Look up THIS player's character name (set during their first play-through)
+    // Look up this player's chosen character name from their login firstName
     const storedChar = localStorage.getItem(charKey(name))
 
     if (storedChar) {
-      // Returning player — restore their character name so all components see it
+      // Returning player — restore their character name and mark them as current player
       localStorage.setItem('iq_character', storedChar)
+      setCurrentPlayer(storedChar)
 
-      const savedProgress = localStorage.getItem(progressKey(player))
+      const save  = loadPlayerSave(storedChar)
       const manna = checkDailyManna()
 
       if (manna.shouldShow) {
-        // Show daily manna first, then route to continue-prompt or game
-        const next: AppScreen = savedProgress ? 'continue-prompt' : 'game'
+        const next: AppScreen = save ? 'continue-prompt' : 'game'
         setPostMannaScreen(next)
         setAppScreen('manna')
         return
       }
 
-      if (savedProgress) {
-        // Skip the cinematic — send them straight to the continue screen
+      if (save) {
+        // Skip the cinematic — land directly on the continue screen
         setAppScreen('continue-prompt')
       } else {
-        // Character exists but no progress yet — start Level 1 (no cinematic)
-        try {
-          localStorage.setItem(progressKey(player), 'game')
-          localStorage.setItem(currentLevelKey(player), 'game')
-        } catch (_) {}
+        // Character created but never played — start Level 1, no cinematic
+        saveProgress(storedChar, 1, getCoins())
         setAppScreen('game')
       }
     } else {
-      // Brand new player — they need to pick a character name, then play the cinematic
+      // Brand new player — needs character name, then will play cinematic
       setAppScreen('character-name')
     }
   }
@@ -372,17 +350,19 @@ export default function App() {
     stopVoice()
     localStorage.setItem('iq_character', characterName)
 
-    // Save per-player character name so afterAuth can find it on every return visit
+    // Mark this character as current player
+    setCurrentPlayer(characterName)
+
+    // Map login firstName → character name so afterAuth resolves correctly on return
     try {
       const session = JSON.parse(localStorage.getItem('iq_session') || '{}') as { firstName?: string }
       if (session.firstName) {
         localStorage.setItem(charKey(session.firstName), characterName)
-        // Write initial progress immediately so hasSavedSession() works after the cinematic
-        const player = safeKey(session.firstName)
-        localStorage.setItem(progressKey(player), 'game')
-        localStorage.setItem(currentLevelKey(player), 'game')
       }
     } catch (_) {}
+
+    // Write Level 1 save immediately — hasSavedSession() will work after the cinematic
+    saveProgress(characterName, 1, getCoins())
 
     audioRef.current = launchSound()
     setShowContinue(false)
@@ -574,7 +554,11 @@ export default function App() {
           </h1>
         )}
         {cinematicPhase === 'cosmos' && showContinue && (
-          <button className="continue-btn" onClick={() => setAppScreen('game')}>
+          <button className="continue-btn" onClick={() => {
+            saveProgress(getCurrentPlayer(), 1, getCoins())
+            console.log('[IKUWA] Journey begun — Level 1 saved')
+            setAppScreen('game')
+          }}>
             BEGIN YOUR JOURNEY
           </button>
         )}
