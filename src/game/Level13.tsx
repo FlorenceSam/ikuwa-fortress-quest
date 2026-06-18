@@ -628,21 +628,17 @@ export default function Level13({ onComplete, onFail }: Props) {
         <span className="l13-level-title">The Birth of Nations</span>
       </div>
 
-      {/* Intro overlay */}
+      {/* Instruction banner */}
+      <div className="l13-instruct-banner">
+        TAP the running tribe figures to stop them and answer questions! Build the nations of the world!
+      </div>
+
+      {/* Start button — floats over gameplay screen until game begins */}
       {phase === 'intro' && (
-        <div className="l13-intro-overlay">
-          <div className="l13-intro-card">
-            <h2 className="l13-intro-heading">The Birth of Nations</h2>
-            <p className="l13-intro-ref">Genesis 10 — The Table of Nations</p>
-            <p className="l13-intro-body">
-              Tribe figures race across the screen. TAP one to stop it and answer a question.
-              Each correct answer births a glowing nation on the globe.
-              Don't let 5 tribes escape!
-            </p>
-            <button className="l13-start-btn" onClick={startGame}>
-              BEGIN THE NATIONS ✦
-            </button>
-          </div>
+        <div className="l13-start-wrap">
+          <button className="l13-start-btn" onClick={startGame}>
+            BEGIN THE NATIONS ✦
+          </button>
         </div>
       )}
 
@@ -652,7 +648,7 @@ export default function Level13({ onComplete, onFail }: Props) {
       )}
 
       {/* Tribe lane */}
-      {phase === 'game' && (
+      {(phase === 'intro' || phase === 'game') && (
         <div className="l13-tribe-lane">
           {tribesRef.current.map(tribe => (
             <div
