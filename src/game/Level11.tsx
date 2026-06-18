@@ -7,13 +7,13 @@ import './level11.css'
 // ── Segment data ──────────────────────────────────────────────────────────────
 
 const SEGMENTS = [
-  { color: '#FF2200', name: 'Red',    promise: 'I will never again curse the ground\nbecause of mankind!' },
-  { color: '#FF8C00', name: 'Orange', promise: 'As long as the earth endures,\nseasons and days will never cease!' },
-  { color: '#FFD700', name: 'Yellow', promise: 'Every living creature on earth —\nI establish my covenant with you!' },
-  { color: '#00CC44', name: 'Green',  promise: 'Never again will floodwaters\ndestroy all life on the earth!' },
-  { color: '#0088FF', name: 'Blue',   promise: 'The rainbow will appear in the clouds\nas my sign to you!' },
-  { color: '#5500DD', name: 'Indigo', promise: 'I will remember my covenant\nbetween me and you!' },
-  { color: '#BB00FF', name: 'Violet', promise: 'This is the sign of the covenant\nI have established with all life on earth!' },
+  { color: '#FF2200', bg: 'rgba(255,34,0,0.30)',   name: 'Red',    icon: '🔴', promise: 'I will never again curse the ground\nbecause of mankind!' },
+  { color: '#FF8C00', bg: 'rgba(255,140,0,0.30)',  name: 'Orange', icon: '🟠', promise: 'As long as the earth endures,\nseasons and days will never cease!' },
+  { color: '#FFD700', bg: 'rgba(255,215,0,0.28)',  name: 'Yellow', icon: '🟡', promise: 'Every living creature on earth —\nI establish my covenant with you!' },
+  { color: '#00CC44', bg: 'rgba(0,204,68,0.28)',   name: 'Green',  icon: '🟢', promise: 'Never again will floodwaters\ndestroy all life on the earth!' },
+  { color: '#0088FF', bg: 'rgba(0,136,255,0.28)',  name: 'Blue',   icon: '🔵', promise: 'The rainbow will appear in the clouds\nas my sign to you!' },
+  { color: '#6600DD', bg: 'rgba(102,0,221,0.30)',  name: 'Indigo', icon: '🟣', promise: 'I will remember my covenant\nbetween me and you!' },
+  { color: '#CC00FF', bg: 'rgba(204,0,255,0.28)',  name: 'Violet', icon: '💜', promise: 'This is the sign of the covenant\nI have established with all life on earth!' },
 ]
 
 const FAMILY = ['👴', '👵', '👨', '👩', '👨‍🦱', '👩‍🦱', '🧔', '👱‍♀️']
@@ -24,7 +24,7 @@ const ALL_Q: Q[] = [
   { q: 'What did God promise He would NEVER do again?',
     opts: ['Destroy the earth with a flood', 'Create new animals', 'Plant a new garden', 'Rest on the seventh day'],
     correct: 0,
-    feedback: '"Never again will I destroy all living creatures." — Genesis 8:21' },
+    feedback: '"Never again will I destroy all living creatures as I have done." — Genesis 8:21' },
   { q: 'What was the FIRST thing Noah did when he left the ark?',
     opts: ['Built an altar and offered burnt offerings', 'Planted a vineyard', 'Named all the animals', 'Built a city'],
     correct: 0,
@@ -36,7 +36,7 @@ const ALL_Q: Q[] = [
   { q: 'What is the SIGN of God\'s covenant with all living things?',
     opts: ['The rainbow', 'The dove', 'The olive branch', 'The altar fire'],
     correct: 0,
-    feedback: '"I have set my rainbow in the clouds, it will be the sign." — Genesis 9:13' },
+    feedback: '"I have set my rainbow in the clouds — it will be the sign of the covenant." — Genesis 9:13' },
   { q: 'How many pairs of CLEAN animals did God tell Noah to bring?',
     opts: ['Seven pairs (14 animals)', 'Two pairs (4 animals)', 'Ten pairs (20 animals)', 'One pair (2 animals)'],
     correct: 0,
@@ -58,12 +58,12 @@ const ALL_Q: Q[] = [
     correct: 0,
     feedback: '"As long as the earth endures, seedtime and harvest shall not cease." — Genesis 8:22' },
   { q: 'How long is the Noahic Covenant?',
-    opts: ['Everlasting, for all future generations', 'Until the next flood', 'For one thousand years', 'Until the new earth'],
+    opts: ['Everlasting — for all future generations', 'Until the next flood', 'For one thousand years', 'Until the new earth'],
     correct: 0,
     feedback: '"I establish my covenant with you as an everlasting covenant." — Genesis 9:16' },
 ]
 
-// Questions to show after each segment (by ALL_Q index)
+// Quiz questions (by ALL_Q index) to show after each segment
 const QUIZ_AFTER: number[][] = [
   [],        // after Red
   [0],       // after Orange
@@ -74,52 +74,36 @@ const QUIZ_AFTER: number[][] = [
   [3, 6, 9], // after Violet
 ]
 
-// ── SVG arc geometry ──────────────────────────────────────────────────────────
+// ── SVG arc geometry (decorative display only) ────────────────────────────────
 
-const CX = 350, CY = 340, R = 250, SW = 54, STEP = 180 / 7
+const CX = 350, CY = 320, R = 255, SW = 50, STEP = 180 / 7
 
-const toRad = (d: number) => d * Math.PI / 180
-
-function arcPt(angleDeg: number) {
-  const a = toRad(angleDeg)
+function arcPt(deg: number) {
+  const a = deg * Math.PI / 180
   return { x: CX + R * Math.cos(a), y: CY - R * Math.sin(a) }
 }
 
 function segPath(i: number) {
-  const a1 = 180 - i * STEP
-  const a2 = 180 - (i + 1) * STEP
-  const p1 = arcPt(a1), p2 = arcPt(a2)
+  const p1 = arcPt(180 - i * STEP)
+  const p2 = arcPt(180 - (i + 1) * STEP)
   return `M ${p1.x.toFixed(1)} ${p1.y.toFixed(1)} A ${R} ${R} 0 0 1 ${p2.x.toFixed(1)} ${p2.y.toFixed(1)}`
-}
-
-function segMid(i: number) { return arcPt(180 - (i + 0.5) * STEP) }
-
-function hitTestSeg(svgEl: SVGSVGElement, clientX: number, clientY: number): number {
-  const rect = svgEl.getBoundingClientRect()
-  const sx = (clientX - rect.left) * (700 / rect.width)
-  const sy = (clientY - rect.top)  * (340 / rect.height)
-  const dx = sx - CX, dy = CY - sy
-  const dist = Math.sqrt(dx * dx + dy * dy)
-  if (dist < R - SW / 2 - 8 || dist > R + SW / 2 + 8) return -1
-  const angleDeg = Math.atan2(dy, dx) * 180 / Math.PI
-  if (angleDeg < 0 || angleDeg > 180) return -1
-  return Math.min(6, Math.floor((180 - angleDeg) / STEP))
 }
 
 // ── Particles ─────────────────────────────────────────────────────────────────
 
 interface Pt { x: number; y: number; vx: number; vy: number; r: number; life: number; max: number; hue: number }
 
-function mkBurst(sx: number, sy: number, hue: number, count = 70): Pt[] {
-  return Array.from({ length: count }, () => {
+function mkBurst(x: number, y: number, hue: number): Pt[] {
+  return Array.from({ length: 90 }, () => {
     const a = Math.random() * Math.PI * 2
-    const s = Math.random() * 9 + 2
+    const s = Math.random() * 11 + 2
     return {
-      x: sx + (Math.random() - 0.5) * 20, y: sy + (Math.random() - 0.5) * 20,
-      vx: Math.cos(a) * s, vy: Math.sin(a) * s - 2,
-      r: Math.random() * 3 + 1, life: 0,
-      max: Math.random() * 55 + 35,
-      hue: hue + Math.random() * 40 - 20,
+      x: x + (Math.random() - 0.5) * 16,
+      y: y + (Math.random() - 0.5) * 16,
+      vx: Math.cos(a) * s, vy: Math.sin(a) * s - 3,
+      r: Math.random() * 3.5 + 0.8,
+      life: 0, max: Math.random() * 60 + 40,
+      hue: hue + Math.random() * 45 - 22,
     }
   })
 }
@@ -127,7 +111,6 @@ function mkBurst(sx: number, sy: number, hue: number, count = 70): Pt[] {
 // ── Types ─────────────────────────────────────────────────────────────────────
 
 type Phase = 'intro' | 'tracing' | 'altar' | 'complete'
-
 interface Props { onComplete: () => void; onFail?: (h: string) => void; showHint?: boolean }
 
 // ── Component ─────────────────────────────────────────────────────────────────
@@ -135,104 +118,117 @@ interface Props { onComplete: () => void; onFail?: (h: string) => void; showHint
 export default function Level11({ onComplete }: Props) {
   const name = localStorage.getItem('iq_character') || 'Warrior'
 
-  const [phase,       setPhase]       = useState<Phase>('intro')
-  const [traced,      setTraced]      = useState<boolean[]>(Array(7).fill(false))
-  const [currentSeg,  setCurrentSeg]  = useState(0)
-  const [coins,       setCoins]       = useState(getCoins)
-  const [promiseInfo, setPromiseInfo] = useState<{ text: string; color: string } | null>(null)
+  const [phase,        setPhase]        = useState<Phase>('intro')
+  const [traced,       setTraced]       = useState<boolean[]>(Array(7).fill(false))
+  const [currentSeg,   setCurrentSeg]   = useState(0)
+  const [coins,        setCoins]        = useState(getCoins)
+  const [promiseInfo,  setPromiseInfo]  = useState<{ text: string; color: string } | null>(null)
   const [coinBurstKey, setCoinBurstKey] = useState(0)
-  const [celebFamily, setCelebFamily] = useState(false)
-  const [activeQuiz,  setActiveQuiz]  = useState<Q | null>(null)
-  const [quizQueue,   setQuizQueue]   = useState<Q[]>([])
-  const [quizAnswer,  setQuizAnswer]  = useState<number | null>(null)
-  const [showKeeper,  setShowKeeper]  = useState(false)
+  const [celebFamily,  setCelebFamily]  = useState(false)
+  const [activeQuiz,   setActiveQuiz]   = useState<Q | null>(null)
+  const [quizQueue,    setQuizQueue]    = useState<Q[]>([])
+  const [quizAnswer,   setQuizAnswer]   = useState<number | null>(null)
+  const [showKeeper,   setShowKeeper]   = useState(false)
+  const [busy,         setBusy]         = useState(false)   // blocks double-tap during animation
 
-  const wrongCountRef   = useRef(0)
-  const tracedSegRef    = useRef(-1)
-  const isDragging      = useRef(false)
-  const svgRef          = useRef<SVGSVGElement>(null)
-  const canvasRef       = useRef<HTMLCanvasElement>(null)
-  const particlesRef    = useRef<Pt[]>([])
-  const rafRef          = useRef<number>(0)
+  const wrongCountRef = useRef(0)
+  const tracedSegRef  = useRef(-1)
+  const btnRefs       = useRef<(HTMLButtonElement | null)[]>(Array(7).fill(null))
+  const canvasRef     = useRef<HTMLCanvasElement>(null)
+  const particlesRef  = useRef<Pt[]>([])
+  const rafRef        = useRef<number>(0)
 
-  // ── Particle canvas loop ──────────────────────────────────────────────────
+  // ── Particle canvas ───────────────────────────────────────────────────────
 
   useEffect(() => {
-    const cv = canvasRef.current; if (!cv) return
-    const ctx = cv.getContext('2d'); if (!ctx) return
+    const cv = canvasRef.current
+    if (!cv) return
+    const ctx = cv.getContext('2d')
+    if (!ctx) return
+
     const resize = () => { cv.width = window.innerWidth; cv.height = window.innerHeight }
-    resize(); window.addEventListener('resize', resize)
+    resize()
+    window.addEventListener('resize', resize)
 
     const tick = () => {
       ctx.clearRect(0, 0, cv.width, cv.height)
       particlesRef.current = particlesRef.current.filter(p => p.life < p.max)
       for (const p of particlesRef.current) {
         p.x += p.vx; p.y += p.vy
-        p.vx *= 0.96; p.vy *= 0.96; p.vy += 0.06
+        p.vx *= 0.96; p.vy *= 0.96; p.vy += 0.07
         p.life++
         const t = p.life / p.max
-        const op = Math.pow(1 - t, 0.65) * 0.9
-        const rN = p.r * (1 + t * 1.2)
-        ctx.beginPath(); ctx.arc(p.x, p.y, rN * 3, 0, Math.PI * 2)
-        ctx.fillStyle = `hsla(${p.hue},100%,65%,${op * 0.22})`; ctx.fill()
+        const op = Math.pow(1 - t, 0.65) * 0.88
+        const rN = p.r * (1 + t)
+        ctx.beginPath(); ctx.arc(p.x, p.y, rN * 3.2, 0, Math.PI * 2)
+        ctx.fillStyle = `hsla(${p.hue},100%,65%,${op * 0.20})`; ctx.fill()
         ctx.beginPath(); ctx.arc(p.x, p.y, rN, 0, Math.PI * 2)
-        ctx.fillStyle = `hsla(${p.hue},100%,80%,${op})`; ctx.fill()
+        ctx.fillStyle = `hsla(${p.hue},100%,82%,${op})`; ctx.fill()
       }
       rafRef.current = requestAnimationFrame(tick)
     }
     tick()
-    return () => { cancelAnimationFrame(rafRef.current); window.removeEventListener('resize', resize) }
+    return () => {
+      cancelAnimationFrame(rafRef.current)
+      window.removeEventListener('resize', resize)
+    }
   }, [])
 
   // ── Helpers ───────────────────────────────────────────────────────────────
 
   const speakVoice = useCallback((text: string) => {
     if (!('speechSynthesis' in window)) return
-    window.speechSynthesis.cancel()
-    const utt = new SpeechSynthesisUtterance(text)
-    utt.rate = 0.82; utt.pitch = 0.95; utt.volume = 1
-    const warm = speechSynthesis.getVoices().find(v => /female|woman|zira|samantha|karen|victoria/i.test(v.name))
-    if (warm) utt.voice = warm
-    window.speechSynthesis.speak(utt)
+    try {
+      window.speechSynthesis.cancel()
+      const utt = new SpeechSynthesisUtterance(text)
+      utt.rate = 0.82; utt.pitch = 0.95; utt.volume = 1
+      const warm = speechSynthesis.getVoices()
+        .find(v => /female|woman|zira|samantha|karen|victoria|moira/i.test(v.name))
+      if (warm) utt.voice = warm
+      window.speechSynthesis.speak(utt)
+    } catch (_) {}
   }, [])
 
-  const burst = useCallback((segIndex: number) => {
-    const cv = canvasRef.current; const sg = svgRef.current; if (!cv || !sg) return
-    const svgRect = sg.getBoundingClientRect()
-    const mid = segMid(segIndex)
-    const scaleX = svgRect.width / 700, scaleY = svgRect.height / 340
-    const sx = svgRect.left + mid.x * scaleX
-    const sy = svgRect.top  + mid.y * scaleY
-    const hue = [0, 33, 51, 120, 210, 255, 280][segIndex]
-    particlesRef.current.push(...mkBurst(sx, sy, hue))
+  const burstFromBtn = useCallback((segIndex: number) => {
+    const btn = btnRefs.current[segIndex]
+    const cv  = canvasRef.current
+    if (!btn || !cv) return
+    const br = btn.getBoundingClientRect()
+    const cx = br.left + br.width / 2
+    const cy = br.top  + br.height / 2
+    const hue = [0, 33, 51, 120, 210, 255, 285][segIndex]
+    particlesRef.current.push(...mkBurst(cx, cy, hue))
   }, [])
 
-  // ── Advance after a segment and its quizzes ───────────────────────────────
+  // ── Advance after segment + quizzes ──────────────────────────────────────
 
   const advanceAfterSegment = useCallback((i: number) => {
+    setBusy(false)
     if (i === 6) {
       if (wrongCountRef.current === 0) {
         const bonus = addCoins(100); setCoins(bonus)
         setShowKeeper(true)
         setTimeout(() => { setShowKeeper(false); setPhase('altar') }, 2800)
       } else {
-        setTimeout(() => setPhase('altar'), 600)
+        setTimeout(() => setPhase('altar'), 700)
       }
     } else {
       setCurrentSeg(i + 1)
     }
   }, [])
 
-  // ── Trace a segment ───────────────────────────────────────────────────────
+  // ── Tap a segment button ──────────────────────────────────────────────────
 
-  const traceSegment = useCallback((i: number) => {
-    if (traced[i] || i !== currentSeg) return
+  const handleSegTap = useCallback((i: number) => {
+    if (busy || traced[i] || i !== currentSeg) return
+    setBusy(true)
 
     setTraced(prev => { const n = [...prev]; n[i] = true; return n })
-    burst(i)
+    burstFromBtn(i)
 
     const newCoins = addCoins(10); setCoins(newCoins)
     setCoinBurstKey(k => k + 1)
+
     setCelebFamily(true)
     setTimeout(() => setCelebFamily(false), 900)
 
@@ -247,11 +243,12 @@ export default function Level11({ onComplete }: Props) {
         tracedSegRef.current = i
         setQuizQueue(qs.slice(1))
         setActiveQuiz(qs[0])
+        setBusy(false)
       } else {
         advanceAfterSegment(i)
       }
     }, 2800)
-  }, [traced, currentSeg, burst, speakVoice, advanceAfterSegment])
+  }, [busy, traced, currentSeg, burstFromBtn, speakVoice, advanceAfterSegment])
 
   // ── Quiz answer ───────────────────────────────────────────────────────────
 
@@ -277,38 +274,19 @@ export default function Level11({ onComplete }: Props) {
     }, 1900)
   }, [quizAnswer, activeQuiz, quizQueue, advanceAfterSegment])
 
-  // ── SVG pointer events ────────────────────────────────────────────────────
-
-  const handleSvgPointerDown = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
-    e.preventDefault()
-    isDragging.current = true
-    const seg = hitTestSeg(svgRef.current!, e.clientX, e.clientY)
-    if (seg !== -1) traceSegment(seg)
-  }, [traceSegment])
-
-  const handleSvgPointerMove = useCallback((e: React.PointerEvent<SVGSVGElement>) => {
-    if (!isDragging.current) return
-    const seg = hitTestSeg(svgRef.current!, e.clientX, e.clientY)
-    if (seg !== -1) traceSegment(seg)
-  }, [traceSegment])
-
-  useEffect(() => {
-    const up = () => { isDragging.current = false }
-    window.addEventListener('pointerup', up)
-    return () => window.removeEventListener('pointerup', up)
-  }, [])
-
   // ── Intro voice ───────────────────────────────────────────────────────────
 
   useEffect(() => {
     if (phase !== 'intro') return
-    const t = setTimeout(() => speakVoice(
-      'Then God spoke to Noah and his sons. I now establish my covenant with you and with every living creature. I have set my rainbow in the clouds as a sign of the covenant between me and the earth. Genesis nine, verse thirteen.'
-    ), 800)
+    const t = setTimeout(() =>
+      speakVoice(
+        'Then God spoke to Noah and his sons. I now establish my covenant with you and with every living creature. ' +
+        'I have set my rainbow in the clouds as a sign of the covenant between me and the earth. Genesis nine, verse thirteen.'
+      ), 900)
     return () => clearTimeout(t)
   }, [phase, speakVoice])
 
-  // ── Completion screen ─────────────────────────────────────────────────────
+  // ── Completion ────────────────────────────────────────────────────────────
 
   if (phase === 'complete') {
     return (
@@ -322,7 +300,7 @@ export default function Level11({ onComplete }: Props) {
     )
   }
 
-  // ── Altar screen ──────────────────────────────────────────────────────────
+  // ── Altar ─────────────────────────────────────────────────────────────────
 
   if (phase === 'altar') {
     return (
@@ -351,7 +329,7 @@ export default function Level11({ onComplete }: Props) {
     )
   }
 
-  // ── Intro screen ──────────────────────────────────────────────────────────
+  // ── Intro ─────────────────────────────────────────────────────────────────
 
   if (phase === 'intro') {
     return (
@@ -363,7 +341,7 @@ export default function Level11({ onComplete }: Props) {
           <h1 className="l11-intro-title">THE NOAHIC COVENANT</h1>
           <p className="l11-intro-sub">
             After the flood, God spoke to Noah and established an everlasting covenant with all living things.
-            Trace each colour of the rainbow to reveal God's precious promises!
+            Tap each colour of the rainbow to reveal God's precious promises!
           </p>
           <p className="l11-intro-verse">
             "I have set my rainbow in the clouds, and it will be the sign
@@ -371,16 +349,16 @@ export default function Level11({ onComplete }: Props) {
           </p>
           <button
             className="l11-intro-btn"
-            onClick={() => { window.speechSynthesis?.cancel(); setPhase('tracing') }}
+            onClick={() => { try { window.speechSynthesis?.cancel() } catch (_) {}; setPhase('tracing') }}
           >
-            TRACE THE RAINBOW ›
+            TAP THE RAINBOW ›
           </button>
         </div>
       </div>
     )
   }
 
-  // ── Tracing phase ─────────────────────────────────────────────────────────
+  // ── Tracing / tap phase ───────────────────────────────────────────────────
 
   const allTraced = traced.every(Boolean)
 
@@ -399,42 +377,60 @@ export default function Level11({ onComplete }: Props) {
           <h1 className="l11-title">The Noahic Covenant &amp; the Rainbow</h1>
         </header>
 
-        {/* Rainbow arc */}
+        {/* Decorative rainbow arc — display only, no click events */}
         <div className="l11-arc-wrap">
-          <svg
-            ref={svgRef}
-            className="l11-arc-svg"
-            viewBox="0 0 700 340"
-            preserveAspectRatio="xMidYMid meet"
-            onPointerDown={handleSvgPointerDown}
-            onPointerMove={handleSvgPointerMove}
-            style={{ touchAction: 'none' }}
-          >
+          <svg className="l11-arc-svg" viewBox="0 0 700 320" preserveAspectRatio="xMidYMid meet">
             {SEGMENTS.map((seg, i) => (
-              <g key={i}>
-                <path
-                  d={segPath(i)}
-                  fill="none"
-                  stroke={traced[i] ? seg.color : 'rgba(180,180,180,0.28)'}
-                  strokeWidth={SW}
-                  strokeLinecap="round"
-                  className={traced[i] ? 'l11-seg traced' : 'l11-seg'}
-                />
-                {/* wider invisible hit area */}
-                <path
-                  d={segPath(i)}
-                  fill="none"
-                  stroke="transparent"
-                  strokeWidth={SW + 24}
-                  strokeLinecap="round"
-                  style={{ cursor: i === currentSeg && !traced[i] ? 'crosshair' : 'default' }}
-                />
-              </g>
+              <path
+                key={i}
+                d={segPath(i)}
+                fill="none"
+                stroke={traced[i] ? seg.color : 'rgba(160,160,160,0.22)'}
+                strokeWidth={SW}
+                strokeLinecap="round"
+                className={traced[i] ? 'l11-seg traced' : 'l11-seg'}
+              />
             ))}
           </svg>
         </div>
 
-        {/* Segment progress dots */}
+        {/* ── 7 large tap buttons ── */}
+        <div className="l11-seg-btns">
+          {SEGMENTS.map((seg, i) => {
+            const isDone   = traced[i]
+            const isActive = !isDone && i === currentSeg
+            const isLocked = !isDone && i !== currentSeg
+
+            let stateClass = 'l11-locked'
+            if (isDone)   stateClass = 'l11-done'
+            if (isActive) stateClass = 'l11-active'
+
+            return (
+              <button
+                key={i}
+                ref={el => { btnRefs.current[i] = el }}
+                className={`l11-seg-btn ${stateClass}`}
+                style={{
+                  background: isDone || isActive ? seg.bg : undefined,
+                  color: seg.color,
+                  borderColor: isDone ? `${seg.color}88` : isActive ? seg.color : undefined,
+                  boxShadow: isActive ? `0 0 22px ${seg.color}88` : isDone ? `0 0 10px ${seg.color}44` : undefined,
+                }}
+                onClick={() => handleSegTap(i)}
+                disabled={isLocked || busy || isDone}
+                aria-label={`${seg.name} segment${isDone ? ' — done' : isActive ? ' — tap to reveal God\'s promise' : ' — locked'}`}
+              >
+                <span className="l11-btn-icon">
+                  {isDone ? '✅' : isLocked ? '⚫' : seg.icon}
+                </span>
+                <span className="l11-btn-name">{seg.name}</span>
+                {isActive && <span className="l11-btn-tap">TAP!</span>}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Progress dots */}
         <div className="l11-dots">
           {SEGMENTS.map((seg, i) => (
             <div
@@ -448,8 +444,8 @@ export default function Level11({ onComplete }: Props) {
         {/* Instruction */}
         <p className="l11-instruct">
           {allTraced
-            ? '🌈 All seven promises revealed — Glory!'
-            : `Trace the ${SEGMENTS[currentSeg]?.name} segment to reveal God's promise!`}
+            ? '🌈 All seven promises revealed — Glory to God!'
+            : `Tap the ${SEGMENTS[currentSeg]?.name} button to reveal God's promise!`}
         </p>
 
         {/* Family row */}
@@ -458,7 +454,7 @@ export default function Level11({ onComplete }: Props) {
             <span
               key={i}
               className={`l11-fam${celebFamily ? ' celebrate' : ''}`}
-              style={{ animationDelay: `${i * 0.15}s` }}
+              style={{ animationDelay: `${i * 0.12}s` }}
             >
               {f}
             </span>
@@ -468,7 +464,10 @@ export default function Level11({ onComplete }: Props) {
 
       {/* Promise banner */}
       {promiseInfo && (
-        <div className="l11-promise" style={{ color: promiseInfo.color, borderColor: `${promiseInfo.color}66` }}>
+        <div
+          className="l11-promise"
+          style={{ color: promiseInfo.color, borderColor: `${promiseInfo.color}55`, border: `1px solid` }}
+        >
           "{promiseInfo.text}"
         </div>
       )}
@@ -478,7 +477,7 @@ export default function Level11({ onComplete }: Props) {
         <div key={coinBurstKey} className="l11-coin-burst">+10 🪙</div>
       )}
 
-      {/* COVENANT KEEPER banner */}
+      {/* Covenant Keeper banner */}
       {showKeeper && (
         <div className="l11-keeper">⭐ COVENANT KEEPER! ⭐</div>
       )}
@@ -492,9 +491,11 @@ export default function Level11({ onComplete }: Props) {
               {activeQuiz.opts.map((opt, i) => (
                 <button
                   key={i}
-                  className={`l11-quiz-opt${quizAnswer === i
-                    ? (i === activeQuiz.correct ? ' correct' : ' wrong')
-                    : (quizAnswer !== null && i === activeQuiz.correct ? ' correct' : '')}`}
+                  className={`l11-quiz-opt${
+                    quizAnswer === i
+                      ? i === activeQuiz.correct ? ' correct' : ' wrong'
+                      : quizAnswer !== null && i === activeQuiz.correct ? ' correct' : ''
+                  }`}
                   onClick={() => handleAnswer(i)}
                   disabled={quizAnswer !== null}
                 >
