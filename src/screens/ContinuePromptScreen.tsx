@@ -21,12 +21,27 @@ function getLevelLabel(screen: string): string {
   return m ? `1-${m[1]}` : screen
 }
 
+// Read progress using the same per-player key as App.tsx
+function getPlayerProgress(): string {
+  try {
+    const raw = localStorage.getItem('iq_session')
+    if (!raw) return 'game'
+    const { firstName } = JSON.parse(raw) as { firstName?: string }
+    if (!firstName) return 'game'
+    const player = firstName.replace(/\s+/g, '_').toLowerCase()
+    return localStorage.getItem(`ikuwa_progress_${player}`) || 'game'
+  } catch (_) {
+    return 'game'
+  }
+}
+
 export default function ContinuePromptScreen({
   onContinue, onRestart,
 }: { onContinue: () => void; onRestart: () => void }) {
   const name     = localStorage.getItem('iq_character') || 'Warrior'
-  const progress = localStorage.getItem('iq_progress')  || 'game'
+  const progress = getPlayerProgress()
   const coins    = getCoins()
+  const levelName = getLevelLabel(progress)
 
   return (
     <div className="cp-screen">
@@ -46,7 +61,7 @@ export default function ContinuePromptScreen({
           <div className="cp-stat-sep" />
           <div className="cp-stat">
             <span className="cp-stat-icon">📖</span>
-            <span className="cp-stat-val">Level {getLevelLabel(progress)}</span>
+            <span className="cp-stat-val">{levelName}</span>
             <span className="cp-stat-lbl">Saved Progress</span>
           </div>
         </div>
@@ -54,7 +69,7 @@ export default function ContinuePromptScreen({
         <div className="cp-btns">
           <button className="cp-btn cp-btn--primary" onClick={onContinue}>
             ▶ CONTINUE FROM<br />
-            <span className="cp-btn-lvl">LEVEL {getLevelLabel(progress)}</span>
+            <span className="cp-btn-lvl">LEVEL {levelName}</span>
           </button>
           <button className="cp-btn cp-btn--secondary" onClick={onRestart}>
             ↩ START FROM BEGINNING

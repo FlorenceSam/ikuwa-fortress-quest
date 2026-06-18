@@ -25,7 +25,35 @@ import { checkDailyManna, getCoins } from './game/coins'
 import './App.css'
 
 // ─── Progress helpers ──────────────────────────────────────────────────────────
-const PROGRESS_KEY = 'iq_progress'
+
+function safeKey(s: string): string {
+  return s.replace(/\s+/g, '_').toLowerCase()
+}
+
+// Read the logged-in player's firstName from session (safe key form)
+function sessionPlayer(): string {
+  try {
+    const raw = localStorage.getItem('iq_session')
+    if (!raw) return 'guest'
+    const { firstName } = JSON.parse(raw) as { firstName?: string }
+    return firstName ? safeKey(firstName) : 'guest'
+  } catch (_) { return 'guest' }
+}
+
+// Per-player character name: maps login firstName → chosen character display name
+function charKey(firstName: string): string {
+  return `iq_char_${safeKey(firstName)}`
+}
+
+// Per-player progress key (the next level to resume from)
+function progressKey(player?: string): string {
+  return `ikuwa_progress_${player ?? sessionPlayer()}`
+}
+
+// Per-player current-level key (the level actively being played)
+function currentLevelKey(player?: string): string {
+  return `ikuwa_currentlevel_${player ?? sessionPlayer()}`
+}
 
 function isLevelScreen(s: string): boolean {
   return s === 'game' || /^level\d+$/.test(s)
@@ -33,11 +61,15 @@ function isLevelScreen(s: string): boolean {
 
 function hasSavedSession(): boolean {
   try {
-    return !!(
-      localStorage.getItem('iq_session') &&
-      localStorage.getItem(PROGRESS_KEY) &&
-      localStorage.getItem('iq_character')
-    )
+    const raw = localStorage.getItem('iq_session')
+    if (!raw) return false
+    const { firstName } = JSON.parse(raw) as { firstName?: string }
+    if (!firstName) return false
+    // Player must have a character name set (completed character creation)
+    if (!localStorage.getItem(charKey(firstName))) return false
+    // Player must have a saved progress entry
+    const p = safeKey(firstName)
+    return localStorage.getItem(progressKey(p)) !== null
   } catch (_) { return false }
 }
 
@@ -210,25 +242,32 @@ export default function App() {
 
   const advanceLevel = (next: AppScreen) => {
     setShowHint(false)
+    const player = sessionPlayer()
     if (isLevelScreen(next)) {
-      try { localStorage.setItem(PROGRESS_KEY, next) } catch (_) {}
+      // Save where they should resume (next level to play)
+      try { localStorage.setItem(progressKey(player), next) } catch (_) {}
+      // Also track which level is currently active
+      try { localStorage.setItem(currentLevelKey(player), next) } catch (_) {}
     } else if (next === 'welcome') {
-      try { localStorage.removeItem(PROGRESS_KEY) } catch (_) {}
+      // All levels complete — clear progress so they start fresh next time
+      try { localStorage.removeItem(progressKey(player)) } catch (_) {}
+      try { localStorage.removeItem(currentLevelKey(player)) } catch (_) {}
     }
     setAppScreen(next)
   }
 
   const handleContinue = () => {
-    const saved = (localStorage.getItem(PROGRESS_KEY) || 'game') as AppScreen
+    const saved = (localStorage.getItem(progressKey()) || 'game') as AppScreen
     setFailActive(false); setShowHint(false)
     setAppScreen(saved)
   }
 
   const handleRestartFresh = () => {
-    try { localStorage.removeItem(PROGRESS_KEY) } catch (_) {}
+    const player = sessionPlayer()
+    try { localStorage.setItem(progressKey(player), 'game') } catch (_) {}
+    try { localStorage.setItem(currentLevelKey(player), 'game') } catch (_) {}
     setFailActive(false); setShowHint(false)
     setAppScreen('game')
-    try { localStorage.setItem(PROGRESS_KEY, 'game') } catch (_) {}
   }
 
   const audioRef       = useRef<AudioContext | null>(null)
@@ -290,23 +329,39 @@ export default function App() {
 
   const afterAuth = (name: string) => {
     setFirstName(name)
-    const savedChar     = localStorage.getItem('iq_character')
-    const savedProgress = localStorage.getItem(PROGRESS_KEY)
-    if (savedChar) {
+    const player = safeKey(name)
+
+    // Look up THIS player's character name (set during their first play-through)
+    const storedChar = localStorage.getItem(charKey(name))
+
+    if (storedChar) {
+      // Returning player — restore their character name so all components see it
+      localStorage.setItem('iq_character', storedChar)
+
+      const savedProgress = localStorage.getItem(progressKey(player))
       const manna = checkDailyManna()
+
       if (manna.shouldShow) {
+        // Show daily manna first, then route to continue-prompt or game
         const next: AppScreen = savedProgress ? 'continue-prompt' : 'game'
         setPostMannaScreen(next)
         setAppScreen('manna')
         return
       }
+
       if (savedProgress) {
+        // Skip the cinematic — send them straight to the continue screen
         setAppScreen('continue-prompt')
       } else {
-        try { localStorage.setItem(PROGRESS_KEY, 'game') } catch (_) {}
+        // Character exists but no progress yet — start Level 1 (no cinematic)
+        try {
+          localStorage.setItem(progressKey(player), 'game')
+          localStorage.setItem(currentLevelKey(player), 'game')
+        } catch (_) {}
         setAppScreen('game')
       }
     } else {
+      // Brand new player — they need to pick a character name, then play the cinematic
       setAppScreen('character-name')
     }
   }
@@ -316,6 +371,19 @@ export default function App() {
   const enterKingdom = (characterName: string) => {
     stopVoice()
     localStorage.setItem('iq_character', characterName)
+
+    // Save per-player character name so afterAuth can find it on every return visit
+    try {
+      const session = JSON.parse(localStorage.getItem('iq_session') || '{}') as { firstName?: string }
+      if (session.firstName) {
+        localStorage.setItem(charKey(session.firstName), characterName)
+        // Write initial progress immediately so hasSavedSession() works after the cinematic
+        const player = safeKey(session.firstName)
+        localStorage.setItem(progressKey(player), 'game')
+        localStorage.setItem(currentLevelKey(player), 'game')
+      }
+    } catch (_) {}
+
     audioRef.current = launchSound()
     setShowContinue(false)
     setAppScreen('cinematic')
