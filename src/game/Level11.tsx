@@ -74,6 +74,20 @@ const QUIZ_AFTER: number[][] = [
   [3, 6, 9], // after Violet
 ]
 
+// Affirmations spoken (and displayed) when each question is answered correctly — in play order
+const AFFIRMATIONS = [
+  "You're God's Masterpiece!",
+  "You're Blessed Beyond Measure!",
+  "Enjoy Supernatural Strength!",
+  "Enjoy Unstoppable Purpose!",
+  "You're Radiant Light!",
+  "Fearless Warrior!",
+  "Anointed Vessel!",
+  "God's Champion!",
+  "Unshakeable Hope!",
+  "You're Blessed Abundantly!",
+]
+
 // ── SVG arc geometry (decorative display only) ────────────────────────────────
 
 const CX = 350, CY = 320, R = 255, SW = 50, STEP = 180 / 7
@@ -131,9 +145,13 @@ export default function Level11({ onComplete }: Props) {
   const [showKeeper,   setShowKeeper]   = useState(false)
   const [busy,         setBusy]         = useState(false)   // blocks double-tap during animation
 
-  const wrongCountRef = useRef(0)
-  const tracedSegRef  = useRef(-1)
-  const btnRefs       = useRef<(HTMLButtonElement | null)[]>(Array(7).fill(null))
+  const [affirmation,    setAffirmation]    = useState<string | null>(null)
+  const [affirmationKey, setAffirmationKey] = useState(0)
+
+  const wrongCountRef   = useRef(0)
+  const tracedSegRef    = useRef(-1)
+  const questionNumRef  = useRef(-1)   // increments to 0..9 each time a new quiz question is shown
+  const btnRefs         = useRef<(HTMLButtonElement | null)[]>(Array(7).fill(null))
   const canvasRef     = useRef<HTMLCanvasElement>(null)
   const particlesRef  = useRef<Pt[]>([])
   const rafRef        = useRef<number>(0)
@@ -242,6 +260,7 @@ export default function Level11({ onComplete }: Props) {
       if (qs.length > 0) {
         tracedSegRef.current = i
         setQuizQueue(qs.slice(1))
+        questionNumRef.current++
         setActiveQuiz(qs[0])
         setBusy(false)
       } else {
@@ -260,11 +279,20 @@ export default function Level11({ onComplete }: Props) {
       wrongCountRef.current++
       const c = penalizeCoins(50); setCoins(c)
       window.dispatchEvent(new CustomEvent('iq-coin-penalty'))
+    } else {
+      const aff = AFFIRMATIONS[questionNumRef.current]
+      if (aff) {
+        setAffirmation(aff)
+        setAffirmationKey(k => k + 1)
+        speakVoice(aff)
+        setTimeout(() => setAffirmation(null), 3000)
+      }
     }
 
     setTimeout(() => {
       setQuizAnswer(null)
       if (quizQueue.length > 0) {
+        questionNumRef.current++
         setActiveQuiz(quizQueue[0])
         setQuizQueue(q => q.slice(1))
       } else {
@@ -272,7 +300,7 @@ export default function Level11({ onComplete }: Props) {
         advanceAfterSegment(tracedSegRef.current)
       }
     }, 1900)
-  }, [quizAnswer, activeQuiz, quizQueue, advanceAfterSegment])
+  }, [quizAnswer, activeQuiz, quizQueue, advanceAfterSegment, speakVoice])
 
   // ── Intro voice ───────────────────────────────────────────────────────────
 
@@ -480,6 +508,11 @@ export default function Level11({ onComplete }: Props) {
       {/* Covenant Keeper banner */}
       {showKeeper && (
         <div className="l11-keeper">⭐ COVENANT KEEPER! ⭐</div>
+      )}
+
+      {/* Affirmation burst — shown on correct quiz answer */}
+      {affirmation && (
+        <div key={affirmationKey} className="l11-affirmation">{affirmation}</div>
       )}
 
       {/* Quiz overlay */}

@@ -67,7 +67,7 @@ export function screenToLevel(screen: string): number {
 
 export function levelToScreen(level: number): string {
   if (level <= 1) return 'game'
-  if (level > 11) return 'welcome'
+  if (level > 12) return 'welcome'
   return `level${level}`
 }
 
@@ -84,6 +84,7 @@ export function levelDisplayName(level: number): string {
     9:  '1-9: Noah\'s Ark Construction',
     10: '1-10: The Great Flood 40 Days',
     11: '1-11: The Noahic Covenant',
+    12: '1-12: The Mantle of Honour and Wisdom',
   }
   return NAMES[level] ?? `Level 1-${level}`
 }

@@ -367,6 +367,34 @@
 .l11-altar-btn:hover  { transform: scale(1.06); box-shadow: 0 0 50px rgba(255,215,0,0.8); }
 .l11-altar-btn:active { transform: scale(0.97); }
 
+/* ── Correct-answer affirmation burst ── */
+.l11-affirmation {
+  position: fixed;
+  top: 38%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: Georgia, serif;
+  font-size: clamp(2rem, 7.5vw, 3.6rem);
+  font-weight: 900;
+  color: #FFD700;
+  text-shadow:
+    0 0 24px rgba(255,215,0,0.95),
+    0 0 55px rgba(255,140,0,0.55),
+    2px 3px 0 rgba(120,60,0,0.85);
+  text-align: center;
+  pointer-events: none;
+  z-index: 200;
+  white-space: nowrap;
+  animation: l11-aff-burst 3s ease-out forwards;
+}
+@keyframes l11-aff-burst {
+  0%   { opacity: 0;   transform: translate(-50%, -50%) scale(0.18) rotate(-4deg); }
+  18%  { opacity: 1;   transform: translate(-50%, -50%) scale(1.22) rotate(2deg); }
+  32%  { opacity: 1;   transform: translate(-50%, -50%) scale(1.0)  rotate(0deg); }
+  68%  { opacity: 1;   transform: translate(-50%, -50%) scale(1.0)  rotate(0deg); }
+  100% { opacity: 0;   transform: translate(-50%, -50%) scale(1.12) rotate(1deg); }
+}
+
 /* ── Animations ── */
 @keyframes l11-fade-in {
   from { opacity: 0; transform: translateY(14px); }

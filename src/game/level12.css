@@ -1,0 +1,290 @@
+/* ── Layout ── */
+.l12-wrap {
+  position: fixed; inset: 0;
+  background: #0a0208;
+  display: flex;
+  overflow: hidden; user-select: none;
+}
+.l12-bg {
+  position: absolute; inset: 0;
+  background-image: url('/1to12web.p.jpeg');
+  background-size: cover; background-position: center;
+  transition: filter 2s ease;
+  z-index: 0;
+}
+.l12-bg.l12-bg-cascade {
+  filter: brightness(1.35) saturate(1.4);
+}
+.l12-vignette {
+  position: absolute; inset: 0;
+  background: rgba(0,0,0,0.30);
+  z-index: 1;
+}
+.l12-canvas {
+  position: absolute; inset: 0;
+  pointer-events: none; z-index: 3;
+}
+
+/* ── Vineyard tracker panel (left) ── */
+.l12-vine-panel {
+  position: relative; z-index: 10;
+  width: clamp(62px, 13vw, 90px);
+  flex-shrink: 0;
+  display: flex; flex-direction: column;
+  align-items: center;
+  padding: 52px 0 0.5rem;
+  background: linear-gradient(180deg, rgba(10,5,0,0.82) 0%, rgba(20,8,0,0.78) 100%);
+  border-right: 1px solid rgba(255,215,0,0.18);
+}
+.l12-vine-count {
+  text-align: center; line-height: 1; margin-bottom: 0.6rem;
+}
+.l12-vine-num {
+  font-family: Georgia, serif; font-size: clamp(1.2rem, 3vw, 1.8rem);
+  font-weight: 900; color: #FFD700;
+  text-shadow: 0 0 16px rgba(255,215,0,0.9);
+}
+.l12-vine-of {
+  font-size: clamp(0.6rem, 1.3vw, 0.78rem);
+  color: rgba(255,215,0,0.55); font-family: Georgia, serif;
+}
+.l12-vine-stem {
+  position: relative;
+  display: flex; flex-direction: column;
+  align-items: center;
+  gap: 0; width: 100%; flex: 1;
+  /* Golden vine line */
+  border-left: 3px solid rgba(255,215,0,0.30);
+  margin-left: 14px; padding-left: 4px;
+}
+
+/* ── Grape clusters ── */
+.l12-grape {
+  position: relative;
+  display: flex; flex-direction: column; align-items: center;
+  flex: 1; justify-content: center;
+  min-height: 0;
+  cursor: default;
+  transition: transform 0.3s;
+}
+.l12-grape-emoji {
+  font-size: clamp(1.1rem, 3vw, 1.6rem);
+  filter: grayscale(0.9) opacity(0.35);
+  transition: filter 0.5s, transform 0.4s;
+  display: block; line-height: 1;
+}
+.l12-grape-n {
+  font-size: clamp(0.42rem, 0.9vw, 0.55rem);
+  color: rgba(255,255,255,0.28); font-family: Georgia, serif;
+  line-height: 1; text-align: center;
+}
+.l12-grape.lit .l12-grape-emoji {
+  filter: grayscale(0) opacity(1) drop-shadow(0 0 8px #CC44FF) drop-shadow(0 0 16px #9900EE);
+  animation: l12-grape-pulse 1.8s ease-in-out infinite alternate;
+}
+.l12-grape.lit .l12-grape-n { color: rgba(204, 68, 255, 0.8); }
+@keyframes l12-grape-pulse {
+  from { filter: grayscale(0) opacity(0.88) drop-shadow(0 0 6px #CC44FF) drop-shadow(0 0 12px #9900EE); }
+  to   { filter: grayscale(0) opacity(1.00) drop-shadow(0 0 14px #EE88FF) drop-shadow(0 0 28px #CC00FF); }
+}
+.l12-grape.cascade .l12-grape-emoji {
+  animation: l12-grape-ignite 0.5s ease-out forwards, l12-grape-pulse 1.5s ease-in-out 0.5s infinite alternate;
+  filter: grayscale(0) opacity(1) drop-shadow(0 0 20px #FF88FF) drop-shadow(0 0 40px #CC00FF);
+}
+@keyframes l12-grape-ignite {
+  0%   { transform: scale(1); }
+  30%  { transform: scale(1.8); }
+  60%  { transform: scale(1.4); }
+  100% { transform: scale(1.1); }
+}
+
+/* ── Main content area ── */
+.l12-main {
+  position: relative; z-index: 10;
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; overflow-y: auto;
+  padding: 0 0.8rem 1rem;
+}
+.l12-header {
+  text-align: center; padding: 56px 0 0.4rem;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.9);
+}
+.l12-label {
+  font-size: clamp(0.58rem, 1.2vw, 0.75rem); letter-spacing: 0.22em;
+  color: rgba(255,215,0,0.55); margin: 0; font-family: Georgia, serif;
+}
+.l12-title {
+  font-family: Georgia, serif; font-size: clamp(0.9rem, 2.4vw, 1.55rem);
+  color: #FFD700; margin: 0.15rem 0 0; text-shadow: 0 0 22px rgba(255,215,0,0.6);
+}
+
+/* ── Quiz card ── */
+.l12-quiz-card {
+  background: linear-gradient(160deg, rgba(12,4,20,0.94), rgba(22,8,5,0.94));
+  border: 2px solid rgba(180,80,255,0.45); border-radius: 18px;
+  padding: 1.4rem 1.5rem; width: 100%; max-width: 520px;
+  box-shadow: 0 0 50px rgba(160,0,255,0.18);
+  margin-top: 0.6rem;
+}
+.l12-q-num {
+  font-size: clamp(0.6rem, 1.2vw, 0.75rem); letter-spacing: 0.18em;
+  color: rgba(204,68,255,0.7); font-family: Georgia, serif; margin-bottom: 0.6rem;
+}
+.l12-q-text {
+  font-family: Georgia, serif; font-style: italic;
+  font-size: clamp(0.92rem, 2.2vw, 1.18rem); color: #fff;
+  margin: 0 0 1.1rem; line-height: 1.55;
+}
+.l12-opts {
+  display: flex; flex-direction: column; gap: 0.55rem;
+}
+.l12-opt {
+  background: rgba(255,255,255,0.06);
+  border: 1.5px solid rgba(180,80,255,0.35); border-radius: 10px;
+  padding: 0.72rem 1.1rem; color: rgba(255,255,255,0.9);
+  font-family: Georgia, serif; font-size: clamp(0.82rem, 1.9vw, 0.98rem);
+  cursor: pointer; transition: background 0.16s, border-color 0.16s, transform 0.11s;
+  text-align: left;
+}
+.l12-opt:hover:not(:disabled)  { background: rgba(180,80,255,0.14); border-color: rgba(180,80,255,0.7); transform: translateX(4px); }
+.l12-opt:active:not(:disabled) { transform: translateX(2px) scale(0.99); }
+.l12-opt.correct { background: rgba(0,200,80,0.25); border-color: #00CC50; color: #aaffcc; }
+.l12-opt.wrong   { background: rgba(200,0,0,0.25);  border-color: #CC0000; color: #ffaaaa; }
+
+/* ── Affirmation burst ── */
+.l12-affirmation {
+  position: fixed; top: 36%; left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: Georgia, serif;
+  font-size: clamp(1.9rem, 7vw, 3.4rem);
+  font-weight: 900; color: #FFD700;
+  text-shadow: 0 0 22px rgba(255,215,0,0.95), 0 0 50px rgba(255,140,0,0.5), 2px 3px 0 rgba(100,40,0,0.9);
+  text-align: center; pointer-events: none; z-index: 200; white-space: nowrap;
+  animation: l12-aff-burst 3.2s ease-out forwards;
+}
+@keyframes l12-aff-burst {
+  0%   { opacity: 0;   transform: translate(-50%,-50%) scale(0.15) rotate(-5deg); }
+  18%  { opacity: 1;   transform: translate(-50%,-50%) scale(1.25) rotate(2deg); }
+  32%  { opacity: 1;   transform: translate(-50%,-50%) scale(1.0)  rotate(0deg); }
+  68%  { opacity: 1;   transform: translate(-50%,-50%) scale(1.0); }
+  100% { opacity: 0;   transform: translate(-50%,-50%) scale(1.1); }
+}
+
+/* ── +5 coin burst ── */
+.l12-coin-burst {
+  position: fixed; top: 26%; left: 50%; transform: translateX(-50%);
+  font-size: 1.7rem; font-weight: 900; color: #FFD700;
+  text-shadow: 0 0 20px rgba(255,215,0,0.9); z-index: 201;
+  pointer-events: none; animation: l12-coin-up 1.6s ease-out forwards;
+}
+@keyframes l12-coin-up {
+  0%   { opacity: 1; transform: translateX(-50%) translateY(0)     scale(1.2); }
+  100% { opacity: 0; transform: translateX(-50%) translateY(-80px) scale(0.8); }
+}
+
+/* ── Cascade banner ── */
+.l12-cascade-banner {
+  position: fixed; top: 22%; left: 50%; transform: translateX(-50%);
+  font-family: Georgia, serif; font-size: clamp(1.3rem, 4vw, 2.5rem);
+  font-weight: 900; letter-spacing: 0.08em; text-align: center;
+  background: linear-gradient(90deg, #FFD700, #FF8C00, #FF2200, #CC00FF, #FFD700);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+  filter: drop-shadow(0 0 18px rgba(255,215,0,0.9));
+  z-index: 150; white-space: nowrap;
+  animation: l12-banner-in 0.6s ease-out both;
+}
+@keyframes l12-banner-in {
+  from { opacity: 0; transform: translateX(-50%) scale(0.5); }
+  to   { opacity: 1; transform: translateX(-50%) scale(1); }
+}
+
+/* ── CSS FX overlays ── */
+.l12-fx-overlay {
+  position: fixed; inset: 0; pointer-events: none; z-index: 90;
+}
+.l12-fx-streak {
+  background: linear-gradient(90deg, transparent 0%, rgba(0,200,80,0.22) 40%, rgba(0,255,100,0.38) 50%, rgba(0,200,80,0.22) 60%, transparent 100%);
+  animation: l12-sweep-h 1s ease-out forwards;
+}
+.l12-fx-lightning {
+  background: radial-gradient(ellipse at 50% 50%, rgba(130,0,255,0.45) 0%, rgba(80,0,200,0.22) 40%, transparent 70%);
+  animation: l12-flash-fast 0.9s ease-out forwards;
+}
+.l12-fx-beam {
+  background: linear-gradient(180deg, transparent 0%, rgba(255,240,180,0.35) 30%, rgba(255,255,220,0.55) 50%, rgba(255,240,180,0.35) 70%, transparent 100%);
+  animation: l12-flash-fade 1.1s ease-out forwards;
+}
+.l12-fx-rainbow {
+  background: linear-gradient(90deg,
+    rgba(255,0,0,0.18),   rgba(255,128,0,0.18),
+    rgba(255,255,0,0.18), rgba(0,200,0,0.18),
+    rgba(0,100,255,0.18), rgba(120,0,200,0.18));
+  animation: l12-sweep-h 1.1s ease-out forwards;
+}
+.l12-fx-flash {
+  background: radial-gradient(ellipse at 50% 50%, rgba(255,210,0,0.55) 0%, rgba(255,160,0,0.22) 50%, transparent 75%);
+  animation: l12-flash-fast 0.8s ease-out forwards;
+}
+
+@keyframes l12-sweep-h {
+  0%   { opacity: 0; clip-path: inset(0 100% 0 0); }
+  25%  { opacity: 1; clip-path: inset(0 50% 0 0); }
+  75%  { opacity: 1; clip-path: inset(0 0 0 50%); }
+  100% { opacity: 0; clip-path: inset(0 0 0 100%); }
+}
+@keyframes l12-flash-fast {
+  0%   { opacity: 0; }
+  20%  { opacity: 1; }
+  100% { opacity: 0; }
+}
+@keyframes l12-flash-fade {
+  0%   { opacity: 0; }
+  15%  { opacity: 1; }
+  80%  { opacity: 0.7; }
+  100% { opacity: 0; }
+}
+
+/* ── Intro screen ── */
+.l12-intro {
+  position: relative; z-index: 10;
+  display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  height: 100vh; padding: 2rem 3rem; text-align: center; gap: 1.3rem;
+  width: 100%;
+}
+.l12-intro-title {
+  font-family: Georgia, serif; font-size: clamp(1.6rem, 5vw, 3rem);
+  color: #FFD700; margin: 0; letter-spacing: 0.1em; line-height: 1.2;
+  text-shadow: 0 0 40px rgba(255,215,0,0.8), 0 2px 8px rgba(0,0,0,0.9);
+  animation: l12-fade-in 1.2s ease-out both;
+}
+.l12-intro-sub {
+  font-family: Georgia, serif; font-style: italic;
+  font-size: clamp(0.88rem, 2vw, 1.15rem);
+  color: rgba(255,255,255,0.88); margin: 0; max-width: 540px; line-height: 1.65;
+  animation: l12-fade-in 1.6s ease-out 0.4s both;
+}
+.l12-intro-verse {
+  font-size: clamp(0.78rem, 1.7vw, 1rem);
+  color: rgba(255,215,0,0.75); font-family: Georgia, serif; font-style: italic;
+  max-width: 480px; margin: 0; line-height: 1.55;
+  animation: l12-fade-in 1.8s ease-out 0.8s both;
+}
+.l12-intro-btn {
+  margin-top: 0.5rem;
+  background: linear-gradient(135deg, #9900CC, #CC00FF, #FFD700);
+  border: none; border-radius: 30px; padding: 0.9rem 3rem;
+  font-family: Georgia, serif; font-size: 1.05rem; font-weight: 700;
+  letter-spacing: 0.1em; color: #fff; cursor: pointer;
+  box-shadow: 0 0 30px rgba(180,0,255,0.5);
+  animation: l12-fade-in 2s ease-out 1.2s both;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.l12-intro-btn:hover  { transform: scale(1.06); box-shadow: 0 0 50px rgba(200,50,255,0.85); }
+.l12-intro-btn:active { transform: scale(0.97); }
+
+/* ── Animation ── */
+@keyframes l12-fade-in {
+  from { opacity: 0; transform: translateY(14px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
