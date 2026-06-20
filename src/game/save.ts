@@ -67,7 +67,8 @@ export function screenToLevel(screen: string): number {
 
 export function levelToScreen(level: number): string {
   if (level <= 1) return 'game'
-  if (level > 14) return 'welcome'
+  if (level > 17) return 'welcome'
+  if (level === 16) return 'level17'   // no Level16 — map gap to Level17
   return `level${level}`
 }
 
@@ -87,6 +88,9 @@ export function levelDisplayName(level: number): string {
     12: '1-12: The Mantle of Honour and Wisdom',
     13: '1-13: The Birth of Nations',
     14: '1-14: The Fall of Babel — Chaos Reigns',
+    15: '1-15: The Golden Chain — From Shem to Abram',
+    16: '1-16: Abram is Called',
+    17: '1-17: Wife or Half-Sister? — Abram in Egypt',
   }
   return NAMES[level] ?? `Level 1-${level}`
 }
