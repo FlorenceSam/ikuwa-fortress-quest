@@ -1,0 +1,738 @@
+/* ─── Level 21: SEEN — The God Who Finds You ─────────────────────────────── */
+
+/* ── Token system (NO hardcoded hex outside this block) ── */
+.l21-wrap {
+  --gold:          #FFD700;
+  --gold-deep:     #FF8800;
+  --gold-soft:     rgba(255,215,0,0.16);
+  --gold-glow:     rgba(255,180,0,0.55);
+  --gold-holy:     rgba(255,220,100,0.88);
+  --midnight:      #020820;
+  --night-overlay: rgba(6,8,42,0.82);
+  --desert-sand:   rgba(200,150,80,0.22);
+  --desert-warm:   rgba(220,160,60,0.18);
+  --sacred-still:  rgba(2,4,20,0.96);
+  --sacred-glow:   rgba(255,240,200,0.18);
+  --blue-water:    rgba(40,140,255,0.70);
+  --blue-soft:     rgba(80,180,255,0.22);
+  --grace-bg:      rgba(255,160,0,0.12);
+  --grace-border:  rgba(255,180,0,0.50);
+  --card-bg:       rgba(4,2,24,0.93);
+  --card-border:   rgba(255,215,0,0.36);
+  --text-gold:     #FFD700;
+  --text-cream:    #f0e0b0;
+  --text-muted:    #bbbbbb;
+  --text-white:    #ffffff;
+  --ink:           rgba(2,1,16,0.98);
+  --btn-yes:       rgba(30,180,80,0.18);
+  --btn-yes-b:     rgba(30,200,80,0.70);
+  --btn-no:        rgba(180,30,30,0.18);
+  --btn-no-b:      rgba(200,30,30,0.60);
+  --correct-bg:    rgba(30,200,80,0.22);
+  --correct-b:     #22dd55;
+  --wrong-bg:      rgba(220,30,30,0.22);
+  --wrong-b:       #dd2222;
+}
+
+/* ── Base wrap ── */
+.l21-wrap {
+  position:    fixed;
+  inset:       0;
+  overflow:    hidden;
+  font-family: 'Georgia', serif;
+  user-select: none;
+  background:  var(--midnight);
+  color:       var(--text-white);
+}
+.l21-wrap * { box-sizing: border-box; }
+
+/* ── Background ── */
+.l21-bg {
+  position:   absolute;
+  inset:      0;
+  background: url('/1to22.png') center/cover no-repeat;
+  opacity:    0;
+  transition: opacity 1.4s ease;
+}
+.l21-bg.visible { opacity: 1; }
+.l21-black { position: absolute; inset: 0; background: #000; }
+
+/* ── Canvas ── */
+.l21-canvas {
+  position:       absolute;
+  inset:          0;
+  pointer-events: none;
+  z-index:        90;
+}
+
+/* ── White burst ── */
+.l21-white-burst {
+  position:       absolute;
+  inset:          0;
+  background:     var(--text-white);
+  z-index:        95;
+  animation:      l21-wb 1.4s ease forwards;
+  pointer-events: none;
+}
+@keyframes l21-wb { 0%{opacity:0.95} 100%{opacity:0} }
+
+/* ── Shake ── */
+.l21-shake { animation: l21-shake 0.65s cubic-bezier(.36,.07,.19,.97) forwards; }
+@keyframes l21-shake {
+  10%,90%     { transform: translateX(-4px); }
+  20%,80%     { transform: translateX(8px); }
+  30%,50%,70% { transform: translateX(-8px); }
+  40%,60%     { transform: translateX(8px); }
+  100%        { transform: translateX(0); }
+}
+
+/* ── Affirm toast ── */
+.l21-affirm {
+  position:    fixed;
+  top:         11%;
+  left:        50%;
+  transform:   translateX(-50%);
+  font-size:   clamp(1.05rem,4.5vw,2rem);
+  font-weight: 900;
+  color:       var(--gold);
+  text-shadow: 0 0 28px var(--gold-glow), 0 2px 8px var(--ink);
+  text-align:  center;
+  z-index:     100;
+  animation:   l21-affirm-pop 2.4s ease forwards;
+  pointer-events: none;
+  letter-spacing: 0.04em;
+  padding:     0 1rem;
+  white-space: nowrap;
+}
+@keyframes l21-affirm-pop {
+  0%   { opacity:0; transform: translateX(-50%) scale(0.6) translateY(24px); }
+  18%  { opacity:1; transform: translateX(-50%) scale(1.14) translateY(-8px); }
+  38%  { transform: translateX(-50%) scale(1) translateY(0); }
+  70%  { opacity:1; }
+  100% { opacity:0; transform: translateX(-50%) scale(0.90) translateY(-18px); }
+}
+
+/* ── HUD ── */
+.l21-coin-hud {
+  position: absolute;
+  top:      env(safe-area-inset-top, 0.75rem);
+  right:    0.75rem;
+  z-index:  80;
+}
+.l21-level-label {
+  position:    absolute;
+  top:         env(safe-area-inset-top, 0.75rem);
+  left:        0.75rem;
+  z-index:     80;
+  font-size:   clamp(0.62rem,1.8vw,0.82rem);
+  font-weight: 700;
+  color:       var(--gold);
+  opacity:     0.75;
+  letter-spacing: 0.06em;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   CINEMATIC
+═══════════════════════════════════════════════════════════════ */
+.l21-cin {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             1.6rem;
+  z-index:         20;
+}
+
+.l21-cin-line {
+  font-size:      clamp(1.4rem,5vw,3rem);
+  font-weight:    700;
+  color:          var(--text-cream);
+  letter-spacing: 0.06em;
+  text-align:     center;
+  animation:      l21-fade-in 0.9s ease forwards;
+}
+.l21-cin-l1 { font-style: italic; }
+.l21-cin-l2 { font-size: clamp(2rem,7vw,4.2rem); color: var(--text-muted); }
+.l21-cin-l3 { font-size: clamp(0.95rem,3.2vw,1.8rem); color: var(--text-muted); letter-spacing: 0.14em; }
+
+@keyframes l21-fade-in {
+  from { opacity:0; transform: translateY(16px); }
+  to   { opacity:1; transform: translateY(0); }
+}
+
+.l21-title-card {
+  display:     flex;
+  align-items: center;
+  gap:         1rem;
+  animation:   l21-title-burst 0.7s cubic-bezier(0.22,1.5,0.36,1.0) forwards;
+}
+.l21-title-eye {
+  font-size: clamp(2.2rem,7vw,4.5rem);
+  filter:    drop-shadow(0 0 20px var(--gold-glow));
+}
+.l21-title-word {
+  font-size:      clamp(2.8rem,9vw,6rem);
+  font-weight:    900;
+  color:          var(--gold);
+  letter-spacing: 0.18em;
+  text-shadow:    0 0 40px var(--gold-glow), 0 4px 16px var(--ink);
+}
+@keyframes l21-title-burst {
+  0%   { opacity:0; transform: scale(0.4); }
+  60%  { opacity:1; transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+.l21-title-sub {
+  font-size:   clamp(0.90rem,3vw,1.6rem);
+  color:       var(--text-cream);
+  font-style:  italic;
+  letter-spacing: 0.06em;
+  animation:   l21-fade-in 0.8s ease 0.2s both;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   SHARED PHASE LAYOUT
+═══════════════════════════════════════════════════════════════ */
+.l21-phase-wrap {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  padding:         env(safe-area-inset-top,0.5rem) 1rem 1.5rem;
+  z-index:         10;
+  overflow-y:      auto;
+}
+
+.l21-phase-header {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  gap:             0.3rem;
+  padding:         2.8rem 0 1rem;
+}
+.l21-phase-badge {
+  font-size:      clamp(0.58rem,1.8vw,0.78rem);
+  font-weight:    700;
+  color:          var(--gold);
+  letter-spacing: 0.18em;
+  opacity:        0.72;
+}
+.l21-phase-title {
+  font-size:      clamp(1.1rem,4vw,2.2rem);
+  font-weight:    900;
+  color:          var(--text-cream);
+  letter-spacing: 0.08em;
+  text-align:     center;
+  text-shadow:    0 2px 12px var(--ink);
+}
+
+/* ── Question Card ── */
+.l21-q-card {
+  width:         min(92vw,520px);
+  background:    var(--card-bg);
+  border:        1.5px solid var(--card-border);
+  border-radius: 18px;
+  padding:       1.4rem 1.2rem 1.6rem;
+  margin-top:    0.8rem;
+  display:       flex;
+  flex-direction: column;
+  align-items:   center;
+  gap:           1rem;
+}
+.l21-round-label {
+  font-size:      clamp(0.60rem,2vw,0.78rem);
+  font-weight:    700;
+  color:          var(--gold);
+  letter-spacing: 0.16em;
+  text-align:     center;
+}
+.l21-q-text {
+  font-size:   clamp(0.88rem,2.8vw,1.18rem);
+  color:       var(--text-cream);
+  text-align:  center;
+  line-height: 1.55;
+  margin:      0;
+}
+
+/* ── YES/NO ── */
+.l21-yn-row {
+  display: flex;
+  gap:     1rem;
+  width:   100%;
+}
+.l21-yn-btn {
+  flex:          1;
+  padding:       1rem 0;
+  border-radius: 14px;
+  border:        2px solid var(--card-border);
+  background:    var(--card-bg);
+  color:         var(--text-cream);
+  font-size:     clamp(1.1rem,4vw,1.6rem);
+  font-weight:   900;
+  cursor:        pointer;
+  letter-spacing: 0.08em;
+  transition:    background 0.15s, border-color 0.15s, transform 0.10s;
+}
+.l21-yn-btn:active { transform: scale(0.94); }
+.l21-yn-btn:first-child { border-color: var(--btn-yes-b); background: var(--btn-yes); }
+.l21-yn-btn:last-child  { border-color: var(--btn-no-b);  background: var(--btn-no); }
+.l21-yn-btn.correct { border-color: var(--correct-b); background: var(--correct-bg); color: var(--correct-b); }
+.l21-yn-btn.wrong   { border-color: var(--wrong-b);   background: var(--wrong-bg);   color: var(--wrong-b); }
+.l21-yn-btn:disabled { opacity: 0.6; cursor: default; }
+
+/* ── TRUE/FALSE tablets ── */
+.l21-tf-row {
+  display: flex;
+  gap:     1rem;
+  width:   100%;
+}
+.l21-tf-tablet {
+  flex:          1;
+  padding:       1.1rem 0.5rem;
+  border-radius: 12px;
+  border:        2.5px solid var(--card-border);
+  background:    var(--card-bg);
+  color:         var(--text-cream);
+  font-size:     clamp(0.95rem,3.2vw,1.3rem);
+  font-weight:   900;
+  cursor:        pointer;
+  letter-spacing: 0.06em;
+  transition:    background 0.15s, border-color 0.15s, transform 0.12s;
+  animation:     l21-tablet-slam 0.45s cubic-bezier(0.22,1.5,0.36,1.0) both;
+}
+.l21-tf-tablet:nth-child(2) { animation-delay: 0.12s; }
+.l21-tf-tablet:active  { transform: scale(0.94); }
+.l21-tf-tablet.correct { border-color: var(--correct-b); background: var(--correct-bg); color: var(--correct-b); }
+.l21-tf-tablet.wrong   { border-color: var(--wrong-b);   background: var(--wrong-bg);   color: var(--wrong-b); }
+.l21-tf-tablet:disabled { opacity: 0.6; cursor: default; }
+.l21-tf-stone { font-size: clamp(1.1rem,3.8vw,1.5rem); padding: 1.3rem 0.5rem; }
+@keyframes l21-tablet-slam {
+  0%   { transform: translateY(-28px) scale(0.88); opacity:0; }
+  60%  { transform: translateY(4px) scale(1.04); opacity:1; }
+  100% { transform: translateY(0) scale(1); }
+}
+
+/* ── Multiple choice ── */
+.l21-mc-opts {
+  display:        flex;
+  flex-direction: column;
+  gap:            0.65rem;
+  width:          100%;
+}
+.l21-mc-opt {
+  padding:       0.85rem 1rem;
+  border-radius: 12px;
+  border:        1.5px solid var(--card-border);
+  background:    var(--card-bg);
+  color:         var(--text-cream);
+  font-size:     clamp(0.82rem,2.6vw,1.05rem);
+  font-weight:   700;
+  cursor:        pointer;
+  text-align:    left;
+  transition:    background 0.14s, border-color 0.14s, transform 0.10s;
+  line-height:   1.4;
+}
+.l21-mc-opt:active  { transform: scale(0.97); }
+.l21-mc-opt.correct { border-color: var(--correct-b); background: var(--correct-bg); color: var(--correct-b); }
+.l21-mc-opt.wrong   { border-color: var(--wrong-b);   background: var(--wrong-bg);   color: var(--wrong-b); }
+.l21-mc-opt:disabled { opacity: 0.6; cursor: default; }
+
+/* ── Grace ── */
+.l21-grace {
+  width:         100%;
+  background:    var(--grace-bg);
+  border:        1.5px solid var(--grace-border);
+  border-radius: 12px;
+  padding:       0.75rem 1rem;
+  color:         var(--gold);
+  font-size:     clamp(0.78rem,2.4vw,0.96rem);
+  font-weight:   700;
+  text-align:    center;
+  animation:     l21-fade-in 0.4s ease;
+}
+
+/* ── Scene icon (Phase 1) ── */
+.l21-scene-icon {
+  font-size:  clamp(2rem,7vw,4rem);
+  margin-top: 1.2rem;
+  filter:     drop-shadow(0 4px 12px rgba(0,0,0,0.5));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PHASE 2 — DESERT RUN
+═══════════════════════════════════════════════════════════════ */
+.l21-desert {
+  background: radial-gradient(ellipse at 50% 80%, var(--desert-warm) 0%, transparent 70%);
+}
+
+.l21-step-hud {
+  margin-top:  3.5rem;
+  font-size:   clamp(1rem,3.5vw,1.5rem);
+  font-weight: 900;
+  color:       var(--gold);
+  letter-spacing: 0.10em;
+}
+
+.l21-step-progress {
+  display: flex;
+  gap:     0.4rem;
+  margin:  0.75rem 0 0;
+}
+.l21-step-dot {
+  width:         clamp(14px,4vw,22px);
+  height:        clamp(14px,4vw,22px);
+  border-radius: 50%;
+  border:        2px solid var(--gold);
+  background:    transparent;
+  transition:    background 0.3s;
+}
+.l21-step-dot.done {
+  background: var(--gold);
+  box-shadow: 0 0 8px var(--gold-glow);
+}
+
+/* Footprint button — absolutely positioned */
+.l21-footprint {
+  position:    absolute;
+  font-size:   clamp(2.2rem,8vw,4rem);
+  background:  none;
+  border:      none;
+  cursor:      pointer;
+  filter:      drop-shadow(0 4px 16px var(--desert-sand));
+  animation:   l21-fp-pop 0.35s cubic-bezier(0.22,1.5,0.36,1.0) both;
+  transform:   translate(-50%,-50%);
+  z-index:     30;
+}
+.l21-footprint:active { transform: translate(-50%,-50%) scale(0.82); }
+@keyframes l21-fp-pop {
+  0%   { opacity:0; transform: translate(-50%,-50%) scale(0.5); }
+  60%  { transform: translate(-50%,-50%) scale(1.15); }
+  100% { opacity:1; transform: translate(-50%,-50%) scale(1); }
+}
+
+.l21-desert-scene {
+  position:       absolute;
+  bottom:         6%;
+  left:           0;
+  right:          0;
+  display:        flex;
+  justify-content: space-between;
+  align-items:    flex-end;
+  padding:        0 2rem;
+  pointer-events: none;
+}
+.l21-hagar-runner { font-size: clamp(2.2rem,7vw,3.5rem); animation: l21-hagar-run 1.2s ease-in-out infinite alternate; }
+@keyframes l21-hagar-run {
+  from { transform: translateX(0) scaleX(1); }
+  to   { transform: translateX(8px) scaleX(1.04); }
+}
+.l21-spring-far {
+  font-size: clamp(1.4rem,4vw,2.2rem);
+  opacity:   0.5;
+  filter:    drop-shadow(0 0 12px var(--blue-water));
+}
+
+.l21-midq { margin-top: 4rem; }
+
+/* Spring banner */
+.l21-spring-banner {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             1rem;
+  animation:       l21-fade-in 0.8s ease;
+}
+.l21-spring-emoji { font-size: clamp(3rem,10vw,5.5rem); }
+.l21-spring-text  {
+  font-size:      clamp(1.3rem,4.5vw,2.5rem);
+  font-weight:    900;
+  color:          var(--gold);
+  letter-spacing: 0.10em;
+  text-align:     center;
+  text-shadow:    0 0 28px var(--blue-water), 0 2px 8px var(--ink);
+}
+.l21-spring-sub {
+  font-size:   clamp(0.85rem,2.8vw,1.2rem);
+  color:       var(--text-cream);
+  font-style:  italic;
+  text-align:  center;
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   PHASE 3 — ANGEL SCENE
+═══════════════════════════════════════════════════════════════ */
+.l21-angel-scene {
+  background: radial-gradient(ellipse at 50% 20%, var(--gold-soft) 0%, transparent 65%);
+}
+.l21-angel-wrap {
+  position:        relative;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  gap:             0.9rem;
+  margin-top:      0.5rem;
+  width:           100%;
+}
+.l21-angel-icon {
+  font-size:  clamp(4rem,13vw,7rem);
+  filter:     drop-shadow(0 0 28px var(--gold-glow));
+  animation:  l21-angel-descend 1.2s cubic-bezier(0.22,1.4,0.36,1.0) both;
+}
+@keyframes l21-angel-descend {
+  from { opacity:0; transform: translateY(-60px) scale(0.7); }
+  to   { opacity:1; transform: translateY(0) scale(1); }
+}
+.l21-angel-ray {
+  position:   absolute;
+  top:        0;
+  width:      3px;
+  height:     45vh;
+  background: linear-gradient(to bottom, var(--gold-holy), transparent);
+  opacity:    0.45;
+  border-radius: 3px;
+  animation:  l21-ray-sweep 2.5s ease-in-out infinite alternate;
+}
+.l21-ray1 { left: 44%; transform-origin: top center; transform: rotate(-14deg); }
+.l21-ray2 { right: 44%; transform-origin: top center; transform: rotate(14deg); }
+@keyframes l21-ray-sweep {
+  from { opacity:0.28; }
+  to   { opacity:0.55; }
+}
+.l21-angel-speech {
+  background:    var(--card-bg);
+  border:        1.5px solid var(--card-border);
+  border-radius: 12px;
+  padding:       0.7rem 1.2rem;
+  font-size:     clamp(0.88rem,3vw,1.2rem);
+  font-weight:   700;
+  color:         var(--gold);
+  text-align:    center;
+  letter-spacing: 0.06em;
+  animation:     l21-fade-in 0.6s ease both;
+  max-width:     min(90vw,480px);
+}
+.l21-speech-2 { animation-delay: 0.2s; }
+.l21-speech-3 { animation-delay: 0.4s; }
+
+/* ═══════════════════════════════════════════════════════════════
+   PHASE 4 — EL ROI (sacred, still, breathtaking)
+═══════════════════════════════════════════════════════════════ */
+.l21-elroi-scene {
+  background: var(--sacred-still);
+}
+.l21-elroi-glow {
+  position:       absolute;
+  inset:          0;
+  background:     radial-gradient(ellipse at 50% 50%, var(--sacred-glow) 0%, transparent 72%);
+  pointer-events: none;
+  animation:      l21-glow-breathe 4s ease-in-out infinite alternate;
+  z-index:        1;
+}
+@keyframes l21-glow-breathe {
+  from { opacity:0.6; }
+  to   { opacity:1.0; }
+}
+.l21-elroi-wrap {
+  position:        relative;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  flex:            1;
+  z-index:         5;
+  gap:             1.6rem;
+}
+.l21-elroi-text-1 {
+  font-size:   clamp(1rem,3.2vw,1.7rem);
+  color:       var(--text-cream);
+  font-style:  italic;
+  text-align:  center;
+  letter-spacing: 0.04em;
+  animation:   l21-fade-in 1.8s ease both;
+}
+
+/* The glowing EL ROI tap button */
+.l21-elroi-btn {
+  display:        flex;
+  align-items:    center;
+  gap:            0.8rem;
+  background:     transparent;
+  border:         none;
+  cursor:         pointer;
+  padding:        0.4rem 0.8rem;
+  border-radius:  18px;
+  animation:      l21-elroi-pulse 2.8s ease-in-out infinite;
+}
+@keyframes l21-elroi-pulse {
+  0%,100% { filter: drop-shadow(0 0 18px var(--gold-glow)) brightness(1.0); }
+  50%     { filter: drop-shadow(0 0 36px var(--gold-glow)) brightness(1.22); }
+}
+.l21-elroi-eye  { font-size: clamp(2rem,6vw,3.5rem); }
+.l21-elroi-name {
+  font-size:      clamp(2.5rem,8vw,5rem);
+  font-weight:    900;
+  color:          var(--gold);
+  letter-spacing: 0.22em;
+  text-shadow:    0 0 40px var(--gold-glow), 0 4px 16px var(--ink);
+}
+.l21-elroi-btn:active .l21-elroi-name { transform: scale(0.92); }
+
+.l21-elroi-prompt {
+  font-size:      clamp(0.68rem,2vw,0.88rem);
+  color:          var(--gold);
+  letter-spacing: 0.18em;
+  opacity:        0.7;
+  animation:      l21-fade-in 0.6s ease both;
+}
+
+/* Revealed state */
+.l21-elroi-revealed {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.7rem;
+  animation:      l21-title-burst 0.7s cubic-bezier(0.22,1.5,0.36,1.0) both;
+}
+.l21-elroi-name-big {
+  font-size:      clamp(2.2rem,7vw,4.5rem);
+  font-weight:    900;
+  color:          var(--gold);
+  letter-spacing: 0.16em;
+  text-shadow:    0 0 48px var(--gold-glow), 0 4px 20px var(--ink);
+}
+.l21-elroi-meaning {
+  font-size:      clamp(1.1rem,3.5vw,2rem);
+  color:          var(--text-cream);
+  font-style:     italic;
+  letter-spacing: 0.06em;
+}
+
+/* Gold ripple rings */
+.l21-ripple {
+  position:       absolute;
+  top:            50%;
+  left:           50%;
+  border-radius:  50%;
+  border:         2px solid var(--gold);
+  opacity:        0;
+  pointer-events: none;
+  transform:      translate(-50%,-50%);
+}
+.l21-rip1 { animation: l21-ripple-out 3.6s ease-out 0.0s infinite; }
+.l21-rip2 { animation: l21-ripple-out 3.6s ease-out 1.2s infinite; }
+.l21-rip3 { animation: l21-ripple-out 3.6s ease-out 2.4s infinite; }
+@keyframes l21-ripple-out {
+  0%   { width:40px;  height:40px;  opacity:0.55; }
+  100% { width:340px; height:340px; opacity:0; }
+}
+
+/* Final boss card */
+.l21-final-boss {
+  border-color: var(--gold);
+  box-shadow:   0 0 32px var(--gold-soft);
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   ENDING
+═══════════════════════════════════════════════════════════════ */
+.l21-ending-wrap {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             1.2rem;
+  z-index:         10;
+  padding:         1.5rem;
+}
+.l21-ending-name {
+  font-size:      clamp(1.6rem,5.5vw,3rem);
+  font-weight:    900;
+  color:          var(--gold);
+  letter-spacing: 0.12em;
+  text-shadow:    0 0 28px var(--gold-glow), 0 2px 10px var(--ink);
+  text-align:     center;
+  animation:      l21-fade-in 0.7s ease both;
+}
+.l21-ending-sub {
+  font-size:      clamp(0.95rem,3.2vw,1.6rem);
+  font-weight:    700;
+  color:          var(--text-cream);
+  letter-spacing: 0.08em;
+  text-align:     center;
+  animation:      l21-fade-in 0.7s ease 0.25s both;
+}
+.l21-stars-row {
+  display: flex;
+  gap:     0.6rem;
+}
+.l21-end-star {
+  font-size: clamp(2rem,7vw,3.5rem);
+  filter:    drop-shadow(0 0 14px var(--gold-glow));
+}
+.l21-st1 { animation: l21-star-in 0.5s cubic-bezier(0.22,1.5,0.36,1.0) both; }
+.l21-st2 { animation: l21-star-in 0.5s cubic-bezier(0.22,1.5,0.36,1.0) 0.08s both; }
+.l21-st3 { animation: l21-star-in 0.5s cubic-bezier(0.22,1.5,0.36,1.0) 0.16s both; }
+@keyframes l21-star-in {
+  from { opacity:0; transform: scale(0) rotate(-90deg); }
+  to   { opacity:1; transform: scale(1) rotate(0deg); }
+}
+
+.l21-coin-tally {
+  display:     flex;
+  align-items: center;
+  gap:         0.6rem;
+  background:  var(--card-bg);
+  border:      1.5px solid var(--card-border);
+  border-radius: 14px;
+  padding:     0.75rem 1.4rem;
+}
+.l21-coin-icon  { font-size: clamp(1.4rem,4.5vw,2.2rem); }
+.l21-coin-num   { font-size: clamp(1.6rem,5vw,2.6rem); font-weight:900; color:var(--gold); }
+.l21-coin-label { font-size: clamp(0.62rem,1.8vw,0.82rem); font-weight:700; color:var(--text-muted); letter-spacing:0.12em; }
+
+.l21-scripture-card {
+  background:    var(--card-bg);
+  border:        1.5px solid var(--card-border);
+  border-radius: 16px;
+  padding:       1.2rem 1.4rem;
+  max-width:     min(88vw,480px);
+  text-align:    center;
+  animation:     l21-fade-in 0.8s ease both;
+}
+.l21-scripture-quote {
+  font-size:   clamp(1rem,3.2vw,1.4rem);
+  color:       var(--text-cream);
+  font-style:  italic;
+  line-height: 1.55;
+}
+.l21-scripture-ref {
+  margin-top: 0.5rem;
+  font-size:  clamp(0.72rem,2.2vw,0.92rem);
+  color:      var(--gold);
+  font-weight:700;
+  letter-spacing: 0.08em;
+}
+
+.l21-advance-btn {
+  padding:       1rem 2.2rem;
+  border-radius: 16px;
+  border:        2px solid var(--gold);
+  background:    var(--gold-soft);
+  color:         var(--gold);
+  font-size:     clamp(0.95rem,3.2vw,1.3rem);
+  font-weight:   900;
+  cursor:        pointer;
+  letter-spacing: 0.08em;
+  animation:     l21-fade-in 0.7s ease both;
+  transition:    background 0.18s, transform 0.12s;
+}
+.l21-advance-btn:hover  { background: rgba(255,215,0,0.28); }
+.l21-advance-btn:active { transform: scale(0.95); }
