@@ -23,6 +23,7 @@ import Level14 from './game/Level14'
 import Level15 from './game/Level15'
 import Level17 from './game/Level17'
 import Level18 from './game/Level18'
+import Level19 from './game/Level19'
 import FailScreen from './game/FailScreen'
 import ContinuePromptScreen from './screens/ContinuePromptScreen'
 import DailyMannaScreen from './screens/DailyMannaScreen'
@@ -192,7 +193,7 @@ function mkParticles(cx: number, cy: number): Particle[] {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8' | 'level9' | 'level10' | 'level11' | 'level12' | 'level13' | 'level14' | 'level15' | 'level17' | 'level18' | 'manna'
+type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8' | 'level9' | 'level10' | 'level11' | 'level12' | 'level13' | 'level14' | 'level15' | 'level17' | 'level18' | 'level19' | 'manna'
 type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -203,7 +204,7 @@ export default function App() {
     const devLevel = new URLSearchParams(window.location.search).get('level')
     if (devLevel) {
       const n = parseInt(devLevel, 10)
-      if (!isNaN(n) && n >= 1 && n <= 18) {
+      if (!isNaN(n) && n >= 1 && n <= 19) {
         if (!localStorage.getItem('iq_character')) {
           localStorage.setItem('iq_character', 'DevPlayer')
           localStorage.setItem('ikuwa_player', 'DevPlayer')
@@ -586,7 +587,11 @@ export default function App() {
   } else if (appScreen === 'level18') {
     mainContent = failActive
       ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-      : <Level18 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
+      : <Level18 key={levelKey} onComplete={() => advanceLevel('level19')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level19') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level19 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
   } else {
     mainContent = (
       <div className="opening-screen">
