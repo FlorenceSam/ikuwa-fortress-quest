@@ -24,6 +24,7 @@ import Level15 from './game/Level15'
 import Level17 from './game/Level17'
 import Level18 from './game/Level18'
 import Level19 from './game/Level19'
+import Level20 from './game/Level20'
 import FailScreen from './game/FailScreen'
 import ContinuePromptScreen from './screens/ContinuePromptScreen'
 import DailyMannaScreen from './screens/DailyMannaScreen'
@@ -204,7 +205,7 @@ export default function App() {
     const devLevel = new URLSearchParams(window.location.search).get('level')
     if (devLevel) {
       const n = parseInt(devLevel, 10)
-      if (!isNaN(n) && n >= 1 && n <= 19) {
+      if (!isNaN(n) && n >= 1 && n <= 20) {
         if (!localStorage.getItem('iq_character')) {
           localStorage.setItem('iq_character', 'DevPlayer')
           localStorage.setItem('ikuwa_player', 'DevPlayer')
@@ -591,7 +592,11 @@ export default function App() {
   } else if (appScreen === 'level19') {
     mainContent = failActive
       ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-      : <Level19 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
+      : <Level19 key={levelKey} onComplete={() => advanceLevel('level20')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level20') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level20 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
   } else {
     mainContent = (
       <div className="opening-screen">
