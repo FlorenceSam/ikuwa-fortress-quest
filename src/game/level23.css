@@ -1,0 +1,1124 @@
+/* ─── Level 23: THE VISIT — When Angels Come to Dinner ──────────────────────── */
+
+/* ── Token system ── */
+.l23-wrap {
+  --gold:         #FFD700;
+  --gold-deep:    #FF8800;
+  --gold-soft:    rgba(255,215,0,0.16);
+  --gold-glow:    rgba(255,180,0,0.55);
+  --gold-holy:    rgba(255,220,100,0.88);
+  --red-deep:     rgba(200,40,20,0.90);
+  --red-soft:     rgba(200,40,20,0.18);
+  --red-border:   rgba(220,60,30,0.70);
+  --warn:         rgba(220,50,50,0.90);
+  --midnight:     #020818;
+  --night-deep:   rgba(2,4,24,0.96);
+  --card-bg:      rgba(4,2,24,0.93);
+  --card-border:  rgba(255,215,0,0.36);
+  --text-gold:    #FFD700;
+  --text-cream:   #f0e0b0;
+  --text-muted:   #bbbbbb;
+  --text-white:   #ffffff;
+  --ink:          rgba(2,1,16,0.98);
+  --btn-yes:      rgba(30,180,80,0.18);
+  --btn-yes-b:    rgba(30,200,80,0.70);
+  --btn-no:       rgba(180,30,30,0.18);
+  --btn-no-b:     rgba(200,30,30,0.60);
+  --correct-bg:   rgba(30,200,80,0.22);
+  --correct-b:    #22dd55;
+  --wrong-bg:     rgba(220,30,30,0.22);
+  --wrong-b:      #dd2222;
+  --grace-bg:     rgba(255,160,0,0.12);
+  --grace-border: rgba(255,180,0,0.50);
+  --stone:        rgba(120,110,100,0.90);
+  --stone-border: rgba(160,150,130,0.70);
+}
+
+/* ── Base ── */
+.l23-wrap {
+  position:    fixed;
+  inset:       0;
+  overflow:    hidden;
+  font-family: 'Georgia', serif;
+  user-select: none;
+  background:  var(--midnight);
+  color:       var(--text-white);
+}
+.l23-wrap * { box-sizing: border-box; }
+
+/* ── Background ── */
+.l23-bg {
+  position:   absolute;
+  inset:      0;
+  background: url('/1to24.png') center/cover no-repeat;
+  opacity:    0;
+  transition: opacity 1.4s ease;
+}
+.l23-bg.visible    { opacity: 1; }
+.l23-bg-overlay    { position:absolute;inset:0;background:rgba(2,4,24,0.50);pointer-events:none; }
+.l23-black         { position:absolute;inset:0;background:#000; }
+
+/* ── Canvas / FX ── */
+.l23-canvas      { position:absolute;inset:0;pointer-events:none;z-index:90; }
+.l23-white-burst { position:absolute;inset:0;background:var(--text-white);z-index:95;animation:l23-wb 1.4s ease forwards;pointer-events:none; }
+@keyframes l23-wb { 0%{opacity:0.95}100%{opacity:0} }
+
+/* ── Shake ── */
+.l23-shake { animation: l23-shake 0.65s cubic-bezier(.36,.07,.19,.97) forwards; }
+@keyframes l23-shake {
+  10%,90%{transform:translateX(-4px)}20%,80%{transform:translateX(8px)}
+  30%,50%,70%{transform:translateX(-8px)}40%,60%{transform:translateX(8px)}100%{transform:translateX(0)}
+}
+
+/* ── Affirm toast ── */
+.l23-affirm {
+  position:   fixed;
+  top:        11%;
+  left:       50%;
+  transform:  translateX(-50%);
+  font-size:  clamp(1.05rem,4.5vw,2rem);
+  font-weight:900;
+  color:      var(--gold);
+  text-shadow:0 0 28px var(--gold-glow),0 2px 8px var(--ink);
+  text-align: center;
+  z-index:    100;
+  animation:  l23-affirm-pop 2.4s ease forwards;
+  pointer-events:none;
+  letter-spacing:0.04em;
+  padding:    0 1rem;
+  white-space:nowrap;
+}
+@keyframes l23-affirm-pop {
+  0%{opacity:0;transform:translateX(-50%) scale(0.6) translateY(24px)}
+  18%{opacity:1;transform:translateX(-50%) scale(1.14) translateY(-8px)}
+  38%{transform:translateX(-50%) scale(1) translateY(0)}
+  70%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(0.90) translateY(-18px)}
+}
+
+/* ── HUD ── */
+.l23-coin-hud  { position:absolute;top:env(safe-area-inset-top,0.75rem);right:0.75rem;z-index:80; }
+.l23-level-label {
+  position:    absolute;
+  top:         env(safe-area-inset-top,0.75rem);
+  left:        0.75rem;
+  z-index:     80;
+  font-size:   clamp(0.58rem,1.6vw,0.76rem);
+  font-weight: 700;
+  color:       var(--gold);
+  opacity:     0.72;
+  letter-spacing:0.06em;
+}
+
+/* ── Global banners ── */
+.l23-run-banner {
+  position:       fixed;
+  top:            18%;
+  left:           50%;
+  transform:      translateX(-50%);
+  font-size:      clamp(1.3rem,5vw,2.6rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 30px var(--gold-glow),0 2px 10px var(--ink);
+  text-align:     center;
+  letter-spacing: 0.10em;
+  z-index:        95;
+  animation:      l23-banner-pop 0.55s cubic-bezier(0.22,1.5,0.36,1) both;
+  pointer-events: none;
+}
+.l23-nothing-banner {
+  position:       fixed;
+  top:            16%;
+  left:           50%;
+  transform:      translateX(-50%);
+  font-size:      clamp(1.0rem,4vw,2.2rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 32px var(--gold-glow),0 2px 10px var(--ink);
+  text-align:     center;
+  letter-spacing: 0.08em;
+  z-index:        95;
+  animation:      l23-banner-pop 0.55s cubic-bezier(0.22,1.5,0.36,1) both;
+  pointer-events: none;
+  padding:        0.4rem 1rem;
+}
+@keyframes l23-banner-pop {
+  from{opacity:0;transform:translateX(-50%) scale(0.5)}
+  to{opacity:1;transform:translateX(-50%) scale(1)}
+}
+
+/* ═══════════════════════════════════════════════════════
+   CINEMATIC
+═══════════════════════════════════════════════════════ */
+.l23-cin {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             1.0rem;
+  z-index:         20;
+}
+
+/* Heat shimmer */
+.l23-heat-shimmer {
+  position:  absolute;
+  inset:     0;
+  background:linear-gradient(180deg,transparent 60%,rgba(255,140,0,0.08) 80%,rgba(255,80,0,0.14) 100%);
+  animation: l23-shimmer 2.5s ease-in-out infinite;
+  pointer-events:none;
+  z-index:   1;
+}
+@keyframes l23-shimmer {
+  0%,100%{opacity:0.5;transform:scaleY(1)}
+  50%{opacity:1;transform:scaleY(1.04)}
+}
+
+.l23-cin-line {
+  font-size:      clamp(1.0rem,3.5vw,2.0rem);
+  font-weight:    700;
+  color:          var(--text-cream);
+  letter-spacing: 0.04em;
+  text-align:     center;
+  animation:      l23-fade-in 0.9s ease both;
+  z-index:        2;
+}
+.l23-cin-l1 { font-size:clamp(0.88rem,3vw,1.6rem);color:var(--text-muted); }
+.l23-cin-l2 { font-size:clamp(0.90rem,3vw,1.7rem);color:var(--text-cream);font-style:italic; }
+.l23-cin-l3 { font-size:clamp(0.70rem,2.2vw,1.0rem);color:var(--gold);opacity:0.70;letter-spacing:0.12em; }
+@keyframes l23-fade-in {
+  from{opacity:0;transform:translateY(14px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.l23-cin-silhouette {
+  font-size:   clamp(3rem,10vw,5.5rem);
+  filter:      drop-shadow(0 0 18px var(--gold-glow));
+  animation:   l23-fade-in 0.8s ease 0.2s both;
+  z-index:     2;
+}
+
+/* Gold horizon burst when figures appear */
+.l23-gold-horizon {
+  position:       absolute;
+  bottom:         0;
+  left:           50%;
+  transform:      translateX(-50%);
+  width:          min(100vw,800px);
+  height:         40%;
+  background:     radial-gradient(ellipse at 50% 100%,rgba(255,200,60,0.85) 0%,rgba(255,140,0,0.45) 22%,transparent 65%);
+  pointer-events: none;
+  animation:      l23-horizon-burst 1.0s ease-out both;
+  z-index:        3;
+}
+@keyframes l23-horizon-burst {
+  0%{opacity:0;transform:translateX(-50%) scaleY(0.2)}
+  40%{opacity:1;transform:translateX(-50%) scaleY(1.15)}
+  100%{transform:translateX(-50%) scaleY(1);opacity:0.80}
+}
+
+.l23-cin-running {
+  font-size:   clamp(2.5rem,9vw,5rem);
+  filter:      drop-shadow(0 0 22px var(--gold-glow));
+  animation:   l23-run-in 0.7s cubic-bezier(0.22,1.4,0.36,1) both, l23-run-bounce 0.45s ease-in-out infinite alternate;
+  z-index:     4;
+}
+@keyframes l23-run-in {
+  from{opacity:0;transform:translateX(-30vw)}
+  to{opacity:1;transform:translateX(0)}
+}
+@keyframes l23-run-bounce {
+  from{transform:translateY(0) rotate(-4deg)}
+  to{transform:translateY(-8px) rotate(2deg)}
+}
+.l23-dust { font-size:0.55em;opacity:0.7;margin-left:0.2em; }
+
+.l23-title-card {
+  display:     flex;
+  align-items: center;
+  gap:         0.7rem;
+  animation:   l23-title-slam 0.55s cubic-bezier(0.22,1.5,0.36,1) both;
+  z-index:     5;
+}
+@keyframes l23-title-slam {
+  0%{opacity:0;transform:translateY(-50px) scale(0.7)}
+  60%{opacity:1;transform:translateY(6px) scale(1.06)}
+  100%{transform:translateY(0) scale(1)}
+}
+.l23-title-dove { font-size:clamp(1.8rem,6vw,3.5rem);filter:drop-shadow(0 0 14px var(--gold-glow)); }
+.l23-title-word {
+  font-size:      clamp(1.5rem,5.5vw,3.4rem);
+  font-weight:    900;
+  color:          var(--gold);
+  letter-spacing: 0.14em;
+  text-shadow:    0 0 36px var(--gold-glow),0 4px 14px var(--ink);
+}
+.l23-title-sub {
+  font-size:   clamp(0.80rem,2.6vw,1.3rem);
+  color:       var(--text-cream);
+  font-style:  italic;
+  text-align:  center;
+  animation:   l23-fade-in 0.8s ease 0.25s both;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SHARED PHASE LAYOUT
+═══════════════════════════════════════════════════════ */
+.l23-phase-wrap {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  padding:         env(safe-area-inset-top,0.5rem) 1rem 1.5rem;
+  z-index:         10;
+  overflow-y:      auto;
+}
+.l23-phase-header {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.3rem;
+  padding:        2.8rem 0 0.8rem;
+}
+.l23-phase-badge {
+  font-size:      clamp(0.56rem,1.7vw,0.76rem);
+  font-weight:    700;
+  color:          var(--gold);
+  letter-spacing: 0.18em;
+  opacity:        0.72;
+}
+.l23-phase-title {
+  font-size:      clamp(1rem,3.8vw,2rem);
+  font-weight:    900;
+  color:          var(--text-cream);
+  letter-spacing: 0.08em;
+  text-align:     center;
+  text-shadow:    0 2px 12px var(--ink);
+}
+
+/* ── Question Card ── */
+.l23-q-card {
+  width:          min(92vw,520px);
+  background:     var(--card-bg);
+  border:         1.5px solid var(--card-border);
+  border-radius:  18px;
+  padding:        1.4rem 1.2rem 1.6rem;
+  margin-top:     0.8rem;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            1rem;
+}
+.l23-final-q  { border-color:var(--gold);box-shadow:0 0 24px rgba(255,215,0,0.25); }
+.l23-final-boss {
+  border-color: var(--gold);
+  box-shadow:   0 0 36px rgba(255,215,0,0.32);
+  animation:    l23-boss-pulse 2.2s ease-in-out infinite;
+}
+@keyframes l23-boss-pulse {
+  0%,100%{box-shadow:0 0 28px rgba(255,215,0,0.25)}
+  50%{box-shadow:0 0 52px rgba(255,215,0,0.50)}
+}
+.l23-round-label {
+  font-size:      clamp(0.58rem,1.9vw,0.76rem);
+  font-weight:    700;
+  color:          var(--gold);
+  letter-spacing: 0.16em;
+  text-align:     center;
+}
+.l23-q-text {
+  font-size:   clamp(0.86rem,2.7vw,1.16rem);
+  color:       var(--text-cream);
+  text-align:  center;
+  line-height: 1.55;
+  margin:      0;
+}
+
+/* ── YES/NO ── */
+.l23-yn-row { display:flex;gap:1rem;width:100%; }
+.l23-yn-btn {
+  flex:1;padding:1rem 0;border-radius:14px;
+  border:2px solid var(--card-border);background:var(--card-bg);
+  color:var(--text-cream);font-size:clamp(1.1rem,4vw,1.6rem);
+  font-weight:900;cursor:pointer;letter-spacing:0.08em;
+  transition:background 0.15s,border-color 0.15s,transform 0.10s;
+}
+.l23-yn-btn:active{transform:scale(0.94)}
+.l23-yn-btn:first-child{border-color:var(--btn-yes-b);background:var(--btn-yes)}
+.l23-yn-btn:last-child{border-color:var(--btn-no-b);background:var(--btn-no)}
+.l23-yn-btn.correct{border-color:var(--correct-b);background:var(--correct-bg);color:var(--correct-b)}
+.l23-yn-btn.wrong{border-color:var(--wrong-b);background:var(--wrong-bg);color:var(--wrong-b)}
+.l23-yn-btn:disabled{opacity:0.6;cursor:default}
+
+/* ── TRUE/FALSE ── */
+.l23-tf-row { display:flex;gap:1rem;width:100%; }
+.l23-tf-tablet {
+  flex:1;padding:1.1rem 0.5rem;border-radius:12px;
+  border:2.5px solid var(--card-border);background:var(--card-bg);
+  color:var(--text-cream);font-size:clamp(0.95rem,3.2vw,1.3rem);
+  font-weight:900;cursor:pointer;letter-spacing:0.06em;
+  transition:background 0.15s,border-color 0.15s,transform 0.12s;
+  animation:l23-tablet-slam 0.45s cubic-bezier(0.22,1.5,0.36,1.0) both;
+}
+.l23-tf-tablet:nth-child(2){animation-delay:0.12s}
+.l23-tf-tablet:active{transform:scale(0.94)}
+.l23-tf-tablet.correct{border-color:var(--correct-b);background:var(--correct-bg);color:var(--correct-b)}
+.l23-tf-tablet.wrong{border-color:var(--wrong-b);background:var(--wrong-bg);color:var(--wrong-b)}
+.l23-tf-tablet:disabled{opacity:0.6;cursor:default}
+.l23-tf-stone{font-size:clamp(1.1rem,3.8vw,1.5rem);padding:1.3rem 0.5rem}
+@keyframes l23-tablet-slam {
+  0%{transform:translateY(-28px) scale(0.88);opacity:0}
+  60%{transform:translateY(4px) scale(1.04);opacity:1}
+  100%{transform:translateY(0) scale(1)}
+}
+
+/* ── Multiple Choice ── */
+.l23-mc-opts { display:flex;flex-direction:column;gap:0.65rem;width:100%; }
+.l23-mc-opt {
+  padding:0.85rem 1rem;border-radius:12px;
+  border:1.5px solid var(--card-border);background:var(--card-bg);
+  color:var(--text-cream);font-size:clamp(0.80rem,2.5vw,1.02rem);
+  font-weight:700;cursor:pointer;text-align:left;
+  transition:background 0.14s,border-color 0.14s,transform 0.10s;line-height:1.4;
+}
+.l23-mc-opt:active{transform:scale(0.97)}
+.l23-mc-opt.correct{border-color:var(--correct-b);background:var(--correct-bg);color:var(--correct-b)}
+.l23-mc-opt.wrong{border-color:var(--wrong-b);background:var(--wrong-bg);color:var(--wrong-b)}
+.l23-mc-opt:disabled{opacity:0.6;cursor:default}
+
+/* ── Grace ── */
+.l23-grace {
+  width:100%;background:var(--grace-bg);border:1.5px solid var(--grace-border);
+  border-radius:12px;padding:0.75rem 1rem;color:var(--gold);
+  font-size:clamp(0.76rem,2.3vw,0.94rem);font-weight:700;text-align:center;
+  animation:l23-fade-in 0.4s ease;
+}
+
+/* ── Inline banner ── */
+.l23-inline-banner {
+  font-size:      clamp(1.0rem,3.6vw,1.8rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 24px var(--gold-glow);
+  text-align:     center;
+  letter-spacing: 0.08em;
+  margin-bottom:  0.4rem;
+  animation:      l23-banner-pop 0.5s cubic-bezier(0.22,1.5,0.36,1) both;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE 1 — Feast Preparation
+═══════════════════════════════════════════════════════ */
+.l23-feast-scene {
+  background: radial-gradient(ellipse at 50% 80%,rgba(255,180,0,0.07) 0%,transparent 65%);
+}
+.l23-feast-hud {
+  display:     flex;
+  gap:         1.4rem;
+  align-items: center;
+  margin-top:  0.3rem;
+  margin-bottom:0.2rem;
+}
+.l23-feast-timer {
+  font-size:   clamp(1.1rem,4vw,1.8rem);
+  font-weight: 900;
+  color:       var(--gold);
+  letter-spacing:0.06em;
+  transition:  color 0.3s;
+}
+.l23-feast-timer.urgent {
+  color:     var(--warn);
+  animation: l23-timer-pulse 0.5s ease-in-out infinite;
+}
+@keyframes l23-timer-pulse {
+  0%,100%{opacity:1}50%{opacity:0.55}
+}
+.l23-feast-count {
+  font-size:   clamp(0.70rem,2.2vw,0.90rem);
+  color:       var(--text-muted);
+  font-weight: 700;
+  letter-spacing:0.06em;
+}
+.l23-feast-instruction {
+  font-size:   clamp(0.76rem,2.4vw,1.0rem);
+  color:       var(--text-cream);
+  text-align:  center;
+  margin-bottom:0.4rem;
+  font-weight: 700;
+  letter-spacing:0.04em;
+  min-height:  1.4em;
+}
+
+/* Feast board — tap targets scattered */
+.l23-feast-board {
+  position:   relative;
+  width:      min(92vw,520px);
+  height:     min(48vw,280px);
+  background: rgba(255,200,80,0.05);
+  border:     1.5px solid var(--card-border);
+  border-radius:18px;
+  overflow:   hidden;
+  flex-shrink:0;
+}
+.l23-feast-item {
+  position:        absolute;
+  transform:       translate(-50%,-50%);
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  gap:             0.2rem;
+  background:      rgba(255,215,0,0.13);
+  border:          2px solid var(--card-border);
+  border-radius:   14px;
+  padding:         0.6rem 0.5rem;
+  cursor:          pointer;
+  animation:       l23-item-float 0.5s cubic-bezier(0.22,1.4,0.36,1) both, l23-item-pulse 2.0s ease-in-out infinite;
+  transition:      transform 0.10s;
+  min-width:       64px;
+}
+.l23-feast-item:active { transform:translate(-50%,-50%) scale(0.86); }
+@keyframes l23-item-float {
+  from{opacity:0;transform:translate(-50%,-50%) scale(0.5)}
+  to{opacity:1;transform:translate(-50%,-50%) scale(1)}
+}
+@keyframes l23-item-pulse {
+  0%,100%{box-shadow:0 0 10px rgba(255,215,0,0.28)}
+  50%{box-shadow:0 0 22px rgba(255,215,0,0.55)}
+}
+.l23-fi-icon  { font-size:clamp(1.6rem,6vw,2.4rem); }
+.l23-fi-label { font-size:clamp(0.50rem,1.6vw,0.64rem);color:var(--text-muted);font-weight:700;letter-spacing:0.04em;text-align:center; }
+
+.l23-feast-basket {
+  position:    absolute;
+  bottom:      0.5rem;
+  right:       0.8rem;
+  display:     flex;
+  align-items: center;
+  gap:         0.2rem;
+  font-size:   clamp(1.2rem,4vw,1.8rem);
+}
+.l23-basket-icon  { filter:drop-shadow(0 0 8px var(--gold-glow)); }
+.l23-basket-items { font-size:0.70em; }
+
+.l23-feast-complete {
+  position:   absolute;
+  inset:      0;
+  display:    flex;
+  align-items:center;
+  justify-content:center;
+  font-size:  clamp(1.1rem,4vw,2.0rem);
+  font-weight:900;
+  color:      var(--gold);
+  text-shadow:0 0 28px var(--gold-glow);
+  text-align: center;
+  letter-spacing:0.08em;
+  background: rgba(4,2,24,0.72);
+  animation:  l23-banner-pop 0.5s cubic-bezier(0.22,1.5,0.36,1) both;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE 2 — Sarah's Laugh
+═══════════════════════════════════════════════════════ */
+.l23-laugh-scene {
+  background: radial-gradient(ellipse at 50% 30%,rgba(255,200,0,0.06) 0%,transparent 60%);
+}
+.l23-laugh-split {
+  display:   flex;
+  width:     min(92vw,540px);
+  gap:       0.8rem;
+  margin-top:0.6rem;
+  flex:      1;
+  min-height:0;
+}
+.l23-laugh-left, .l23-laugh-right {
+  flex:            1;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  gap:             0.6rem;
+  background:      var(--card-bg);
+  border:          1.5px solid var(--card-border);
+  border-radius:   16px;
+  padding:         0.8rem 0.5rem;
+}
+.l23-visitor-icons {
+  font-size:   clamp(1.4rem,5vw,2.4rem);
+  filter:      drop-shadow(0 0 14px var(--gold-glow));
+  animation:   l23-fade-in 0.6s ease both;
+}
+.l23-visitor-speech {
+  display:        flex;
+  flex-direction: column;
+  gap:            0.4rem;
+  width:          100%;
+}
+.l23-vs-line {
+  font-size:   clamp(0.60rem,1.8vw,0.76rem);
+  color:       var(--gold);
+  font-style:  italic;
+  text-align:  center;
+  animation:   l23-fade-in 0.7s ease both;
+}
+.l23-vs2 { animation-delay:0.8s; }
+.l23-vs3 { animation-delay:1.6s; }
+.l23-abraham-stand {
+  font-size:   clamp(1.8rem,6vw,3rem);
+  margin-top:  auto;
+  filter:      drop-shadow(0 0 10px rgba(255,200,0,0.30));
+}
+
+/* Sarah side */
+.l23-tent-label {
+  font-size:      clamp(0.54rem,1.6vw,0.68rem);
+  color:          var(--text-muted);
+  font-weight:    700;
+  letter-spacing: 0.10em;
+}
+.l23-sarah-sil {
+  position:  relative;
+  font-size: clamp(2.4rem,8vw,4rem);
+  filter:    drop-shadow(0 0 12px rgba(255,200,0,0.22));
+  transition:filter 0.4s;
+}
+.l23-sarah-sil.exploded {
+  animation: l23-sarah-shake 0.5s ease both;
+  filter:    drop-shadow(0 0 28px rgba(255,120,0,0.70));
+}
+@keyframes l23-sarah-shake {
+  10%,90%{transform:translateX(-3px) rotate(-4deg)}
+  30%,70%{transform:translateX(5px) rotate(6deg)}
+  50%{transform:translateX(-4px) rotate(-6deg)}
+  100%{transform:translateX(0) rotate(0)}
+}
+.l23-ha-burst {
+  position:       absolute;
+  top:            -30px;
+  left:           50%;
+  transform:      translateX(-50%);
+  font-size:      clamp(1.8rem,7vw,3.2rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 24px var(--gold-glow),0 2px 8px var(--ink);
+  letter-spacing: 0.12em;
+  animation:      l23-ha-burst 0.5s cubic-bezier(0.22,1.8,0.36,1) both;
+  white-space:    nowrap;
+}
+@keyframes l23-ha-burst {
+  from{opacity:0;transform:translateX(-50%) scale(0.3) rotate(-15deg)}
+  to{opacity:1;transform:translateX(-50%) scale(1) rotate(0)}
+}
+
+/* Laugh meter */
+.l23-laugh-meter-wrap {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.5rem;
+  width:          100%;
+}
+.l23-lm-label {
+  font-size:      clamp(0.54rem,1.7vw,0.72rem);
+  font-weight:    700;
+  color:          var(--gold);
+  letter-spacing: 0.08em;
+  text-align:     center;
+}
+.l23-lm-track {
+  width:         100%;
+  height:        18px;
+  background:    rgba(255,255,255,0.08);
+  border-radius: 9px;
+  border:        1.5px solid var(--card-border);
+  overflow:      hidden;
+}
+.l23-lm-fill {
+  height:      100%;
+  background:  var(--gold);
+  border-radius:8px;
+  transition:  width 0.25s ease, background 0.3s;
+}
+.l23-lm-fill.danger { background:var(--warn);animation:l23-danger-flash 0.4s ease-in-out infinite; }
+@keyframes l23-danger-flash {
+  0%,100%{opacity:1}50%{opacity:0.65}
+}
+.l23-lm-pct {
+  font-size:  clamp(0.52rem,1.5vw,0.66rem);
+  color:      var(--text-muted);
+  font-weight:700;
+}
+.l23-suppress-btn {
+  padding:      0.55rem 1rem;
+  border-radius:12px;
+  border:       2px solid var(--gold);
+  background:   rgba(255,215,0,0.14);
+  color:        var(--gold);
+  font-size:    clamp(0.76rem,2.4vw,1.0rem);
+  font-weight:  900;
+  cursor:       pointer;
+  letter-spacing:0.06em;
+  animation:    l23-suppress-pulse 0.9s ease-in-out infinite;
+  transition:   transform 0.10s;
+}
+.l23-suppress-btn:active { transform:scale(0.90); }
+@keyframes l23-suppress-pulse {
+  0%,100%{box-shadow:0 0 10px rgba(255,215,0,0.30)}
+  50%{box-shadow:0 0 24px rgba(255,215,0,0.65)}
+}
+
+/* God's booming voice */
+.l23-god-boom {
+  font-size:      clamp(0.80rem,2.8vw,1.3rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 22px var(--gold-glow),0 2px 8px var(--ink);
+  text-align:     center;
+  letter-spacing: 0.06em;
+  padding:        0.5rem 0.6rem;
+  border:         1.5px solid var(--gold);
+  border-radius:  12px;
+  background:     rgba(255,215,0,0.10);
+  animation:      l23-god-boom-in 0.45s cubic-bezier(0.22,1.5,0.36,1) both;
+}
+@keyframes l23-god-boom-in {
+  from{opacity:0;transform:scale(0.6)}
+  to{opacity:1;transform:scale(1)}
+}
+
+/* Sarah denied */
+.l23-sarah-denied-wrap {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.4rem;
+  margin-bottom:  0.6rem;
+  animation:      l23-fade-in 0.4s ease both;
+}
+.l23-sd-sarah {
+  font-size:   clamp(0.82rem,2.6vw,1.1rem);
+  color:       var(--text-cream);
+  font-style:  italic;
+  font-weight: 700;
+  text-align:  center;
+}
+.l23-sd-god {
+  font-size:   clamp(0.82rem,2.6vw,1.1rem);
+  color:       var(--gold);
+  font-weight: 900;
+  text-align:  center;
+  text-shadow: 0 0 14px var(--gold-glow);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE 3 — Bold Negotiation
+═══════════════════════════════════════════════════════ */
+.l23-nego-scene {
+  background: radial-gradient(ellipse at 50% 20%,rgba(255,100,20,0.06) 0%,transparent 65%);
+}
+
+/* God's reveal */
+.l23-god-reveal {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            1.0rem;
+  margin-top:     0.8rem;
+  width:          min(90vw,480px);
+}
+.l23-sodom-icon {
+  font-size:   clamp(2.5rem,8vw,4.5rem);
+  filter:      drop-shadow(0 0 18px rgba(255,80,0,0.55));
+  animation:   l23-fade-in 0.7s ease both;
+}
+.l23-god-line {
+  font-size:      clamp(0.88rem,2.8vw,1.2rem);
+  color:          var(--gold);
+  font-style:     italic;
+  font-weight:    700;
+  text-align:     center;
+  letter-spacing: 0.04em;
+  text-shadow:    0 0 18px var(--gold-glow);
+  animation:      l23-god-line-in 0.8s ease both;
+  border-left:    3px solid var(--gold);
+  padding:        0.4rem 0.8rem;
+  background:     rgba(255,215,0,0.05);
+  border-radius:  0 10px 10px 0;
+  width:          100%;
+}
+@keyframes l23-god-line-in {
+  from{opacity:0;transform:translateX(-16px)}
+  to{opacity:1;transform:translateX(0)}
+}
+.l23-abr-approach {
+  font-size:   clamp(1.2rem,4vw,2.2rem);
+  animation:   l23-fade-in 0.7s ease both;
+  letter-spacing:0.12em;
+}
+
+/* Scale of justice */
+.l23-scale-wrap {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.5rem;
+  margin-top:     0.6rem;
+  width:          min(90vw,480px);
+}
+.l23-scale-arm {
+  display:         flex;
+  align-items:     center;
+  gap:             0.5rem;
+  transition:      transform 0.6s cubic-bezier(0.34,1.56,0.64,1);
+}
+.l23-scale-arm.tipped-1 { transform:rotate(4deg); }
+.l23-scale-arm.tipped-2 { transform:rotate(8deg); }
+.l23-scale-arm.tipped-3 { transform:rotate(12deg); }
+.l23-scale-pivot { font-size:clamp(1.6rem,5vw,2.8rem); }
+.l23-scale-pan {
+  padding:      0.5rem 0.8rem;
+  border-radius:12px;
+  font-size:    clamp(0.60rem,1.9vw,0.80rem);
+  font-weight:  700;
+  text-align:   center;
+  line-height:  1.4;
+  min-width:    80px;
+  transition:   background 0.5s,border-color 0.5s,box-shadow 0.5s;
+}
+.l23-pan-dark {
+  background:  rgba(150,20,10,0.22);
+  border:      1.5px solid rgba(200,60,30,0.50);
+  color:       rgba(255,180,140,0.90);
+}
+.l23-pan-gold {
+  background:  rgba(255,215,0,0.08);
+  border:      1.5px solid var(--card-border);
+  color:       var(--text-muted);
+  transition:  all 0.5s;
+}
+.l23-pan-gold.lit {
+  background:  rgba(255,215,0,0.20);
+  border-color:var(--gold);
+  color:       var(--gold);
+  box-shadow:  0 0 18px rgba(255,215,0,0.40);
+}
+.l23-nego-num {
+  font-size:      clamp(2rem,7vw,4rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 32px var(--gold-glow),0 3px 14px var(--ink);
+  letter-spacing: 0.10em;
+  animation:      l23-fade-in 0.5s ease both;
+}
+
+/* Countdown */
+.l23-countdown-wrap {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            1.2rem;
+  margin-top:     1rem;
+  width:          min(90vw,480px);
+}
+.l23-bold-banner {
+  font-size:      clamp(1.0rem,3.8vw,2.0rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 30px var(--gold-glow),0 2px 10px var(--ink);
+  text-align:     center;
+  letter-spacing: 0.10em;
+  animation:      l23-banner-pop 0.55s cubic-bezier(0.22,1.5,0.36,1) both;
+}
+.l23-cnt-display {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.4rem;
+}
+.l23-cnt-num {
+  font-size:      clamp(4rem,14vw,8rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 50px var(--gold-glow),0 4px 20px var(--ink);
+  letter-spacing: 0.10em;
+  animation:      l23-cnt-slam 0.45s cubic-bezier(0.22,1.6,0.36,1) both;
+  line-height:    1;
+}
+@keyframes l23-cnt-slam {
+  0%{opacity:0;transform:scale(0.3) translateY(-30px)}
+  60%{transform:scale(1.18) translateY(4px)}
+  100%{opacity:1;transform:scale(1) translateY(0)}
+}
+.l23-cnt-label {
+  font-size:      clamp(0.62rem,2vw,0.90rem);
+  color:          var(--text-muted);
+  font-weight:    700;
+  letter-spacing: 0.14em;
+}
+.l23-cnt-dots {
+  display:     flex;
+  gap:         0.5rem;
+  flex-wrap:   wrap;
+  justify-content:center;
+}
+.l23-cnt-dot {
+  font-size:   clamp(0.58rem,1.8vw,0.76rem);
+  color:       var(--text-muted);
+  font-weight: 700;
+  padding:     0.2rem 0.4rem;
+  border-radius:8px;
+  border:      1.5px solid var(--card-border);
+  transition:  all 0.3s;
+}
+.l23-cnt-dot.done {
+  color:        var(--gold);
+  border-color: var(--gold);
+  background:   rgba(255,215,0,0.14);
+  box-shadow:   0 0 10px rgba(255,215,0,0.30);
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE 4 — Dual Revelation
+═══════════════════════════════════════════════════════ */
+.l23-reveal-scene {
+  background: radial-gradient(ellipse at 35% 50%,rgba(255,215,0,0.06) 0%,transparent 50%),
+              radial-gradient(ellipse at 65% 50%,rgba(200,40,20,0.06) 0%,transparent 50%);
+}
+.l23-dual-wrap {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            1rem;
+  margin-top:     0.8rem;
+  width:          min(92vw,540px);
+}
+.l23-card-instruction {
+  font-size:      clamp(0.76rem,2.5vw,1.0rem);
+  color:          var(--text-cream);
+  font-weight:    700;
+  text-align:     center;
+  letter-spacing: 0.06em;
+  min-height:     1.4em;
+  transition:     color 0.3s;
+}
+.l23-card-instruction.warn { color:var(--gold);animation:l23-timer-pulse 0.5s ease-in-out 3; }
+
+.l23-dual-row {
+  display:         flex;
+  gap:             0.8rem;
+  width:           100%;
+}
+.l23-rev-card {
+  flex:            1;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  gap:             0.5rem;
+  padding:         1.2rem 0.8rem;
+  border-radius:   18px;
+  border:          2px solid;
+  cursor:          pointer;
+  transition:      transform 0.15s,box-shadow 0.25s,opacity 0.3s;
+  position:        relative;
+  overflow:        hidden;
+  min-height:      160px;
+}
+.l23-rev-card:active { transform:scale(0.94); }
+.l23-rev-card:disabled { cursor:default; }
+
+.l23-card-gold {
+  background:   rgba(255,215,0,0.12);
+  border-color: var(--gold);
+  box-shadow:   0 0 22px rgba(255,215,0,0.30);
+  animation:    l23-card-gold-pulse 2.2s ease-in-out infinite;
+}
+.l23-card-gold.tapped {
+  background: rgba(255,215,0,0.25);
+  box-shadow: 0 0 40px rgba(255,215,0,0.60);
+  opacity:    0.80;
+  animation:  none;
+}
+@keyframes l23-card-gold-pulse {
+  0%,100%{box-shadow:0 0 18px rgba(255,215,0,0.25)}
+  50%{box-shadow:0 0 38px rgba(255,215,0,0.55)}
+}
+
+.l23-card-red {
+  background:   var(--red-soft);
+  border-color: var(--red-border);
+  box-shadow:   0 0 18px rgba(200,40,20,0.25);
+  animation:    l23-card-red-pulse 2.6s ease-in-out infinite;
+}
+.l23-card-red.tapped {
+  background: rgba(200,40,20,0.30);
+  box-shadow: 0 0 36px rgba(200,40,20,0.55);
+  opacity:    0.80;
+  animation:  none;
+}
+@keyframes l23-card-red-pulse {
+  0%,100%{box-shadow:0 0 14px rgba(200,40,20,0.20)}
+  50%{box-shadow:0 0 32px rgba(200,40,20,0.45)}
+}
+
+.l23-rc-icon  { font-size:clamp(1.8rem,6vw,3rem);filter:drop-shadow(0 0 10px rgba(255,200,0,0.40)); }
+.l23-rc-title {
+  font-size:      clamp(0.68rem,2vw,0.86rem);
+  font-weight:    900;
+  color:          var(--text-cream);
+  letter-spacing: 0.10em;
+  text-align:     center;
+}
+.l23-rc-text {
+  font-size:   clamp(0.60rem,1.8vw,0.76rem);
+  color:       var(--text-muted);
+  text-align:  center;
+  line-height: 1.4;
+}
+.l23-rc-check {
+  position:   absolute;
+  top:        0.5rem;
+  right:      0.7rem;
+  font-size:  clamp(1rem,3vw,1.5rem);
+  color:      var(--gold);
+  text-shadow:0 0 14px var(--gold-glow);
+  animation:  l23-banner-pop 0.4s cubic-bezier(0.22,1.5,0.36,1) both;
+}
+.l23-both-banner {
+  font-size:      clamp(0.76rem,2.5vw,1.1rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 20px var(--gold-glow);
+  text-align:     center;
+  letter-spacing: 0.08em;
+  animation:      l23-banner-pop 0.5s cubic-bezier(0.22,1.5,0.36,1) both;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ENDING
+═══════════════════════════════════════════════════════ */
+.l23-ending-wrap {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             1.0rem;
+  padding:         2rem 1.5rem;
+  z-index:         20;
+  overflow-y:      auto;
+  background:      radial-gradient(ellipse at 50% 35%,rgba(255,215,0,0.12) 0%,transparent 68%);
+}
+.l23-ending-wings {
+  font-size:   clamp(2rem,7vw,3.8rem);
+  filter:      drop-shadow(0 0 18px var(--gold-glow));
+  animation:   l23-wings-sweep 1.4s ease both;
+}
+@keyframes l23-wings-sweep {
+  0%{opacity:0;transform:scaleX(0.2)}
+  60%{opacity:1;transform:scaleX(1.1)}
+  100%{transform:scaleX(1)}
+}
+.l23-ending-name {
+  font-size:      clamp(1.3rem,5vw,2.8rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 36px var(--gold-glow),0 3px 14px var(--ink);
+  letter-spacing: 0.12em;
+  text-align:     center;
+  animation:      l23-fade-in 0.8s ease 0.4s both;
+}
+.l23-ending-sub {
+  font-size:      clamp(0.76rem,2.6vw,1.2rem);
+  color:          var(--text-cream);
+  font-weight:    700;
+  letter-spacing: 0.06em;
+  text-align:     center;
+  animation:      l23-fade-in 0.8s ease 0.6s both;
+}
+.l23-stars-row {
+  display:     flex;
+  gap:         0.8rem;
+  align-items: center;
+}
+.l23-end-star {
+  font-size:  clamp(1.6rem,6vw,3rem);
+  filter:     drop-shadow(0 0 14px var(--gold-glow));
+  animation:  l23-star-drop 0.65s cubic-bezier(0.22,1.4,0.36,1) both;
+}
+.l23-st1{animation-delay:0s}
+.l23-st2{animation-delay:0.12s}
+.l23-st3{animation-delay:0.24s}
+@keyframes l23-star-drop {
+  from{opacity:0;transform:translateY(-30px) scale(0.5)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.l23-coin-tally {
+  display:     flex;
+  align-items: center;
+  gap:         0.6rem;
+  background:  var(--card-bg);
+  border:      1.5px solid var(--card-border);
+  border-radius:14px;
+  padding:     0.7rem 1.3rem;
+  animation:   l23-fade-in 0.8s ease 0.8s both;
+}
+.l23-coin-icon  { font-size:clamp(1.2rem,4vw,2rem); }
+.l23-coin-num   {
+  font-size:      clamp(1.4rem,5vw,2.4rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 20px var(--gold-glow);
+  letter-spacing: 0.06em;
+}
+.l23-coin-label {
+  font-size:      clamp(0.58rem,1.8vw,0.76rem);
+  color:          var(--text-muted);
+  font-weight:    700;
+  letter-spacing: 0.10em;
+}
+.l23-scripture-card {
+  width:          min(90vw,480px);
+  background:     var(--card-bg);
+  border:         1.5px solid var(--card-border);
+  border-radius:  18px;
+  padding:        1.2rem 1.4rem;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.6rem;
+  animation:      l23-fade-in 0.9s ease both;
+}
+.l23-scripture-dove  { font-size:clamp(1.4rem,5vw,2.4rem);filter:drop-shadow(0 0 12px var(--gold-glow)); }
+.l23-scripture-quote {
+  font-size:   clamp(0.80rem,2.5vw,1.05rem);
+  color:       var(--text-cream);
+  font-style:  italic;
+  text-align:  center;
+  line-height: 1.6;
+}
+.l23-scripture-ref {
+  font-size:   clamp(0.64rem,2vw,0.82rem);
+  color:       var(--gold);
+  font-weight: 700;
+  letter-spacing:0.06em;
+}
+.l23-advance-btn {
+  padding:        1rem 2.4rem;
+  border-radius:  16px;
+  border:         2px solid var(--gold);
+  background:     rgba(255,215,0,0.16);
+  color:          var(--gold);
+  font-size:      clamp(0.90rem,3vw,1.2rem);
+  font-weight:    900;
+  cursor:         pointer;
+  letter-spacing: 0.10em;
+  text-shadow:    0 0 14px var(--gold-glow);
+  box-shadow:     0 0 24px rgba(255,215,0,0.28);
+  animation:      l23-advance-pulse 1.8s ease-in-out infinite;
+  transition:     transform 0.12s;
+}
+.l23-advance-btn:active { transform:scale(0.95); }
+@keyframes l23-advance-pulse {
+  0%,100%{box-shadow:0 0 18px rgba(255,215,0,0.25)}
+  50%{box-shadow:0 0 38px rgba(255,215,0,0.60)}
+}
