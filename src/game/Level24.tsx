@@ -393,13 +393,14 @@ export default function Level24({ onComplete }: Props) {
     return t
   }, [])
 
-  const speak = useCallback((text: string, rate = 0.80, pitch = 1.0) => {
+  const speak = useCallback((text: string, rate = 0.80, pitch = 1.0, onEnd?: () => void) => {
     try {
       window.speechSynthesis?.cancel()
       const fixed = text.replace(/\b([A-Z]{2,})\b/g, m => m.toLowerCase())
       const u = new SpeechSynthesisUtterance(fixed); u.rate = rate; u.pitch = pitch; u.volume = 1
+      if (onEnd) u.onend = onEnd
       window.speechSynthesis?.speak(u)
-    } catch (_) {}
+    } catch (_) { onEnd?.() }
   }, [])
 
   const speakAffirm = useCallback((text: string) => {
@@ -561,7 +562,6 @@ export default function Level24({ onComplete }: Props) {
   useEffect(() => {
     if (phase !== 'phase2' || p2Sub !== 'escape' || escDone) return
     if (wayDoneRef.current >= WAYPOINT_COUNT) return
-    if (wayDoneRef.current === 3) return // mid-question pause
 
     wayTimerRef.current = window.setInterval(() => {
       setWayTimer(t => {
@@ -575,7 +575,7 @@ export default function Level24({ onComplete }: Props) {
       })
     }, 1000)
     return () => { if (wayTimerRef.current) clearInterval(wayTimerRef.current) }
-  }, [phase, p2Sub, escDone, wayDoneRef.current === 3]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [phase, p2Sub, escDone]) // eslint-disable-line react-hooks/exhaustive-deps
 
   const tapWaypoint = useCallback(() => {
     if (p2Sub !== 'escape' || escDone) return
@@ -659,13 +659,14 @@ export default function Level24({ onComplete }: Props) {
     forwardTapsRef.current = next
     setForwardTaps(next)
     if (next >= 10) {
-      // Salt moment
       saltDoneRef.current = true
       setSaltMoment(true)
       playSaltCrystal()
-      speak("But Lot's wife looked back... and she became a pillar of salt.", 0.60, 0.80)
       setTimeout(() => { setSaltCrystals(true) }, 2000)
-      setTimeout(() => { setP3Sub('questions') }, 6500)
+      let qShown = false
+      const showQ = () => { if (!qShown) { qShown = true; setP3Sub('questions') } }
+      speak("But Lot's wife looked back... and she became a pillar of salt.", 0.60, 0.80, () => setTimeout(showQ, 1800))
+      setTimeout(showQ, 14000)
     }
   }, [p3Sub, addEarned, burst, speak])
 
@@ -965,7 +966,7 @@ export default function Level24({ onComplete }: Props) {
                   }}>🏃🏾</div>
                 <div className="l24-fire-chase" />
               </div>
-              {wayDone < WAYPOINT_COUNT && wayDone !== 3 && (
+              {wayDone < WAYPOINT_COUNT && (
                 <button className="l24-tap-btn" onClick={tapWaypoint}>
                   TAP TO RUN! ({wayTimer}s) ➤
                 </button>
@@ -1017,24 +1018,25 @@ export default function Level24({ onComplete }: Props) {
           {p3Sub === 'run' && (
             <>
               <div className="l24-warning-pulse">⚠️ THE ANGELS SAID: DO NOT LOOK BACK ⚠️</div>
-              <div className="l24-run-scene">
-                <div className="l24-sodom-burning" aria-hidden>🌋🔥🌆🔥🌋</div>
-                <div className="l24-run-family">
-                  {['🏃🏾', '🏃🏾‍♀️', '🏃🏾‍♀️', saltMoment ? '🧂' : '🏃🏾‍♀️'].map((icon, i) => (
-                    <span key={i} className={`l24-runner${i === 3 && saltMoment ? ' turning' : ''}`}>{icon}</span>
-                  ))}
-                </div>
-                <div className="l24-mountain-ahead">⛰️ ZOAR</div>
-                {saltCrystals && (
-                  <div className="l24-salt-pillar">
-                    <div className="l24-salt-crystal">🧂</div>
-                    <div className="l24-salt-label">Lot's wife</div>
-                    <div className="l24-salt-verse">"But Lot's wife looked back... and she became a pillar of salt." — Genesis 19:26</div>
-                  </div>
-                )}
+              <div className="l24-sodom-burning-fs" aria-hidden>
+                {['🌋','🔥','🌆','🔥','🌋'].map((e, i) => <span key={i}>{e}</span>)}
               </div>
+              <div className="l24-run-family-fs">
+                {['🏃🏾', '🏃🏾‍♀️', '🏃🏾‍♀️', saltMoment ? '🧂' : '🏃🏾‍♀️'].map((icon, i) => (
+                  <span key={i} className={`l24-runner${i === 3 && saltMoment ? ' turning' : ''}`}>{icon}</span>
+                ))}
+              </div>
+              <div className="l24-mountain-fs">⛰️ ZOAR</div>
+              {saltCrystals && (
+                <div className="l24-salt-pillar-fs">
+                  <div className="l24-salt-crystal">🧂</div>
+                  <div className="l24-salt-label">Lot's wife</div>
+                  <div className="l24-salt-verse">"But Lot's wife looked back... and she became a pillar of salt." — Genesis 19:26</div>
+                </div>
+              )}
+              <div className="l24-run-spacer" />
               {!saltMoment && (
-                <button className="l24-forward-btn" onClick={tapForward}>
+                <button className="l24-forward-btn l24-forward-fs-btn" onClick={tapForward}>
                   ▶ KEEP MOVING! ({forwardTaps}/10)
                 </button>
               )}

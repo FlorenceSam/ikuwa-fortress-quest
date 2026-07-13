@@ -771,6 +771,63 @@
   to{opacity:1;transform:scale(1)}
 }
 
+/* ── Phase 3 Fullscreen Run Scene ── */
+.l24-sodom-burning-fs {
+  position:   absolute;
+  left:       0.4rem;
+  top:        50%;
+  transform:  translateY(-45%);
+  display:    flex;
+  flex-direction:column;
+  align-items:center;
+  gap:        0.3rem;
+  font-size:  clamp(2.0rem,7.5vw,4rem);
+  filter:     drop-shadow(0 0 14px var(--fire-glow));
+  animation:  l24-fire-glow 1.0s ease-in-out infinite alternate;
+  pointer-events:none;
+  z-index:    1;
+}
+.l24-run-family-fs {
+  position:   absolute;
+  top:        55%;
+  left:       50%;
+  transform:  translate(-50%,-50%);
+  display:    flex;
+  gap:        1.2rem;
+  font-size:  clamp(3.5rem,14vw,7rem);
+  align-items:center;
+  z-index:    2;
+  pointer-events:none;
+}
+.l24-mountain-fs {
+  position:   absolute;
+  right:      1rem;
+  top:        50%;
+  transform:  translateY(-45%);
+  font-size:  clamp(1.0rem,3.5vw,1.6rem);
+  color:      var(--gold);
+  font-weight:700;
+  text-align: center;
+  filter:     drop-shadow(0 0 8px var(--gold-glow));
+  pointer-events:none;
+  z-index:    1;
+}
+.l24-salt-pillar-fs {
+  position:   absolute;
+  right:      24%;
+  top:        55%;
+  transform:  translateY(-50%);
+  display:    flex;
+  flex-direction:column;
+  align-items:center;
+  gap:        0.3rem;
+  animation:  l24-salt-appear 1.2s ease both;
+  z-index:    3;
+  pointer-events:none;
+}
+.l24-run-spacer { flex:1; min-height:4rem; pointer-events:none; }
+.l24-forward-fs-btn { position:relative; z-index:5; margin-bottom:1.5rem; }
+
 .l24-salt-reminder {
   font-size:   clamp(1.4rem,5vw,2.4rem);
   text-align:  center;
