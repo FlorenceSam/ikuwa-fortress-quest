@@ -550,7 +550,7 @@ export default function Level25({ onComplete }: Props) {
       addEarned(20); playPressureRelease(); shake()
       const af = getAffirm(); speakAffirm(af); showAffirm(af)
       showBanner('THE CAVE FEELS LESS SUFFOCATING.', 'gold', 3200)
-      setTimeout(() => setP1Sub('questions'), 2200)
+      setTimeout(() => setP1Sub('questions'), 3300)
     }
   }, [crackTapped, addEarned, burst, getAffirm, speakAffirm, showAffirm, showBanner, shake])
 
@@ -571,7 +571,7 @@ export default function Level25({ onComplete }: Props) {
           speak('What happened next is a hard part of the story. Get ready.', 0.78, 0.92)
           setTimeout(() => { phaseRef.current = 'warning'; setPhase('warning') }, 2600)
         }
-      }, 2200)
+      }, b ? 3100 : 2200)
     } else {
       setP1Grace(true); setP1Sel(null); playBuzzer()
       setTimeout(() => setP1Grace(false), 2800)
@@ -613,7 +613,8 @@ export default function Level25({ onComplete }: Props) {
     if (idx === round.ans) {
       addEarned(P2_COINS[p2Round]); playGoldPop(); shake()
       const af = getAffirm(); speakAffirm(af); showAffirm(af)
-      if (p2Round === 0) showBanner('DESPERATE — BUT WRONG!!', 'warn', 3000)
+      const p2HasBanner = p2Round === 0
+      if (p2HasBanner) showBanner('DESPERATE — BUT WRONG!!', 'warn', 3000)
       setTimeout(() => {
         setP2Sel(null)
         if (p2Round < P2_ROUNDS.length - 1) {
@@ -622,7 +623,7 @@ export default function Level25({ onComplete }: Props) {
           speak('Morning came. And what happened next would echo far beyond that cave.', 0.74, 0.88)
           setTimeout(() => { phaseRef.current = 'phase3'; setPhase('phase3') }, 5200)
         }
-      }, 2200)
+      }, p2HasBanner ? 3100 : 2200)
     } else {
       setP2Grace(true); setP2Sel(null); playBuzzer()
       setTimeout(() => setP2Grace(false), 2800)
