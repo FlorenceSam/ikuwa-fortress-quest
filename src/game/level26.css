@@ -1,0 +1,827 @@
+/* ─── Level 26: ROYAL DECEPTION — The King's Dream ─────────────────────────── */
+
+/* ── Token system ── */
+.l26-wrap {
+  --purple:       #9333EA;
+  --purple-deep:  #4C0F7A;
+  --purple-soft:  rgba(147,51,234,0.18);
+  --purple-glow:  rgba(168,85,247,0.55);
+  --gold:         #FFD700;
+  --gold-deep:    #FFB800;
+  --gold-soft:    rgba(255,215,0,0.16);
+  --gold-glow:    rgba(255,200,0,0.55);
+  --silver:       #D9D9EE;
+  --silver-soft:  rgba(217,217,238,0.16);
+  --silver-glow:  rgba(220,220,245,0.55);
+  --dream-blue:   #2A3B8F;
+  --dream-glow:   rgba(90,120,255,0.55);
+  --midnight:     #0a0616;
+  --card-bg:      rgba(18,8,32,0.93);
+  --card-border:  rgba(190,150,255,0.34);
+  --text-gold:    #FFD700;
+  --text-cream:   #ece2ff;
+  --text-muted:   #b8a8d8;
+  --text-white:   #ffffff;
+  --ink:          rgba(6,2,12,0.98);
+  --btn-yes:      rgba(30,180,80,0.18);
+  --btn-yes-b:    rgba(30,200,80,0.70);
+  --btn-no:       rgba(180,30,30,0.18);
+  --btn-no-b:     rgba(200,30,30,0.60);
+  --correct-bg:   rgba(30,200,80,0.22);
+  --correct-b:    #22dd55;
+  --wrong-bg:     rgba(220,30,30,0.22);
+  --wrong-b:      #dd2222;
+  --grace-bg:     rgba(190,150,255,0.12);
+  --grace-border: rgba(190,150,255,0.50);
+  --warn-bg:      rgba(80,20,120,0.85);
+}
+
+/* ── Base ── */
+.l26-wrap {
+  position:    fixed;
+  inset:       0;
+  overflow:    hidden;
+  font-family: 'Georgia', serif;
+  user-select: none;
+  background:  var(--midnight);
+  color:       var(--text-white);
+}
+.l26-wrap * { box-sizing: border-box; }
+
+/* ── Background ── */
+.l26-bg {
+  position:   absolute;
+  inset:      0;
+  background: url('/1to26.png') center/cover no-repeat;
+  opacity:    0;
+  transition: opacity 1.4s ease;
+}
+.l26-bg.visible  { opacity: 1; }
+.l26-bg-overlay  { position:absolute;inset:0;background:rgba(20,6,36,0.56);pointer-events:none; }
+.l26-black       { position:absolute;inset:0;background:#000; }
+
+/* ── Canvas / FX ── */
+.l26-canvas      { position:absolute;inset:0;pointer-events:none;z-index:90; }
+.l26-white-burst { position:absolute;inset:0;background:var(--text-white);z-index:95;animation:l26-wb2 2.0s ease forwards;pointer-events:none; }
+.l26-gold-flash  { position:absolute;inset:0;background:rgba(255,210,80,0.45);z-index:94;animation:l26-wb 1.4s ease forwards;pointer-events:none; }
+@keyframes l26-wb  { 0%{opacity:0.95}100%{opacity:0} }
+@keyframes l26-wb2 { 0%{opacity:0.97}100%{opacity:0} }
+
+/* ── Shake ── */
+.l26-shake { animation: l26-shake 0.65s cubic-bezier(.36,.07,.19,.97) forwards; }
+@keyframes l26-shake {
+  10%,90%{transform:translateX(-4px)}20%,80%{transform:translateX(8px)}
+  30%,50%,70%{transform:translateX(-8px)}40%,60%{transform:translateX(8px)}100%{transform:translateX(0)}
+}
+
+/* ── Affirm toast ── */
+.l26-affirm {
+  position:   fixed;
+  top:        11%;
+  left:       50%;
+  transform:  translateX(-50%);
+  font-size:  clamp(1.0rem,4.3vw,1.9rem);
+  font-weight:900;
+  color:      var(--gold);
+  text-shadow:0 0 28px var(--gold-glow),0 2px 8px var(--ink);
+  text-align: center;
+  z-index:    100;
+  animation:  l26-affirm-pop 2.4s ease forwards;
+  pointer-events:none;
+  letter-spacing:0.04em;
+  padding:    0 1rem;
+  white-space:nowrap;
+}
+@keyframes l26-affirm-pop {
+  0%{opacity:0;transform:translateX(-50%) scale(0.6) translateY(24px)}
+  18%{opacity:1;transform:translateX(-50%) scale(1.14) translateY(-8px)}
+  38%{transform:translateX(-50%) scale(1) translateY(0)}
+  70%{opacity:1}100%{opacity:0;transform:translateX(-50%) scale(0.90) translateY(-18px)}
+}
+
+/* ── HUD ── */
+.l26-coin-hud  { position:absolute;top:env(safe-area-inset-top,0.75rem);right:0.75rem;z-index:80; }
+.l26-level-label {
+  position:    absolute;
+  top:         env(safe-area-inset-top,0.75rem);
+  left:        0.75rem;
+  z-index:     80;
+  font-size:   clamp(0.58rem,1.6vw,0.76rem);
+  font-weight: 700;
+  color:       var(--silver);
+  opacity:     0.72;
+  letter-spacing:0.06em;
+}
+
+/* ── Global banner ── */
+.l26-banner {
+  position:       fixed;
+  top:            17%;
+  left:           50%;
+  transform:      translateX(-50%);
+  font-size:      clamp(0.86rem,3vw,1.5rem);
+  font-weight:    900;
+  text-align:     center;
+  letter-spacing: 0.07em;
+  z-index:        95;
+  animation:      l26-banner-pop 0.55s cubic-bezier(0.22,1.5,0.36,1) both;
+  pointer-events: none;
+  padding:        0.4rem 1.1rem;
+  max-width:      92vw;
+}
+.l26-banner-gold      { color:var(--gold);text-shadow:0 0 22px var(--gold-glow); }
+.l26-banner-warn      { color:#d8a4ff;text-shadow:0 0 22px rgba(160,60,220,0.65); }
+.l26-banner-comedic   { color:var(--text-cream);text-shadow:0 0 18px rgba(190,150,255,0.55); }
+.l26-banner-legendary { color:var(--gold);text-shadow:0 0 30px var(--gold-glow),0 0 50px var(--silver-glow);font-size:clamp(0.92rem,3.4vw,1.7rem); }
+@keyframes l26-banner-pop {
+  from{opacity:0;transform:translateX(-50%) scale(0.5)}
+  to{opacity:1;transform:translateX(-50%) scale(1)}
+}
+
+/* ═══════════════════════════════════════════════════════
+   CINEMATIC
+═══════════════════════════════════════════════════════ */
+.l26-cin {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             0.9rem;
+  z-index:         20;
+}
+.l26-royal-glow {
+  position:       absolute;
+  inset:          0;
+  background:     radial-gradient(ellipse at 50% 40%,rgba(147,51,234,0.35) 0%,transparent 60%);
+  animation:      l26-royal-pulse 2.4s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes l26-royal-pulse { 0%,100%{opacity:0.5}50%{opacity:1} }
+
+.l26-stars { position:absolute;inset:0;pointer-events:none;z-index:1; }
+.l26-star {
+  position:  absolute;
+  color:     var(--silver);
+  font-size: clamp(0.7rem,2vw,1.1rem);
+  opacity:   0.7;
+  filter:    drop-shadow(0 0 6px var(--silver-glow));
+  animation: l26-twinkle 2.4s ease-in-out infinite;
+}
+@keyframes l26-twinkle { 0%,100%{opacity:0.25}50%{opacity:0.9} }
+
+.l26-curtain {
+  position:   absolute;
+  top:        0;
+  bottom:     0;
+  width:      52%;
+  background: linear-gradient(90deg,var(--purple-deep),var(--purple));
+  z-index:    4;
+  animation:  l26-curtain-open 1.2s ease forwards;
+  box-shadow: 0 0 60px rgba(0,0,0,0.6) inset;
+}
+.l26-curtain-left  { left:0;transform-origin:left; }
+.l26-curtain-right { right:0;transform-origin:right; }
+@keyframes l26-curtain-open {
+  0%{transform:scaleX(1)}
+  100%{transform:scaleX(0.02)}
+}
+.l26-palace {
+  position:  absolute;
+  font-size: clamp(2.4rem,9vw,4.4rem);
+  filter:    drop-shadow(0 0 24px var(--purple-glow));
+  z-index:   2;
+  bottom:    16%;
+}
+
+.l26-cin-line {
+  font-size:      clamp(1.0rem,3.8vw,2.0rem);
+  font-weight:    700;
+  color:          var(--text-cream);
+  letter-spacing: 0.04em;
+  text-align:     center;
+  animation:      l26-fade-in 0.9s ease both;
+  z-index:        5;
+}
+.l26-cin-quote { color:var(--gold);font-style:italic; }
+@keyframes l26-fade-in {
+  from{opacity:0;transform:translateY(14px)}
+  to{opacity:1;transform:translateY(0)}
+}
+
+.l26-title-card {
+  display:     flex;
+  align-items: center;
+  gap:         0.6rem;
+  animation:   l26-title-slam 0.55s cubic-bezier(0.22,1.5,0.36,1) both;
+  z-index:     5;
+}
+@keyframes l26-title-slam {
+  0%{opacity:0;transform:translateY(-60px) scale(0.7)}
+  60%{opacity:1;transform:translateY(8px) scale(1.08)}
+  100%{transform:translateY(0) scale(1)}
+}
+.l26-title-crown { font-size:clamp(1.6rem,5.5vw,2.8rem);filter:drop-shadow(0 0 16px var(--gold-glow)); }
+.l26-title-word {
+  font-size:      clamp(1.1rem,4.2vw,2.4rem);
+  font-weight:    900;
+  color:          var(--gold);
+  letter-spacing: 0.12em;
+  text-shadow:    0 0 36px var(--gold-glow),0 4px 14px var(--ink);
+}
+.l26-title-sub {
+  font-size:   clamp(0.78rem,2.6vw,1.2rem);
+  color:       var(--silver);
+  font-style:  italic;
+  text-align:  center;
+  animation:   l26-fade-in 0.8s ease 0.25s both;
+  z-index:     5;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SHARED PHASE LAYOUT
+═══════════════════════════════════════════════════════ */
+.l26-phase-wrap {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  padding:         env(safe-area-inset-top,0.5rem) 1rem 1.5rem;
+  z-index:         10;
+  overflow-y:      auto;
+}
+.l26-phase-header {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.3rem;
+  padding:        2.8rem 0 0.8rem;
+}
+.l26-phase-badge {
+  font-size:      clamp(0.56rem,1.7vw,0.76rem);
+  font-weight:    700;
+  color:          var(--silver);
+  letter-spacing: 0.18em;
+  opacity:        0.72;
+}
+.l26-phase-title {
+  font-size:      clamp(1rem,3.8vw,2rem);
+  font-weight:    900;
+  color:          var(--text-cream);
+  letter-spacing: 0.08em;
+  text-align:     center;
+  text-shadow:    0 2px 12px var(--ink);
+}
+
+/* ── Question Card ── */
+.l26-q-card {
+  width:          min(92vw,520px);
+  background:     var(--card-bg);
+  border:         1.5px solid var(--card-border);
+  border-radius:  18px;
+  padding:        1.4rem 1.2rem 1.6rem;
+  margin-top:     0.8rem;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            1rem;
+}
+.l26-final-boss {
+  border-color: var(--gold);
+  box-shadow:   0 0 36px rgba(255,215,0,0.30);
+  animation:    l26-boss-pulse 2.2s ease-in-out infinite;
+}
+@keyframes l26-boss-pulse {
+  0%,100%{box-shadow:0 0 28px rgba(255,215,0,0.22)}
+  50%{box-shadow:0 0 52px rgba(255,215,0,0.50)}
+}
+.l26-round-label {
+  font-size:      clamp(0.58rem,1.9vw,0.76rem);
+  font-weight:    700;
+  color:          var(--silver);
+  letter-spacing: 0.16em;
+  text-align:     center;
+}
+.l26-q-text {
+  font-size:   clamp(0.86rem,2.7vw,1.16rem);
+  color:       var(--text-cream);
+  text-align:  center;
+  line-height: 1.55;
+  margin:      0;
+}
+
+/* ── YES/NO ── */
+.l26-yn-row { display:flex;gap:1rem;width:100%; }
+.l26-yn-btn {
+  flex:1;padding:1rem 0;border-radius:14px;
+  border:2px solid var(--card-border);background:var(--card-bg);
+  color:var(--text-cream);font-size:clamp(1.1rem,4vw,1.6rem);
+  font-weight:900;cursor:pointer;letter-spacing:0.08em;
+  transition:background 0.15s,border-color 0.15s,transform 0.10s;
+}
+.l26-yn-btn:active{transform:scale(0.94)}
+.l26-yn-btn:first-child{border-color:var(--btn-yes-b);background:var(--btn-yes)}
+.l26-yn-btn:last-child{border-color:var(--btn-no-b);background:var(--btn-no)}
+.l26-yn-btn.correct{border-color:var(--correct-b);background:var(--correct-bg);color:var(--correct-b)}
+.l26-yn-btn.wrong{border-color:var(--wrong-b);background:var(--wrong-bg);color:var(--wrong-b)}
+.l26-yn-btn:disabled{opacity:0.6;cursor:default}
+
+/* ── TRUE/FALSE ── */
+.l26-tf-row { display:flex;gap:1rem;width:100%; }
+.l26-tf-tablet {
+  flex:1;padding:1.1rem 0.5rem;border-radius:12px;
+  border:2.5px solid var(--card-border);background:var(--card-bg);
+  color:var(--text-cream);font-size:clamp(0.95rem,3.2vw,1.3rem);
+  font-weight:900;cursor:pointer;letter-spacing:0.06em;
+  transition:background 0.15s,border-color 0.15s,transform 0.12s;
+  animation:l26-tablet-slam 0.45s cubic-bezier(0.22,1.5,0.36,1.0) both;
+}
+.l26-tf-tablet:nth-child(2){animation-delay:0.12s}
+.l26-tf-tablet:active{transform:scale(0.94)}
+.l26-tf-tablet.correct{border-color:var(--correct-b);background:var(--correct-bg);color:var(--correct-b)}
+.l26-tf-tablet.wrong{border-color:var(--wrong-b);background:var(--wrong-bg);color:var(--wrong-b)}
+.l26-tf-tablet:disabled{opacity:0.6;cursor:default}
+@keyframes l26-tablet-slam {
+  0%{transform:translateY(-28px) scale(0.88);opacity:0}
+  60%{transform:translateY(4px) scale(1.04);opacity:1}
+  100%{transform:translateY(0) scale(1)}
+}
+
+/* ── Multiple Choice ── */
+.l26-mc-opts { display:flex;flex-direction:column;gap:0.65rem;width:100%; }
+.l26-mc-opt {
+  padding:0.85rem 1rem;border-radius:12px;
+  border:1.5px solid var(--card-border);background:var(--card-bg);
+  color:var(--text-cream);font-size:clamp(0.80rem,2.5vw,1.02rem);
+  font-weight:700;cursor:pointer;text-align:left;
+  transition:background 0.14s,border-color 0.14s,transform 0.10s;line-height:1.4;
+}
+.l26-mc-opt:active{transform:scale(0.97)}
+.l26-mc-opt.correct{border-color:var(--correct-b);background:var(--correct-bg);color:var(--correct-b)}
+.l26-mc-opt.wrong{border-color:var(--wrong-b);background:var(--wrong-bg);color:var(--wrong-b)}
+.l26-mc-opt:disabled{opacity:0.6;cursor:default}
+
+/* ── Grace ── */
+.l26-grace {
+  width:100%;background:var(--grace-bg);border:1.5px solid var(--grace-border);
+  border-radius:12px;padding:0.75rem 1rem;color:var(--gold);
+  font-size:clamp(0.76rem,2.3vw,0.94rem);font-weight:700;text-align:center;
+  animation:l26-fade-in 0.4s ease;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE 1 — The Royal Court
+═══════════════════════════════════════════════════════ */
+.l26-court-scene {
+  background: radial-gradient(ellipse at 50% 20%,rgba(147,51,234,0.14) 0%,transparent 60%);
+}
+.l26-scroll-scene {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            1rem;
+  margin-top:     0.6rem;
+  width:          min(94vw,560px);
+}
+.l26-scroll-instruction {
+  font-size:      clamp(0.86rem,2.8vw,1.15rem);
+  color:          var(--text-cream);
+  text-align:     center;
+  font-weight:    700;
+}
+.l26-scroll-timer {
+  font-size:      clamp(1.0rem,3.4vw,1.4rem);
+  font-weight:    900;
+  color:          var(--silver);
+  letter-spacing: 0.06em;
+}
+.l26-scroll-timer.warn   { color:var(--gold); }
+.l26-scroll-timer.danger { color:#ff5a5a;animation:l26-danger-pulse 0.6s ease-in-out infinite; }
+@keyframes l26-danger-pulse { 0%,100%{transform:scale(1)}50%{transform:scale(1.15)} }
+
+.l26-scroll-row {
+  display: flex;
+  gap:     1rem;
+  width:   100%;
+}
+.l26-scroll {
+  flex:            1;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             0.6rem;
+  padding:         1.6rem 0.8rem;
+  border-radius:   18px;
+  border:          2px solid var(--card-border);
+  background:      var(--card-bg);
+  cursor:          pointer;
+  transition:      transform 0.10s,border-color 0.2s,background 0.2s;
+  animation:       l26-scroll-sway 1.3s ease-in-out infinite;
+}
+.l26-scroll:active { transform:scale(0.96); }
+.l26-scroll-gold   { animation-delay:0s; }
+.l26-scroll-silver { animation-delay:0.18s; }
+@keyframes l26-scroll-sway {
+  0%,100%{box-shadow:0 0 14px rgba(190,150,255,0.25)}
+  50%{box-shadow:0 0 30px rgba(190,150,255,0.55)}
+}
+.l26-scroll.picked {
+  border-color: var(--gold);
+  background:   rgba(255,215,0,0.14);
+  animation:    none;
+  box-shadow:   0 0 30px var(--gold-glow);
+}
+.l26-scroll:disabled { cursor:default; }
+.l26-scroll-icon { font-size:clamp(2.0rem,7vw,3.2rem); }
+.l26-scroll-text {
+  font-size:      clamp(0.80rem,2.6vw,1.05rem);
+  font-weight:    700;
+  color:          var(--text-cream);
+  text-align:     center;
+  font-style:     italic;
+}
+.l26-king-receive {
+  display:        flex;
+  align-items:    center;
+  gap:            0.5rem;
+  animation:      l26-fade-in 0.6s ease both;
+}
+.l26-king-icon { font-size:clamp(1.6rem,5.5vw,2.4rem); }
+.l26-king-bow  {
+  font-size:  clamp(0.76rem,2.4vw,0.98rem);
+  color:      var(--text-muted);
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE 2 — The King's Dream
+═══════════════════════════════════════════════════════ */
+.l26-dream-scene {
+  background: radial-gradient(ellipse at 50% 30%,rgba(42,59,143,0.28) 0%,transparent 60%);
+}
+.l26-dream-mechanic {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            1rem;
+  margin-top:     0.6rem;
+  width:          min(92vw,520px);
+}
+.l26-dream-king  { font-size:clamp(2.2rem,8vw,3.6rem);filter:drop-shadow(0 0 18px var(--dream-glow)); }
+.l26-dream-cloud {
+  font-size: clamp(1.6rem,6vw,2.6rem);
+  opacity:   0.85;
+  animation: l26-cloud-drift 3.2s ease-in-out infinite;
+  filter:    drop-shadow(0 0 14px var(--silver-glow));
+}
+@keyframes l26-cloud-drift { 0%,100%{transform:translateY(0)}50%{transform:translateY(-10px)} }
+
+.l26-dream-cards {
+  display: flex;
+  gap:     0.8rem;
+  width:   100%;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+.l26-dream-card {
+  width:           min(28vw,120px);
+  height:          min(36vw,150px);
+  border-radius:   14px;
+  border:          2px solid var(--dream-blue);
+  background:      linear-gradient(160deg,rgba(42,59,143,0.35),rgba(18,8,32,0.9));
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             0.4rem;
+  cursor:          pointer;
+  padding:         0.6rem;
+  animation:       l26-card-glow 1.3s ease-in-out infinite;
+  transition:      transform 0.15s;
+}
+.l26-dream-card:active { transform:scale(0.95); }
+.l26-dream-card:disabled { cursor:default; }
+@keyframes l26-card-glow {
+  0%,100%{box-shadow:0 0 14px rgba(90,120,255,0.30)}
+  50%{box-shadow:0 0 30px rgba(90,120,255,0.60)}
+}
+.l26-dream-card.flipped {
+  border-color: var(--gold);
+  background:   linear-gradient(160deg,rgba(255,215,0,0.18),rgba(18,8,32,0.92));
+  animation:    none;
+  box-shadow:   0 0 26px var(--gold-glow);
+}
+.l26-dream-back {
+  font-size:   clamp(1.6rem,6vw,2.6rem);
+  font-weight: 900;
+  color:       var(--silver);
+  opacity:     0.6;
+}
+.l26-dream-icon { font-size:clamp(1.4rem,5vw,2.2rem); }
+.l26-dream-text {
+  font-size:   clamp(0.62rem,2.2vw,0.82rem);
+  color:       var(--text-cream);
+  text-align:  center;
+  font-weight: 700;
+  line-height: 1.3;
+}
+.l26-dream-hint {
+  font-size:      clamp(0.70rem,2.2vw,0.88rem);
+  color:          var(--text-muted);
+  text-align:     center;
+  letter-spacing: 0.06em;
+}
+
+.l26-panic-scene {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.8rem;
+  margin-top:     1.2rem;
+}
+.l26-panic-king {
+  font-size: clamp(2.6rem,9vw,4.2rem);
+  animation: l26-panic-shudder 0.35s ease-in-out infinite;
+}
+@keyframes l26-panic-shudder {
+  0%,100%{transform:rotate(-3deg)}50%{transform:rotate(3deg)}
+}
+.l26-panic-bubble {
+  background:     var(--card-bg);
+  border:         2px solid var(--gold);
+  border-radius:  16px;
+  padding:        0.7rem 1.2rem;
+  font-size:      clamp(0.9rem,3vw,1.3rem);
+  font-weight:    900;
+  color:          var(--gold);
+  letter-spacing: 0.05em;
+  animation:      l26-title-slam 0.4s cubic-bezier(0.22,1.5,0.36,1) both;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE 3 — The Confrontation
+═══════════════════════════════════════════════════════ */
+.l26-confront-scene {
+  background: radial-gradient(ellipse at 50% 100%,rgba(147,51,234,0.14) 0%,transparent 60%);
+}
+.l26-sort-scene {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            1rem;
+  margin-top:     0.6rem;
+  width:          min(94vw,560px);
+}
+.l26-sort-boxes {
+  display: flex;
+  gap:     0.8rem;
+  width:   100%;
+}
+.l26-sort-box {
+  flex:            1;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             0.4rem;
+  padding:         1rem 0.6rem;
+  border-radius:   16px;
+  border:          2px solid var(--card-border);
+  background:      var(--card-bg);
+  cursor:          pointer;
+  transition:      transform 0.10s,border-color 0.2s;
+}
+.l26-sort-box:active { transform:scale(0.96); }
+.l26-sort-box-what { border-color: rgba(190,150,255,0.5); }
+.l26-sort-box-why  { border-color: rgba(255,215,0,0.5); }
+.l26-sort-box-icon { font-size:clamp(1.4rem,5vw,2rem); }
+.l26-sort-box-label {
+  font-size:      clamp(0.62rem,2vw,0.82rem);
+  font-weight:    900;
+  color:          var(--text-cream);
+  text-align:     center;
+  letter-spacing: 0.04em;
+}
+.l26-sort-cards {
+  display:         flex;
+  flex-wrap:       wrap;
+  gap:             0.6rem;
+  justify-content: center;
+  width:           100%;
+}
+.l26-sort-card {
+  padding:        0.7rem 1rem;
+  border-radius:  12px;
+  border:         1.5px solid var(--card-border);
+  background:     var(--card-bg);
+  color:          var(--text-cream);
+  font-size:      clamp(0.76rem,2.4vw,0.96rem);
+  font-weight:    700;
+  cursor:         pointer;
+  transition:     transform 0.10s,border-color 0.15s,background 0.15s;
+}
+.l26-sort-card:active { transform:scale(0.96); }
+.l26-sort-card.selected {
+  border-color: var(--gold);
+  background:   rgba(255,215,0,0.16);
+  box-shadow:   0 0 18px var(--gold-glow);
+}
+.l26-sort-card.wrong-bounce { animation: l26-wrong-bounce 0.5s ease; }
+@keyframes l26-wrong-bounce {
+  0%,100%{transform:translateX(0)}
+  25%{transform:translateX(-8px)}
+  75%{transform:translateX(8px)}
+}
+.l26-sort-hint {
+  font-size:      clamp(0.70rem,2.2vw,0.88rem);
+  color:          var(--text-muted);
+  text-align:     center;
+  letter-spacing: 0.06em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE 4 — Restoration and Prayer
+═══════════════════════════════════════════════════════ */
+.l26-restore-scene {
+  background: radial-gradient(ellipse at 50% 100%,rgba(255,215,0,0.14) 0%,transparent 60%);
+}
+.l26-restore-mechanic {
+  display:         flex;
+  flex-wrap:       wrap;
+  gap:             0.8rem;
+  justify-content: center;
+  margin-top:      1rem;
+  width:           min(92vw,520px);
+}
+.l26-restore-item {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  gap:             0.4rem;
+  padding:         1rem 1.2rem;
+  border-radius:   16px;
+  border:          2px solid var(--silver);
+  background:      var(--silver-soft);
+  cursor:          pointer;
+  animation:       l26-restore-pulse 1.1s ease-in-out infinite;
+  transition:      transform 0.10s;
+}
+.l26-restore-item:active { transform:scale(0.94); }
+@keyframes l26-restore-pulse {
+  0%,100%{box-shadow:0 0 14px rgba(217,217,238,0.30)}
+  50%{box-shadow:0 0 30px rgba(217,217,238,0.60)}
+}
+.l26-restore-item.done {
+  border-color: var(--gold);
+  background:   rgba(255,215,0,0.16);
+  animation:    none;
+  box-shadow:   0 0 28px var(--gold-glow);
+}
+.l26-restore-icon  { font-size:clamp(2.0rem,7vw,3.0rem); }
+.l26-restore-label {
+  font-size:      clamp(0.66rem,2.1vw,0.88rem);
+  font-weight:    700;
+  color:          var(--text-cream);
+  text-align:     center;
+  letter-spacing: 0.03em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ENDING
+═══════════════════════════════════════════════════════ */
+.l26-ending-wrap {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             1.0rem;
+  padding:         2rem 1.5rem;
+  z-index:         20;
+  overflow-y:      auto;
+}
+.l26-ending-royal {
+  position:       absolute;
+  inset:          0;
+  background:     radial-gradient(ellipse at 50% 30%,rgba(147,51,234,0.30) 0%,rgba(255,215,0,0.10) 40%,transparent 68%);
+  pointer-events: none;
+  animation:      l26-royal-rise 2.5s ease both;
+}
+@keyframes l26-royal-rise {
+  from{opacity:0;transform:translateY(30px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.l26-ending-name {
+  font-size:      clamp(1.3rem,5vw,2.8rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 36px var(--gold-glow),0 3px 14px var(--ink);
+  letter-spacing: 0.12em;
+  text-align:     center;
+  animation:      l26-fade-in 0.8s ease 0.4s both;
+  position:       relative;
+}
+.l26-ending-sub {
+  font-size:      clamp(0.76rem,2.6vw,1.2rem);
+  color:          var(--text-cream);
+  font-weight:    700;
+  letter-spacing: 0.06em;
+  text-align:     center;
+  animation:      l26-fade-in 0.8s ease 0.6s both;
+  position:       relative;
+}
+.l26-stars-row {
+  display:     flex;
+  gap:         0.8rem;
+  align-items: center;
+  position:    relative;
+}
+.l26-end-star {
+  font-size: clamp(1.6rem,6vw,3rem);
+  filter:    drop-shadow(0 0 14px var(--gold-glow));
+  animation: l26-star-drop 0.65s cubic-bezier(0.22,1.4,0.36,1) both;
+}
+.l26-st1{animation-delay:0s}
+.l26-st2{animation-delay:0.12s}
+.l26-st3{animation-delay:0.24s}
+@keyframes l26-star-drop {
+  from{opacity:0;transform:translateY(-30px) scale(0.5)}
+  to{opacity:1;transform:translateY(0) scale(1)}
+}
+.l26-coin-tally {
+  display:       flex;
+  align-items:   center;
+  gap:           0.6rem;
+  background:    var(--card-bg);
+  border:        1.5px solid var(--card-border);
+  border-radius: 14px;
+  padding:       0.7rem 1.3rem;
+  animation:     l26-fade-in 0.8s ease 0.8s both;
+  position:      relative;
+}
+.l26-coin-icon { font-size:clamp(1.2rem,4vw,2rem); }
+.l26-coin-num  {
+  font-size:      clamp(1.4rem,5vw,2.4rem);
+  font-weight:    900;
+  color:          var(--gold);
+  text-shadow:    0 0 20px var(--gold-glow);
+  letter-spacing: 0.06em;
+}
+.l26-coin-label {
+  font-size:      clamp(0.58rem,1.8vw,0.76rem);
+  color:          var(--text-muted);
+  font-weight:    700;
+  letter-spacing: 0.10em;
+}
+.l26-scripture-card {
+  width:          min(90vw,480px);
+  background:     var(--card-bg);
+  border:         1.5px solid var(--card-border);
+  border-radius:  18px;
+  padding:        1.2rem 1.4rem;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.6rem;
+  animation:      l26-fade-in 0.9s ease both;
+  position:       relative;
+}
+.l26-scripture-crown { font-size:clamp(1.4rem,5vw,2.4rem);filter:drop-shadow(0 0 12px var(--gold-glow)); }
+.l26-scripture-quote {
+  font-size:   clamp(0.88rem,2.8vw,1.15rem);
+  color:       var(--text-cream);
+  font-style:  italic;
+  text-align:  center;
+  line-height: 1.6;
+}
+.l26-scripture-ref {
+  font-size:      clamp(0.62rem,1.9vw,0.80rem);
+  color:          var(--gold);
+  font-weight:    700;
+  letter-spacing: 0.05em;
+  text-align:     center;
+}
+.l26-advance-btn {
+  padding:        1rem 2.4rem;
+  border-radius:  16px;
+  border:         2px solid var(--gold);
+  background:     rgba(255,215,0,0.16);
+  color:          var(--gold);
+  font-size:      clamp(0.90rem,3vw,1.2rem);
+  font-weight:    900;
+  cursor:         pointer;
+  letter-spacing: 0.10em;
+  text-shadow:    0 0 14px var(--gold-glow);
+  animation:      l26-adv-pulse 1.8s ease-in-out infinite;
+  transition:     transform 0.12s;
+  position:       relative;
+}
+.l26-advance-btn:active { transform:scale(0.95); }
+@keyframes l26-adv-pulse {
+  0%,100%{box-shadow:0 0 12px rgba(255,215,0,0.25)}
+  50%{box-shadow:0 0 30px rgba(255,215,0,0.60)}
+}

@@ -30,6 +30,7 @@ import Level22 from './game/Level22'
 import Level23 from './game/Level23'
 import Level24 from './game/Level24'
 import Level25 from './game/Level25'
+import Level26 from './game/Level26'
 import FailScreen from './game/FailScreen'
 import ContinuePromptScreen from './screens/ContinuePromptScreen'
 import DailyMannaScreen from './screens/DailyMannaScreen'
@@ -199,7 +200,7 @@ function mkParticles(cx: number, cy: number): Particle[] {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8' | 'level9' | 'level10' | 'level11' | 'level12' | 'level13' | 'level14' | 'level15' | 'level17' | 'level18' | 'level19' | 'level20' | 'level21' | 'level22' | 'level23' | 'level24' | 'level25' | 'manna'
+type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8' | 'level9' | 'level10' | 'level11' | 'level12' | 'level13' | 'level14' | 'level15' | 'level17' | 'level18' | 'level19' | 'level20' | 'level21' | 'level22' | 'level23' | 'level24' | 'level25' | 'level26' | 'manna'
 type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -210,7 +211,7 @@ export default function App() {
     const devLevel = new URLSearchParams(window.location.search).get('level')
     if (devLevel) {
       const n = parseInt(devLevel, 10)
-      if (!isNaN(n) && n >= 1 && n <= 25) {
+      if (!isNaN(n) && n >= 1 && n <= 26) {
         if (!localStorage.getItem('iq_character')) {
           localStorage.setItem('iq_character', 'DevPlayer')
           localStorage.setItem('ikuwa_player', 'DevPlayer')
@@ -621,7 +622,11 @@ export default function App() {
   } else if (appScreen === 'level25') {
     mainContent = failActive
       ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-      : <Level25 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
+      : <Level25 key={levelKey} onComplete={() => advanceLevel('level26')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level26') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level26 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
   } else {
     mainContent = (
       <div className="opening-screen">
