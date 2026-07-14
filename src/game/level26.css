@@ -52,7 +52,7 @@
 .l26-bg {
   position:   absolute;
   inset:      0;
-  background: url('/1to26.png') center/cover no-repeat;
+  background: url('/1to27.png') center/cover no-repeat;
   opacity:    0;
   transition: opacity 1.4s ease;
 }
