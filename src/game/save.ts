@@ -67,7 +67,7 @@ export function screenToLevel(screen: string): number {
 
 export function levelToScreen(level: number): string {
   if (level <= 1) return 'game'
-  if (level > 27) return 'welcome'
+  if (level > 28) return 'welcome'
   if (level === 16) return 'level17'   // no Level16 — map gap to Level17
   return `level${level}`
 }
@@ -95,6 +95,7 @@ export function levelDisplayName(level: number): string {
     25: '1-25: The Cave',
     26: '1-26: Royal Deception',
     27: '1-27: The Miracle — Isaac Is Born',
+    28: '1-28: Cast Out — God Meets Hagar in the Desert',
   }
   return NAMES[level] ?? `Level 1-${level}`
 }
