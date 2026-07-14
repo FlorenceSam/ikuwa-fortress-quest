@@ -35,6 +35,7 @@ import Level26 from './game/Level26'
 import Level27 from './game/Level27'
 import Level28 from './game/Level28'
 import Level29 from './game/Level29'
+import Level30 from './game/Level30'
 import FailScreen from './game/FailScreen'
 import ContinuePromptScreen from './screens/ContinuePromptScreen'
 import DailyMannaScreen from './screens/DailyMannaScreen'
@@ -204,7 +205,7 @@ function mkParticles(cx: number, cy: number): Particle[] {
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
-type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'forgot-password' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8' | 'level9' | 'level10' | 'level11' | 'level12' | 'level13' | 'level14' | 'level15' | 'level17' | 'level18' | 'level19' | 'level20' | 'level21' | 'level22' | 'level23' | 'level24' | 'level25' | 'level26' | 'level27' | 'level28' | 'level29' | 'manna'
+type AppScreen      = 'account-type' | 'continue-prompt' | 'welcome' | 'create-account' | 'login' | 'forgot-password' | 'character-name' | 'cinematic' | 'game' | 'level2' | 'level3' | 'level4' | 'level5' | 'level6' | 'level7' | 'level8' | 'level9' | 'level10' | 'level11' | 'level12' | 'level13' | 'level14' | 'level15' | 'level17' | 'level18' | 'level19' | 'level20' | 'level21' | 'level22' | 'level23' | 'level24' | 'level25' | 'level26' | 'level27' | 'level28' | 'level29' | 'level30' | 'manna'
 type CinematicPhase = 'dark' | 'reveal' | 'creation' | 'cosmos'
 
 // ─── Component ───────────────────────────────────────────────────────────────
@@ -215,7 +216,7 @@ export default function App() {
     const devLevel = new URLSearchParams(window.location.search).get('level')
     if (devLevel) {
       const n = parseInt(devLevel, 10)
-      if (!isNaN(n) && n >= 1 && n <= 29) {
+      if (!isNaN(n) && n >= 1 && n <= 30) {
         if (!localStorage.getItem('iq_character')) {
           localStorage.setItem('iq_character', 'DevPlayer')
           localStorage.setItem('ikuwa_player', 'DevPlayer')
@@ -645,7 +646,11 @@ export default function App() {
   } else if (appScreen === 'level29') {
     mainContent = failActive
       ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-      : <Level29 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
+      : <Level29 key={levelKey} onComplete={() => advanceLevel('level30')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level30') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level30 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
   } else {
     mainContent = (
       <div className="opening-screen">
