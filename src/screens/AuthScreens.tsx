@@ -14,6 +14,15 @@ const saveAccount = (acc: Account) => {
   localStorage.setItem('iq_accounts', JSON.stringify(list))
 }
 
+const updateAccountPassword = (email: string, newPassword: string): boolean => {
+  const list = getAccounts()
+  const acc = list.find(a => a.email.toLowerCase() === email.toLowerCase())
+  if (!acc) return false
+  acc.password = newPassword
+  localStorage.setItem('iq_accounts', JSON.stringify(list))
+  return true
+}
+
 // ─── Eye icons ─────────────────────────────────────────────────────────────
 
 const EyeOpen = () => (
@@ -193,9 +202,10 @@ export function CreateAccountScreen({ onSuccess, onLogin }: CreateProps) {
 interface LoginProps {
   onSuccess: (firstName: string) => void
   onCreateAccount: () => void
+  onForgotPassword: () => void
 }
 
-export function LoginScreen({ onSuccess, onCreateAccount }: LoginProps) {
+export function LoginScreen({ onSuccess, onCreateAccount, onForgotPassword }: LoginProps) {
   const [form, setForm] = useState({ email: '', password: '' })
   const [error, setError] = useState('')
   const [showPw, setShowPw] = useState(false)
@@ -248,11 +258,119 @@ export function LoginScreen({ onSuccess, onCreateAccount }: LoginProps) {
         </div>
         {error && <p className="form-error">{error}</p>}
         <button type="submit" className="gold-btn form-btn">LOGIN</button>
+        <button type="button" className="text-link forgot-link" onClick={onForgotPassword}>
+          Forgot Password?
+        </button>
       </form>
       <p className="auth-switch">
         New here?{' '}
         <button className="text-link" onClick={onCreateAccount}>Create Account</button>
       </p>
+    </div>
+  )
+}
+
+// ─── Forgot Password Screen ────────────────────────────────────────────────
+
+interface ForgotPasswordProps {
+  onBackToLogin: () => void
+}
+
+export function ForgotPasswordScreen({ onBackToLogin }: ForgotPasswordProps) {
+  const [step, setStep] = useState<'request' | 'reset' | 'done'>('request')
+  const [email, setEmail] = useState('')
+  const [form, setForm] = useState({ password: '', confirm: '' })
+  const [error, setError] = useState('')
+  const [showPw, setShowPw] = useState(false)
+
+  const submitEmail = (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    if (!email.includes('@')) return setError('Please enter a valid email.')
+    if (!getAccounts().find(a => a.email.toLowerCase() === email.toLowerCase()))
+      return setError('No account found with that email.')
+    setStep('reset')
+  }
+
+  const submitReset = (e: React.FormEvent) => {
+    e.preventDefault()
+    setError('')
+    if (form.password.length < 6) return setError('Password must be at least 6 characters.')
+    if (form.password !== form.confirm) return setError('Passwords do not match.')
+    updateAccountPassword(email, form.password)
+    setStep('done')
+  }
+
+  return (
+    <div className="screen">
+      <h2 className="screen-title">RESET PASSWORD</h2>
+      <div className="gold-rule narrow" />
+
+      {step === 'request' && (
+        <form className="auth-form" onSubmit={submitEmail} noValidate>
+          <p className="forgot-instructions">
+            Enter the email address on your account and we'll let you set a new password.
+          </p>
+          <div className="field-group">
+            <label>EMAIL</label>
+            <input type="email" value={email} onChange={e => setEmail(e.target.value)}
+              placeholder="Your email address" autoComplete="email" autoFocus />
+          </div>
+          {error && <p className="form-error">{error}</p>}
+          <button type="submit" className="gold-btn form-btn">CONTINUE</button>
+        </form>
+      )}
+
+      {step === 'reset' && (
+        <form className="auth-form" onSubmit={submitReset} noValidate>
+          <p className="forgot-instructions">Choose a new password for {email}.</p>
+          <div className="field-group">
+            <label>NEW PASSWORD</label>
+            <div className="password-row">
+              <input
+                type={showPw ? 'text' : 'password'}
+                value={form.password}
+                onChange={e => setForm(f => ({ ...f, password: e.target.value }))}
+                placeholder="Create a new password"
+                autoComplete="new-password"
+                autoFocus
+              />
+              <button type="button" className="pw-toggle"
+                onClick={() => setShowPw(v => !v)}
+                aria-label={showPw ? 'Hide password' : 'Show password'}>
+                {showPw ? <EyeOpen /> : <EyeClosed />}
+              </button>
+            </div>
+          </div>
+          <div className="field-group">
+            <label>CONFIRM PASSWORD</label>
+            <input
+              type={showPw ? 'text' : 'password'}
+              value={form.confirm}
+              onChange={e => setForm(f => ({ ...f, confirm: e.target.value }))}
+              placeholder="Confirm your new password"
+              autoComplete="new-password"
+            />
+          </div>
+          {error && <p className="form-error">{error}</p>}
+          <button type="submit" className="gold-btn form-btn">RESET PASSWORD</button>
+        </form>
+      )}
+
+      {step === 'done' && (
+        <div className="auth-form">
+          <p className="forgot-instructions">
+            Your password has been reset. You can now log in with your new password.
+          </p>
+          <button className="gold-btn form-btn" onClick={onBackToLogin}>BACK TO LOGIN</button>
+        </div>
+      )}
+
+      {step !== 'done' && (
+        <p className="auth-switch">
+          <button className="text-link" onClick={onBackToLogin}>Back to Login</button>
+        </p>
+      )}
     </div>
   )
 }
