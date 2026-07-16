@@ -37,6 +37,7 @@ import Level28 from './game/Level28'
 import Level29 from './game/Level29'
 import Level30 from './game/Level30'
 import Level31 from './game/Level31'
+import Level32 from './game/Level32'
 import FailScreen from './game/FailScreen'
 import ContinuePromptScreen from './screens/ContinuePromptScreen'
 import DailyMannaScreen from './screens/DailyMannaScreen'
@@ -655,7 +656,11 @@ export default function App() {
   } else if (appScreen === 'level31') {
     mainContent = failActive
       ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
-      : <Level31 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
+      : <Level31 key={levelKey} onComplete={() => advanceLevel('level32')} onFail={handleFail} showHint={showHint} />
+  } else if (appScreen === 'level32') {
+    mainContent = failActive
+      ? <FailScreen onRetry={handleRetry} onHintRetry={handleHintRetry} onRestart={handleRestart} />
+      : <Level32 key={levelKey} onComplete={() => advanceLevel('welcome')} onFail={handleFail} showHint={showHint} />
   } else {
     mainContent = (
       <div className="opening-screen">

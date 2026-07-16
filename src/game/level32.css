@@ -1,0 +1,898 @@
+/* ─── Level 32: THE SIGN — Rebekah at the Well ──────────────────────────────── */
+/* Tone: warm, hopeful, romantic — gold, rose and sunset throughout. */
+
+/* ── Token system ── */
+.l32-wrap {
+  --gold:         #F0B85E;
+  --gold-deep:    #D9902E;
+  --gold-soft:    rgba(240,184,94,0.14);
+  --gold-glow:    rgba(240,184,94,0.48);
+  --rose:         #E88E7D;
+  --rose-deep:    #C96550;
+  --rose-soft:    rgba(232,142,125,0.16);
+  --rose-glow:    rgba(232,142,125,0.45);
+  --sunset:       #E2637A;
+  --sunset-deep:  #B8425A;
+  --sunset-glow:  rgba(226,99,122,0.45);
+  --midnight:     #1a0e10;
+  --card-bg:      rgba(28,15,14,0.92);
+  --card-border:  rgba(240,184,94,0.28);
+  --text-gold:    #F0B85E;
+  --text-cream:   #fbe9d8;
+  --text-muted:   #c9a48f;
+  --text-white:   #ffffff;
+  --ink:          rgba(20,8,6,0.98);
+  --btn-yes:      rgba(30,150,80,0.14);
+  --btn-yes-b:    rgba(30,170,80,0.55);
+  --btn-no:       rgba(150,40,40,0.14);
+  --btn-no-b:     rgba(170,50,50,0.5);
+  --correct-bg:   rgba(30,180,80,0.18);
+  --correct-b:    #3fcf72;
+  --wrong-bg:     rgba(180,50,50,0.18);
+  --wrong-b:      #d84a4a;
+  --grace-bg:     rgba(240,184,94,0.10);
+  --grace-border: rgba(240,184,94,0.40);
+  --warn-bg:      rgba(40,20,20,0.9);
+}
+
+/* ── Base ── */
+.l32-wrap {
+  position:    fixed;
+  inset:       0;
+  overflow:    hidden;
+  font-family: 'Georgia', serif;
+  user-select: none;
+  background:  var(--midnight);
+  color:       var(--text-white);
+}
+.l32-wrap * { box-sizing: border-box; }
+
+/* ── Background ── */
+.l32-bg {
+  position:   absolute;
+  inset:      0;
+  background: url('/1to33.png') center/cover no-repeat;
+  opacity:    0;
+  transition: opacity 2.4s ease;
+}
+.l32-bg.visible  { opacity: 1; }
+.l32-bg-overlay  { position:absolute;inset:0;background:rgba(30,12,10,0.48);pointer-events:none; }
+.l32-black       { position:absolute;inset:0;background:#000; }
+
+/* ── Canvas / FX ── */
+.l32-canvas    { position:absolute;inset:0;pointer-events:none;z-index:90; }
+.l32-gold-flash {
+  position:       fixed;
+  inset:          0;
+  z-index:        94;
+  pointer-events: none;
+  background:     radial-gradient(ellipse at 50% 40%,rgba(240,184,94,0.35) 0%,rgba(226,99,122,0.16) 45%,transparent 75%);
+  animation:      l32-flash-fade 1.4s ease forwards;
+}
+@keyframes l32-flash-fade { 0%{opacity:0} 25%{opacity:1} 100%{opacity:0} }
+
+/* ── Shake ── */
+.l32-shake { animation: l32-shake 0.7s ease-in-out; }
+@keyframes l32-shake {
+  0%,100%{transform:translateX(0)}
+  15%{transform:translateX(-6px)}
+  30%{transform:translateX(6px)}
+  45%{transform:translateX(-4px)}
+  60%{transform:translateX(4px)}
+  75%{transform:translateX(-2px)}
+  90%{transform:translateX(2px)}
+}
+
+/* ── HUD ── */
+.l32-coin-hud  { position:absolute;top:env(safe-area-inset-top,0.75rem);right:0.75rem;z-index:80; }
+.l32-level-label {
+  position:    absolute;
+  top:         env(safe-area-inset-top,0.75rem);
+  left:        0.75rem;
+  z-index:     80;
+  font-size:   clamp(0.58rem,1.6vw,0.76rem);
+  font-weight: 700;
+  color:       var(--gold);
+  opacity:     0.8;
+  letter-spacing:0.06em;
+}
+
+/* ── Global banner ── */
+.l32-banner {
+  position:       fixed;
+  top:            17%;
+  left:           50%;
+  transform:      translateX(-50%);
+  font-size:      clamp(0.82rem,2.8vw,1.4rem);
+  font-weight:    800;
+  text-align:     center;
+  letter-spacing: 0.06em;
+  z-index:        95;
+  animation:      l32-banner-fade 0.9s ease both;
+  pointer-events: none;
+  padding:        0.4rem 1.1rem;
+  max-width:      92vw;
+}
+.l32-banner-gold      { color:var(--gold);text-shadow:0 0 20px var(--gold-glow); }
+.l32-banner-warn      { color:var(--rose);text-shadow:0 0 18px var(--rose-glow); }
+.l32-banner-comedic   { color:var(--text-cream);text-shadow:0 0 16px rgba(232,142,125,0.4); }
+.l32-banner-emotional { color:var(--sunset);text-shadow:0 0 20px var(--sunset-glow); }
+.l32-banner-legendary { color:var(--gold);text-shadow:0 0 26px var(--gold-glow),0 0 44px var(--sunset-glow);font-size:clamp(0.86rem,3.1vw,1.55rem); }
+@keyframes l32-banner-fade {
+  from{opacity:0;transform:translateX(-50%) translateY(8px)}
+  to{opacity:1;transform:translateX(-50%) translateY(0)}
+}
+
+/* ═══════════════════════════════════════════════════════
+   CINEMATIC
+═══════════════════════════════════════════════════════ */
+.l32-cin {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             1.1rem;
+  z-index:         20;
+}
+.l32-sunset-glow {
+  position:       absolute;
+  inset:          0;
+  z-index:        1;
+  background:     radial-gradient(ellipse at 50% 75%,rgba(226,99,122,0.30) 0%,rgba(240,184,94,0.14) 40%,transparent 72%);
+  animation:      l32-sunset-pulse 4s ease-in-out infinite;
+}
+@keyframes l32-sunset-pulse {
+  0%,100%{opacity:0.7}
+  50%{opacity:1}
+}
+.l32-camel-horizon {
+  position:        absolute;
+  bottom:          16%;
+  display:         flex;
+  gap:             2.4rem;
+  z-index:         2;
+}
+.l32-horizon-camel {
+  font-size: clamp(1.6rem,5.5vw,2.6rem);
+  filter:    drop-shadow(0 0 14px var(--sunset-glow));
+  animation: l32-camel-sway 2.4s ease-in-out infinite;
+}
+@keyframes l32-camel-sway {
+  0%,100%{transform:translateY(0)}
+  50%{transform:translateY(-5px)}
+}
+.l32-cin-line {
+  font-size:      clamp(1.0rem,3.6vw,1.9rem);
+  font-weight:    500;
+  font-style:     italic;
+  color:          var(--text-cream);
+  letter-spacing: 0.02em;
+  text-align:     center;
+  text-shadow:    0 0 20px var(--gold-glow);
+  animation:      l32-fade-in 1.6s ease both;
+  z-index:        5;
+}
+@keyframes l32-fade-in {
+  0%{opacity:0;transform:translateY(10px)}
+  40%{opacity:1;transform:translateY(0)}
+  100%{opacity:1}
+}
+.l32-title-card {
+  display:     flex;
+  align-items: center;
+  gap:         0.6rem;
+  animation:   l32-title-rise 1.3s ease both;
+  z-index:     5;
+}
+@keyframes l32-title-rise {
+  0%{opacity:0;transform:translateY(30px)}
+  100%{opacity:1;transform:translateY(0)}
+}
+.l32-title-icon { font-size:clamp(1.4rem,5vw,2.4rem);filter:drop-shadow(0 0 14px var(--gold-glow)); }
+.l32-title-word {
+  font-size:      clamp(1.0rem,3.6vw,2.0rem);
+  font-weight:    700;
+  color:          var(--gold);
+  letter-spacing: 0.14em;
+  text-shadow:    0 0 26px var(--gold-glow),0 4px 12px var(--ink);
+}
+.l32-title-sub {
+  font-size:   clamp(0.8rem,2.6vw,1.2rem);
+  color:       var(--rose);
+  font-style:  italic;
+  text-align:  center;
+  animation:   l32-fade-in 1.2s ease both;
+  z-index:     5;
+}
+
+/* ═══════════════════════════════════════════════════════
+   SHARED PHASE LAYOUT
+═══════════════════════════════════════════════════════ */
+.l32-phase-wrap {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  padding:         env(safe-area-inset-top,0.5rem) 1rem 1.5rem;
+  z-index:         10;
+  overflow-y:      auto;
+}
+.l32-phase-header {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.3rem;
+  padding:        2.8rem 0 0.8rem;
+}
+.l32-phase-badge {
+  font-size:      clamp(0.54rem,1.6vw,0.72rem);
+  font-weight:    600;
+  color:          var(--rose);
+  letter-spacing: 0.18em;
+  opacity:        0.8;
+}
+.l32-phase-title {
+  font-size:      clamp(0.94rem,3.5vw,1.85rem);
+  font-weight:    700;
+  color:          var(--text-cream);
+  letter-spacing: 0.06em;
+  text-align:     center;
+  text-shadow:    0 2px 10px var(--ink);
+}
+
+/* ── Question Card ── */
+.l32-q-card {
+  width:          min(92vw,520px);
+  background:     var(--card-bg);
+  border:         1.5px solid var(--card-border);
+  border-radius:  16px;
+  padding:        1.3rem 1.2rem 1.5rem;
+  margin-top:     0.8rem;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            1rem;
+}
+.l32-round-label {
+  font-size:      clamp(0.56rem,1.8vw,0.72rem);
+  font-weight:    600;
+  color:          var(--rose);
+  letter-spacing: 0.14em;
+  text-align:     center;
+}
+.l32-q-text {
+  font-size:   clamp(0.84rem,2.6vw,1.12rem);
+  color:       var(--text-cream);
+  text-align:  center;
+  line-height: 1.55;
+  margin:      0;
+}
+
+/* ── YES/NO ── */
+.l32-yn-row { display:flex;gap:1rem;width:100%; }
+.l32-yn-btn {
+  flex:1;padding:0.95rem 0;border-radius:12px;
+  border:2px solid var(--card-border);background:var(--card-bg);
+  color:var(--text-cream);font-size:clamp(1.0rem,3.6vw,1.5rem);
+  font-weight:700;cursor:pointer;letter-spacing:0.06em;
+  transition:background 0.2s,border-color 0.2s,transform 0.12s;
+}
+.l32-yn-btn:active{transform:scale(0.96)}
+.l32-yn-btn:first-child{border-color:var(--btn-yes-b);background:var(--btn-yes)}
+.l32-yn-btn:last-child{border-color:var(--btn-no-b);background:var(--btn-no)}
+.l32-yn-btn.correct{border-color:var(--correct-b);background:var(--correct-bg);color:var(--correct-b)}
+.l32-yn-btn.wrong{border-color:var(--wrong-b);background:var(--wrong-bg);color:var(--wrong-b)}
+.l32-yn-btn:disabled{opacity:0.6;cursor:default}
+
+/* ── TRUE/FALSE ── */
+.l32-tf-row { display:flex;gap:1rem;width:100%; }
+.l32-tf-tablet {
+  flex:1;padding:1.0rem 0.5rem;border-radius:10px;
+  border:2px solid var(--card-border);background:var(--card-bg);
+  color:var(--text-cream);font-size:clamp(0.90rem,3vw,1.2rem);
+  font-weight:700;cursor:pointer;letter-spacing:0.04em;
+  transition:background 0.2s,border-color 0.2s,transform 0.14s;
+  animation:l32-tablet-settle 0.6s ease both;
+}
+.l32-tf-tablet:nth-child(2){animation-delay:0.15s}
+.l32-tf-tablet:active{transform:scale(0.96)}
+.l32-tf-tablet.correct{border-color:var(--correct-b);background:var(--correct-bg);color:var(--correct-b)}
+.l32-tf-tablet.wrong{border-color:var(--wrong-b);background:var(--wrong-bg);color:var(--wrong-b)}
+.l32-tf-tablet:disabled{opacity:0.6;cursor:default}
+@keyframes l32-tablet-settle {
+  0%{transform:translateY(-16px);opacity:0}
+  100%{transform:translateY(0);opacity:1}
+}
+
+/* ── Multiple Choice ── */
+.l32-mc-opts { display:flex;flex-direction:column;gap:0.6rem;width:100%; }
+.l32-mc-opt {
+  padding:0.8rem 1rem;border-radius:10px;
+  border:1.5px solid var(--card-border);background:var(--card-bg);
+  color:var(--text-cream);font-size:clamp(0.78rem,2.4vw,0.98rem);
+  font-weight:600;cursor:pointer;text-align:left;
+  transition:background 0.16s,border-color 0.16s,transform 0.12s;line-height:1.4;
+}
+.l32-mc-opt:active{transform:scale(0.98)}
+.l32-mc-opt.correct{border-color:var(--correct-b);background:var(--correct-bg);color:var(--correct-b)}
+.l32-mc-opt.wrong{border-color:var(--wrong-b);background:var(--wrong-bg);color:var(--wrong-b)}
+.l32-mc-opt:disabled{opacity:0.6;cursor:default}
+
+/* ── Grace ── */
+.l32-grace {
+  width:100%;background:var(--grace-bg);border:1.5px solid var(--grace-border);
+  border-radius:10px;padding:0.7rem 1rem;color:var(--gold);
+  font-size:clamp(0.74rem,2.2vw,0.9rem);font-weight:600;text-align:center;
+  animation:l32-fade-in 0.6s ease;
+}
+
+/* ═══════════════════════════════════════════════════════
+   TIMED SELECT MECHANIC (gold → rose → sunset)
+═══════════════════════════════════════════════════════ */
+.l32-timed-scene {
+  position:       relative;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.6rem;
+  width:          min(96vw,600px);
+  margin-top:     0.4rem;
+}
+.l32-timer-wrap {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.35rem;
+  width:          min(90vw,420px);
+}
+.l32-timer-label {
+  font-size:      clamp(0.76rem,2.4vw,0.98rem);
+  font-weight:    700;
+  color:          var(--text-cream);
+  letter-spacing: 0.04em;
+  text-align:     center;
+}
+.l32-timer-bar {
+  width:         100%;
+  height:        13px;
+  background:    rgba(255,255,255,0.08);
+  border-radius: 7px;
+  border:        1.5px solid var(--gold);
+  overflow:      hidden;
+}
+.l32-timer-bar.warn   { border-color: var(--rose); }
+.l32-timer-bar.danger { border-color: var(--sunset-deep); }
+.l32-timer-bar.urgent { animation: l32-timer-pulse 0.7s ease-in-out infinite; }
+@keyframes l32-timer-pulse { 0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.2)} }
+.l32-timer-fill {
+  height:        100%;
+  background:    linear-gradient(90deg,var(--gold-deep),var(--gold));
+  border-radius: 6px;
+  transition:    width 0.9s linear;
+}
+.l32-timer-bar.warn   .l32-timer-fill { background: linear-gradient(90deg,var(--rose-deep),var(--rose)); }
+.l32-timer-bar.danger .l32-timer-fill { background: linear-gradient(90deg,var(--sunset-deep),var(--sunset)); }
+.l32-timer-num {
+  font-size:   clamp(0.72rem,2.2vw,0.9rem);
+  color:       var(--text-muted);
+  font-weight: 600;
+}
+.l32-bubble-field {
+  position:   relative;
+  width:      100%;
+  min-height: clamp(280px,58vh,400px);
+}
+.l32-bubble {
+  position:      absolute;
+  transform:     translate(-50%,-50%);
+  max-width:     clamp(120px,34vw,180px);
+  padding:       0.6rem 0.85rem;
+  border-radius: 14px;
+  border:        2px solid var(--card-border);
+  background:    var(--card-bg);
+  color:         var(--text-cream);
+  font-size:     clamp(0.64rem,2vw,0.82rem);
+  font-weight:   600;
+  text-align:    center;
+  cursor:        pointer;
+  line-height:   1.25;
+  animation:     l32-bubble-drift 3.4s ease-in-out infinite;
+  transition:    transform 0.14s,border-color 0.2s,background 0.2s;
+}
+.l32-bubble:active { transform: translate(-50%,-50%) scale(0.95); }
+.l32-bubble:disabled { cursor:default; }
+@keyframes l32-bubble-drift {
+  0%,100%{transform:translate(-50%,-50%) translateY(0)}
+  50%{transform:translate(-50%,-50%) translateY(-8px)}
+}
+.l32-bubble.collected {
+  border-color: var(--gold);
+  background:   rgba(240,184,94,0.16);
+  color:        var(--gold);
+  animation:    none;
+  box-shadow:   0 0 18px var(--gold-glow);
+  transform:    translate(-50%,-50%);
+}
+.l32-bubble.wrong-shake {
+  border-color: var(--wrong-b);
+  background:   var(--wrong-bg);
+  color:        var(--wrong-b);
+  animation:    l32-bubble-nudge 0.5s ease;
+}
+@keyframes l32-bubble-nudge {
+  0%,100%{transform:translate(-50%,-50%) translateX(0)}
+  25%{transform:translate(-50%,-50%) translateX(-5px)}
+  75%{transform:translate(-50%,-50%) translateX(5px)}
+}
+
+/* ── Urgent camel gallop overlay ── */
+.l32-camel-gallop {
+  position:       absolute;
+  top:            0;
+  left:           0;
+  right:          0;
+  display:        flex;
+  justify-content: center;
+  gap:            1.4rem;
+  z-index:        3;
+  pointer-events: none;
+}
+.l32-gallop-camel {
+  font-size: clamp(1.2rem,4vw,1.8rem);
+  animation: l32-gallop 0.5s ease-in-out infinite;
+  filter:    drop-shadow(0 0 10px var(--sunset-glow));
+}
+@keyframes l32-gallop {
+  0%,100%{transform:translateY(0) scaleX(1)}
+  50%{transform:translateY(-6px) scaleX(1.05)}
+}
+
+/* ═══════════════════════════════════════════════════════
+   MATCHING MECHANIC
+═══════════════════════════════════════════════════════ */
+.l32-match-scene {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.6rem;
+  width:          min(96vw,620px);
+  margin-top:     0.4rem;
+}
+.l32-match-wrap {
+  position: relative;
+  display:  flex;
+  gap:      0.8rem;
+  width:    100%;
+}
+.l32-match-svg {
+  position:       absolute;
+  inset:          0;
+  width:          100%;
+  height:         100%;
+  pointer-events: none;
+  z-index:        1;
+}
+.l32-match-line {
+  stroke:            var(--gold);
+  stroke-width:      2.2;
+  stroke-linecap:    round;
+  filter:            drop-shadow(0 0 5px var(--gold-glow));
+}
+.l32-match-col {
+  flex:           1;
+  display:        flex;
+  flex-direction: column;
+  gap:            0.6rem;
+  position:       relative;
+  z-index:        2;
+}
+.l32-match-item {
+  padding:        0.68rem 0.72rem;
+  border-radius:  10px;
+  border:         1.5px solid var(--card-border);
+  background:     var(--card-bg);
+  color:          var(--text-cream);
+  font-size:      clamp(0.64rem,2.1vw,0.84rem);
+  font-weight:    600;
+  cursor:         pointer;
+  text-align:     left;
+  line-height:    1.3;
+  transition:     transform 0.14s,border-color 0.2s,background 0.2s;
+}
+.l32-match-item:active { transform:scale(0.98); }
+.l32-match-item.selected {
+  border-color: var(--gold);
+  background:   var(--gold-soft);
+  box-shadow:   0 0 14px var(--gold-glow);
+}
+.l32-match-item.matched {
+  border-color: var(--rose);
+  background:   rgba(232,142,125,0.14);
+  color:        var(--rose);
+  box-shadow:   0 0 14px var(--rose-glow);
+  cursor:       default;
+}
+.l32-match-item.wrong-shake {
+  border-color: var(--wrong-b);
+  background:   var(--wrong-bg);
+  animation:    l32-match-nudge 0.5s ease;
+}
+@keyframes l32-match-nudge {
+  0%,100%{transform:translateX(0)}25%{transform:translateX(-5px)}75%{transform:translateX(5px)}
+}
+.l32-match-hint {
+  font-size:      clamp(0.7rem,2.2vw,0.86rem);
+  color:          var(--text-muted);
+  text-align:     center;
+  font-style:     italic;
+  animation:      l32-fade-in 0.6s ease;
+}
+
+/* ═══════════════════════════════════════════════════════
+   PRAYER BUILDING MECHANIC
+═══════════════════════════════════════════════════════ */
+.l32-prayer-mechanic {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            1rem;
+  width:          min(94vw,540px);
+  margin-top:     0.6rem;
+}
+.l32-prayer-scroll {
+  width:          100%;
+  min-height:     4.5rem;
+  background:     rgba(20,10,8,0.55);
+  border:         1.5px solid var(--card-border);
+  border-radius:  14px;
+  padding:        0.9rem 1.1rem;
+  display:        flex;
+  flex-direction: column;
+  gap:            0.4rem;
+}
+.l32-prayer-scroll-line {
+  font-size:  clamp(0.76rem,2.4vw,0.96rem);
+  color:      var(--gold);
+  font-style: italic;
+  line-height: 1.4;
+  animation:  l32-fade-in 0.6s ease both;
+  text-shadow: 0 0 10px var(--gold-glow);
+}
+.l32-prayer-scroll-placeholder {
+  font-size:  clamp(0.76rem,2.4vw,0.94rem);
+  color:      var(--text-muted);
+  font-style: italic;
+  text-align: center;
+  margin:     auto;
+}
+.l32-prayer-cards {
+  display:         flex;
+  flex-wrap:       wrap;
+  gap:             0.6rem;
+  justify-content: center;
+  width:           100%;
+}
+.l32-prayer-card {
+  display:        flex;
+  align-items:    center;
+  gap:            0.5rem;
+  padding:        0.7rem 0.95rem;
+  border-radius:  12px;
+  border:         1.5px solid var(--card-border);
+  background:     var(--card-bg);
+  color:          var(--text-cream);
+  font-size:      clamp(0.7rem,2.2vw,0.88rem);
+  font-weight:    600;
+  cursor:         pointer;
+  transition:     transform 0.14s,border-color 0.2s,background 0.2s;
+}
+.l32-prayer-card:active { transform:scale(0.96); }
+.l32-prayer-card.wrong-shake {
+  border-color: var(--wrong-b);
+  background:   var(--wrong-bg);
+  animation:    l32-match-nudge 0.5s ease;
+}
+.l32-prayer-card-icon { font-size: clamp(1.0rem,3.2vw,1.3rem); }
+.l32-prayer-card-text { text-align: left; line-height: 1.3; }
+.l32-prayer-hint {
+  font-size:  clamp(0.7rem,2.2vw,0.86rem);
+  color:      var(--text-muted);
+  text-align: center;
+  font-style: italic;
+}
+
+/* ═══════════════════════════════════════════════════════
+   WATER CARRYING MECHANIC
+═══════════════════════════════════════════════════════ */
+.l32-water-mechanic {
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            1.2rem;
+  margin-top:     0.8rem;
+  width:          min(94vw,540px);
+}
+.l32-water-hint {
+  font-size:   clamp(0.8rem,2.6vw,1.0rem);
+  color:       var(--text-cream);
+  text-align:  center;
+  font-weight: 600;
+}
+.l32-well-btn {
+  width:           clamp(90px,24vw,130px);
+  height:          clamp(90px,24vw,130px);
+  border-radius:   50%;
+  border:          2.5px solid var(--card-border);
+  background:      var(--card-bg);
+  display:         flex;
+  align-items:     center;
+  justify-content: center;
+  cursor:          pointer;
+  transition:      border-color 0.3s,box-shadow 0.3s,transform 0.14s;
+}
+.l32-well-btn:active { transform: scale(0.94); }
+.l32-well-btn:disabled { cursor: default; }
+.l32-well-icon {
+  font-size: clamp(2.2rem,7vw,3.2rem);
+  filter:    drop-shadow(0 0 10px var(--gold-glow));
+}
+.l32-well-btn.filled {
+  border-color: var(--gold);
+  box-shadow:   0 0 22px var(--gold-glow);
+  animation:    l32-well-pulse 1.6s ease-in-out infinite;
+}
+@keyframes l32-well-pulse {
+  0%,100%{box-shadow:0 0 16px var(--gold-glow)}
+  50%{box-shadow:0 0 30px var(--gold-glow)}
+}
+.l32-camel-row {
+  display:         flex;
+  flex-wrap:       wrap;
+  gap:             0.7rem;
+  justify-content: center;
+  width:           100%;
+}
+.l32-camel-btn {
+  background:    none;
+  border:        2px solid var(--card-border);
+  border-radius: 14px;
+  padding:       0.5rem 0.7rem;
+  font-size:     clamp(1.5rem,5.5vw,2.2rem);
+  cursor:        pointer;
+  transition:    transform 0.12s,border-color 0.3s,background 0.3s;
+}
+.l32-camel-btn:active { transform: scale(0.9); }
+.l32-camel-btn:disabled { cursor: default; opacity: 0.55; }
+.l32-camel-btn.watered {
+  border-color: var(--rose);
+  background:   var(--rose-soft);
+  box-shadow:   0 0 14px var(--rose-glow);
+}
+.l32-water-progress {
+  font-size:      clamp(0.76rem,2.4vw,0.96rem);
+  font-weight:    700;
+  color:          var(--gold);
+  letter-spacing: 0.06em;
+}
+
+/* ═══════════════════════════════════════════════════════
+   ISAAC & REBEKAH MOMENT — tender, warm
+═══════════════════════════════════════════════════════ */
+.l32-isaac-moment {
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             2rem;
+  min-height:      min(56vh,400px);
+  width:           min(90vw,520px);
+}
+.l32-isaac-silhouettes {
+  display: flex;
+  gap:     1.2rem;
+}
+.l32-isaac-fig {
+  font-size: clamp(2.6rem,9vw,4.2rem);
+  filter:    drop-shadow(0 0 20px var(--sunset-glow));
+  animation: l32-fig-glow 2.4s ease-in-out infinite;
+}
+@keyframes l32-fig-glow {
+  0%,100%{transform:scale(1);opacity:0.92}
+  50%{transform:scale(1.04);opacity:1}
+}
+.l32-isaac-line {
+  font-size:      clamp(1.0rem,3.6vw,1.7rem);
+  font-weight:    600;
+  color:          var(--gold);
+  text-align:     center;
+  letter-spacing: 0.02em;
+  text-shadow:    0 0 20px var(--gold-glow);
+  animation:      l32-gen-fade 2.0s ease both;
+}
+@keyframes l32-gen-fade {
+  0%{opacity:0;transform:translateY(8px)}
+  35%{opacity:1;transform:translateY(0)}
+  90%{opacity:1}
+  100%{opacity:0.92}
+}
+
+/* ═══════════════════════════════════════════════════════
+   PHASE-SPECIFIC BACKDROPS
+═══════════════════════════════════════════════════════ */
+.l32-oath-scene     { background: radial-gradient(ellipse at 50% 20%,rgba(240,184,94,0.10) 0%,transparent 60%); }
+.l32-prayer-scene   { background: radial-gradient(ellipse at 50% 60%,rgba(232,142,125,0.10) 0%,transparent 60%); }
+.l32-well-scene     { background: radial-gradient(ellipse at 50% 50%,rgba(240,184,94,0.12) 0%,transparent 60%); }
+.l32-decision-scene { background: radial-gradient(ellipse at 50% 100%,rgba(226,99,122,0.12) 0%,transparent 60%); }
+
+/* ═══════════════════════════════════════════════════════
+   ENDING
+═══════════════════════════════════════════════════════ */
+.l32-ending-wrap {
+  position:        absolute;
+  inset:           0;
+  display:         flex;
+  flex-direction:  column;
+  align-items:     center;
+  justify-content: center;
+  gap:             1.0rem;
+  padding:         2rem 1.5rem;
+  z-index:         20;
+  overflow-y:      auto;
+}
+.l32-ending-glow {
+  position:       absolute;
+  inset:          0;
+  background:     radial-gradient(ellipse at 50% 30%,rgba(240,184,94,0.22) 0%,rgba(226,99,122,0.14) 42%,transparent 70%);
+  pointer-events: none;
+  animation:      l32-glow-rise 3.2s ease both;
+}
+@keyframes l32-glow-rise {
+  from{opacity:0;transform:translateY(20px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.l32-ending-camels {
+  position:       absolute;
+  bottom:         8%;
+  display:        flex;
+  gap:            2rem;
+  z-index:        1;
+  pointer-events: none;
+}
+.l32-ending-camel {
+  font-size: clamp(1.6rem,5.5vw,2.6rem);
+  filter:    drop-shadow(0 0 14px var(--sunset-glow));
+  animation: l32-camel-sway 2.4s ease-in-out infinite;
+}
+.l32-ending-petals { position:absolute;inset:0;pointer-events:none;overflow:hidden;z-index:1; }
+.l32-petal-item {
+  position:  absolute;
+  top:       -8%;
+  font-size: clamp(1.1rem,3.8vw,1.8rem);
+  animation: l32-petal-fall 6.5s linear infinite;
+  opacity:   0.7;
+}
+@keyframes l32-petal-fall {
+  0%{transform:translateY(0) rotate(0deg);opacity:0}
+  12%{opacity:0.7}
+  100%{transform:translateY(110vh) rotate(20deg);opacity:0.1}
+}
+.l32-ending-name {
+  font-size:      clamp(1.0rem,4vw,2.0rem);
+  font-weight:    700;
+  color:          var(--gold);
+  text-shadow:    0 0 28px var(--gold-glow),0 3px 12px var(--ink);
+  letter-spacing: 0.05em;
+  text-align:     center;
+  animation:      l32-name-fade 1.4s ease both;
+  position:       relative;
+  z-index:        2;
+}
+@keyframes l32-name-fade {
+  0%{opacity:0;transform:scale(0.9)}
+  100%{opacity:1;transform:scale(1)}
+}
+.l32-stars-row {
+  display:     flex;
+  gap:         0.8rem;
+  align-items: center;
+  position:    relative;
+  z-index:     2;
+}
+.l32-end-star {
+  font-size: clamp(1.5rem,5.5vw,2.7rem);
+  filter:    drop-shadow(0 0 12px var(--gold-glow));
+  animation: l32-star-soft 1.0s ease both;
+}
+.l32-st1{animation-delay:0s}
+.l32-st2{animation-delay:0.2s}
+.l32-st3{animation-delay:0.4s}
+@keyframes l32-star-soft {
+  from{opacity:0;transform:translateY(-10px)}
+  to{opacity:1;transform:translateY(0)}
+}
+.l32-coin-tally {
+  display:       flex;
+  align-items:   center;
+  gap:           0.6rem;
+  background:    var(--card-bg);
+  border:        1.5px solid var(--card-border);
+  border-radius: 14px;
+  padding:       0.7rem 1.3rem;
+  animation:     l32-fade-in 1.2s ease 0.4s both;
+  position:      relative;
+  z-index:       2;
+}
+.l32-coin-icon { font-size:clamp(1.1rem,3.8vw,1.8rem); }
+.l32-coin-num  {
+  font-size:      clamp(1.3rem,4.6vw,2.2rem);
+  font-weight:    800;
+  color:          var(--gold);
+  text-shadow:    0 0 18px var(--gold-glow);
+  letter-spacing: 0.05em;
+}
+.l32-coin-label {
+  font-size:      clamp(0.56rem,1.7vw,0.72rem);
+  color:          var(--text-muted);
+  font-weight:    600;
+  letter-spacing: 0.09em;
+}
+.l32-scripture-card {
+  width:          min(90vw,480px);
+  background:     var(--card-bg);
+  border:         1.5px solid var(--card-border);
+  border-radius:  16px;
+  padding:        1.2rem 1.4rem;
+  display:        flex;
+  flex-direction: column;
+  align-items:    center;
+  gap:            0.6rem;
+  animation:      l32-fade-in 1.3s ease both;
+  position:       relative;
+  z-index:        2;
+  overflow:       hidden;
+}
+.l32-scripture-watermark {
+  position:  absolute;
+  right:     -0.5rem;
+  bottom:    -1rem;
+  font-size: clamp(2.4rem,8vw,4rem);
+  opacity:   0.08;
+  transform: rotate(-8deg);
+  pointer-events: none;
+}
+.l32-scripture-quote {
+  font-size:   clamp(0.86rem,2.6vw,1.1rem);
+  color:       var(--text-cream);
+  font-style:  italic;
+  text-align:  center;
+  line-height: 1.6;
+  position:    relative;
+}
+.l32-scripture-ref {
+  font-size:      clamp(0.6rem,1.8vw,0.78rem);
+  color:          var(--gold);
+  font-weight:    600;
+  letter-spacing: 0.04em;
+  text-align:     center;
+  position:       relative;
+}
+.l32-advance-btn {
+  padding:        0.95rem 2.2rem;
+  border-radius:  14px;
+  border:         2px solid var(--gold);
+  background:     rgba(240,184,94,0.12);
+  color:          var(--gold);
+  font-size:      clamp(0.86rem,2.8vw,1.12rem);
+  font-weight:    700;
+  cursor:         pointer;
+  letter-spacing: 0.08em;
+  text-shadow:    0 0 12px var(--gold-glow);
+  transition:     transform 0.14s, box-shadow 0.4s;
+  box-shadow:     0 0 16px rgba(240,184,94,0.18);
+  position:       relative;
+  z-index:        2;
+}
+.l32-advance-btn:active { transform:scale(0.96); }
